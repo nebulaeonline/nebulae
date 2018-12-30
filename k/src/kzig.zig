@@ -39,7 +39,7 @@ export fn kzig_main() noreturn {
     klib.kzig_main_called = true;
 
     // Print a welcome message
-    const m1 = c"Nebulae on Zig!\n";
+    const m1 = c"nebulae on Zig!\n";
     var efi_result = klib.uefi.AsciiPrint(@ptrCast(?[*]const u8, m1));
     
     // Initialize CSPRNG (isaac64)

@@ -34,26 +34,448 @@ const baselib = @cImport({
     @cInclude("Library/BaseLib.h");
 });
 
-pub var PhysicalAddressBits: u8 = 0;
-pub var LinearAddressBits: u8 = 0;
+// CPU struct
+pub const x86cpu = struct {
+    PhysicalAddressBits: u8,
+    LinearAddressBits: u8,
+    MaxBasicCpuidEAX: u32,
+    MaxExtendedCpuidEAX: u32,
+    VendorString: [13]u8,
+    Model: u8,
+    ExtModel: u8,
+    Family: u8,
+    ExtFamily: u8,
+    Stepping: u8,
+    BrandIndex: u8,
+    ClflushLineSize: u8,
+    CacheLineSize: u32,
+    MaxAPICIds: u8,
+    InitialAPICId: u8,
+    SSE3: bool,
+    PCLMULQDQ: bool,
+    DTES64: bool,
+    MONITOR: bool,
+    CPLDebugStore: bool,
+    VMX: bool,
+    SMX: bool,
+    SpeedStep: bool,
+    ThermalMonitor2: bool,
+    SSSE3: bool,
+    L1ContextId: bool,
+    SiliconDebug: bool,
+    FMA: bool,
+    CMPXCHG16B: bool,
+    TPRUpdateControl: bool,
+    PDCM: bool,
+    PCID: bool,
+    DCA: bool,
+    SSE41: bool,
+    SSE42: bool,
+    X2APIC: bool,
+    MOVBE: bool,
+    POPCNT: bool,
+    TSCDeadline: bool,
+    AESNI: bool,
+    XSAVE: bool,
+    OSXSAVE: bool,
+    AVX: bool,
+    F16C: bool,
+    RDRAND: bool,
+    Fpu: bool,
+    V8086: bool,
+    Debug: bool,
+    PSE: bool,
+    RDTSC: bool,
+    MSR: bool,
+    PAE: bool,
+    MachineCheckException: bool,
+    CMPXCHG8B: bool,
+    APIC: bool,
+    SYSENTER: bool,
+    MTRR: bool,
+    PGE: bool,
+    MachineCheckArchitecture: bool,
+    CMOV: bool,
+    PAT: bool,
+    PSE36: bool,
+    PSN: bool,
+    CLFLUSH: bool,
+    DebugStore: bool,
+    ACPI: bool,
+    MMX: bool,
+    FXSAVE: bool,
+    SSE: bool,
+    SSE2: bool,
+    SelfSnoop: bool,
+    HyperThreading: bool,
+    ThermalMonitor: bool,
+    PBE: bool,
+};
 
-// Function to query the processor to determine the physical and linear
-// address bits supported
-pub fn InitAddressBits() void {
-    var data: u32 = 0;
+// Fill out a cpu information struct
+pub fn IdentifyCPU(cpu_struct: *x86cpu) void {
+    var EAX: u32 = 0;
+    var EBX: u32 = 0;
+    var ECX: u32 = 0;
+    var EDX: u32 = 0;
     var retval: u32 = 0;
     
+    // Start at the beginning - EAX == 00H
+    retval = baselib.AsmCpuid(0x00, @ptrCast(?[*]c_uint, &EAX), @ptrCast(?[*]c_uint, &EBX), @ptrCast(?[*]c_uint, &ECX), @ptrCast(?[*]c_uint, &EDX));
+    cpu_struct.MaxBasicCpuidEAX = EAX;
+    cpu_struct.VendorString[0] = @truncate(u8, ((EBX & 0xFF000000) >> 24));
+    cpu_struct.VendorString[1] = @truncate(u8, ((EBX & 0x00FF0000) >> 16));
+    cpu_struct.VendorString[2] = @truncate(u8, ((EBX & 0x0000FF00) >> 8));
+    cpu_struct.VendorString[3] = @truncate(u8, (EBX & 0x000000FF));
+    cpu_struct.VendorString[4] = @truncate(u8, ((ECX & 0xFF000000) >> 24));
+    cpu_struct.VendorString[5] = @truncate(u8, ((ECX & 0x00FF0000) >> 16));
+    cpu_struct.VendorString[6] = @truncate(u8, ((ECX & 0x0000FF00) >> 8));
+    cpu_struct.VendorString[7] = @truncate(u8, (ECX & 0x000000FF));
+    cpu_struct.VendorString[8] = @truncate(u8, ((EDX & 0xFF000000) >> 24));
+    cpu_struct.VendorString[9] = @truncate(u8, ((EDX & 0x00FF0000) >> 16));
+    cpu_struct.VendorString[10] = @truncate(u8, ((EDX & 0x0000FF00) >> 8));
+    cpu_struct.VendorString[11] = @truncate(u8, (EDX & 0x000000FF));
+    cpu_struct.VendorString[12] = '\x00';
+
+    // EAX == 01H
+    if (cpu_struct.MaxBasicCpuidEAX <= 0x01) {        
+        retval = baselib.AsmCpuid(0x01, @ptrCast(?[*]c_uint, &EAX), @ptrCast(?[*]c_uint, &EBX), @ptrCast(?[*]c_uint, &ECX), @ptrCast(?[*]c_uint, &EDX));
+        cpu_struct.Model = @truncate(u8, ((EAX & 0x000000F0) >> 4));
+        cpu_struct.ExtModel = @truncate(u8, ((EAX & 0x000F0000) >> 16));
+        cpu_struct.Family = @truncate(u8, ((EAX & 0x00000F00) >> 8));
+        cpu_struct.ExtFamily = @truncate(u8, ((EAX & 0x0FF00000) >> 20));
+        cpu_struct.Stepping = @truncate(u8, (EAX & 0x0000000F));
+        cpu_struct.BrandIndex = @truncate(u8, (EBX & 0x000000FF));
+        cpu_struct.ClflushLineSize = @truncate(u8, ((EBX & 0x0000FF00) >> 8));
+        cpu_struct.CacheLineSize = cpu_struct.ClflushLineSize * 8;
+        cpu_struct.MaxAPICIds = @truncate(u8, ((EBX & 0x00FF0000) >> 16));
+        cpu_struct.InitialAPICId = @truncate(u8, ((EBX & 0xFF000000) >> 24));
+
+        // Bit 0 ECX - SSE3 Support
+        if ((ECX & (1 << 0)) == (1 << 0)) {
+            cpu_struct.SSE3 = true;
+        }
+
+        // Bit 1 ECX - PCLMULQDQ Support
+        if ((ECX & (1 << 1)) == (1 << 1)) {
+            cpu_struct.PCLMULQDQ = true;
+        }
+
+        // Bit 2 ECX - DTES64 Support
+        if ((ECX & (1 << 2)) == (1 << 2)) {
+            cpu_struct.DTES64 = true;
+        }
+
+        // Bit 3 ECX - MONITOR Support
+        if ((ECX & (1 << 3)) == (1 << 3)) {
+            cpu_struct.MONITOR = true;
+        }
+
+        // Bit 4 ECX - CPLDebugStore Support
+        if ((ECX & (1 << 4)) == (1 << 4)) {
+            cpu_struct.CPLDebugStore = true;
+        }
+
+        // Bit 5 ECX - VMX Support
+        if ((ECX & (1 << 5)) == (1 << 5)) {
+            cpu_struct.VMX = true;
+        }
+
+        // Bit 6 ECX - SMX Support
+        if ((ECX & (1 << 6)) == (1 << 6)) {
+            cpu_struct.SMX = true;
+        }
+
+        // Bit 7 ECX - SpeedStep Support
+        if ((ECX & (1 << 7)) == (1 << 7)) {
+            cpu_struct.SpeedStep = true;
+        }
+
+        // Bit 8 ECX - ThermalMonitor2 Support
+        if ((ECX & (1 << 8)) == (1 << 8)) {
+            cpu_struct.ThermalMonitor2 = true;
+        }
+
+        // Bit 9 ECX - SSSE3 Support
+        if ((ECX & (1 << 9)) == (1 << 9)) {
+            cpu_struct.SSSE3 = true;
+        }
+
+        // Bit 10 ECX - L1ContextId Support
+        if ((ECX & (1 << 10)) == (1 << 10)) {
+            cpu_struct.L1ContextId = true;
+        }
+
+        // Bit 11 ECX - SiliconDebug Support
+        if ((ECX & (1 << 11)) == (1 << 11)) {
+            cpu_struct.SiliconDebug = true;
+        }
+
+        // Bit 12 ECX - FMA Support
+        if ((ECX & (1 << 12)) == (1 << 12)) {
+            cpu_struct.FMA = true;
+        }
+
+        // Bit 13 ECX - CMPXCHG16B Support
+        if ((ECX & (1 << 13)) == (1 << 13)) {
+            cpu_struct.CMPXCHG16B = true;
+        }
+
+        // Bit 14 ECX - TPRUpdateControl Support
+        if ((ECX & (1 << 14)) == (1 << 14)) {
+            cpu_struct.TPRUpdateControl = true;
+        }
+
+        // Bit 15 ECX - PDCM Support
+        if ((ECX & (1 << 15)) == (1 << 15)) {
+            cpu_struct.PDCM = true;
+        }
+
+        // Bit 16 ECX - Reserved
+
+        // Bit 17 ECX - PCID Support
+        if ((ECX & (1 << 17)) == (1 << 17)) {
+            cpu_struct.PCID = true;
+        }
+
+        // Bit 18 ECX - DCA Support
+        if ((ECX & (1 << 18)) == (1 << 18)) {
+            cpu_struct.DCA = true;
+        }
+
+        // Bit 19 ECX - SSE41 Support
+        if ((ECX & (1 << 19)) == (1 << 19)) {
+            cpu_struct.SSE41 = true;
+        }
+
+        // Bit 20 ECX - SSE42 Support
+        if ((ECX & (1 << 20)) == (1 << 20)) {
+            cpu_struct.SSE42 = true;
+        }
+
+        // Bit 21 ECX - X2APIC Support
+        if ((ECX & (1 << 21)) == (1 << 21)) {
+            cpu_struct.X2APIC = true;
+        }
+
+        // Bit 22 ECX - MOVBE Support
+        if ((ECX & (1 << 22)) == (1 << 22)) {
+            cpu_struct.MOVBE = true;
+        }
+
+        // Bit 23 ECX - POPCNT Support
+        if ((ECX & (1 << 23)) == (1 << 23)) {
+            cpu_struct.POPCNT = true;
+        }
+
+        // Bit 24 ECX - TSCDeadline Support
+        if ((ECX & (1 << 24)) == (1 << 24)) {
+            cpu_struct.TSCDeadline = true;
+        }
+
+        // Bit 25 ECX - AESNI Support
+        if ((ECX & (1 << 25)) == (1 << 25)) {
+            cpu_struct.AESNI = true;
+        }
+
+        // Bit 26 ECX - XSAVE Support
+        if ((ECX & (1 << 26)) == (1 << 26)) {
+            cpu_struct.XSAVE = true;
+        }
+
+        // Bit 27 ECX - OSXSAVE Support
+        if ((ECX & (1 << 27)) == (1 << 27)) {
+            cpu_struct.OSXSAVE = true;
+        }
+
+        // Bit 28 ECX - AVX Support
+        if ((ECX & (1 << 28)) == (1 << 28)) {
+            cpu_struct.AVX = true;
+        }
+
+        // Bit 29 ECX - F16C Support
+        if ((ECX & (1 << 29)) == (1 << 29)) {
+            cpu_struct.F16C = true;
+        }
+
+        // Bit 30 ECX - RDRAND Support
+        if ((ECX & (1 << 30)) == (1 << 30)) {
+            cpu_struct.RDRAND = true;
+        }
+
+        // Bit 31 ECX == 0
+
+        // Bit 0 EDX - x87 FPU Support
+        if ((EDX & (1 << 0)) == (1 << 0)) {
+            cpu_struct.Fpu = true;
+        }
+
+        // Bit 1 EDX - Virtual 8086 Support
+        if ((EDX & (1 << 1)) == (1 << 1)) {
+            cpu_struct.V8086 = true;
+        }
+
+        // Bit 2 EDX - Debug Extensions Support
+        if ((EDX & (1 << 2)) == (1 << 2)) {
+            cpu_struct.Debug = true;
+        }
+
+        // Bit 3 EDX - Page Size Extensions Support
+        if ((EDX & (1 << 3)) == (1 << 3)) {
+            cpu_struct.PSE = true;
+        }
+
+        // Bit 4 EDX - Time Stamp Counter Support
+        if ((EDX & (1 << 4)) == (1 << 4)) {
+            cpu_struct.RDTSC = true;
+        }
+
+        // Bit 5 EDX - MSR Support
+        if ((EDX & (1 << 5)) == (1 << 5)) {
+            cpu_struct.MSR = true;
+        }
+
+        // Bit 6 EDX - PAE Support
+        if ((EDX & (1 << 6)) == (1 << 6)) {
+            cpu_struct.PAE = true;
+        }
+
+        // Bit 7 EDX - Machine Check Exception Support
+        if ((EDX & (1 << 7)) == (1 << 7)) {
+            cpu_struct.MachineCheckException = true;
+        }
+
+        // Bit 8 EDX - CMPXCHG8B Support
+        if ((EDX & (1 << 8)) == (1 << 8)) {
+            cpu_struct.CMPXCHG8B = true;
+        }
+
+        // Bit 9 EDX - APIC Support
+        if ((EDX & (1 << 9)) == (1 << 9)) {
+            cpu_struct.APIC = true;
+        }
+
+        // Bit 10 EDX - Reserved
+
+        // Bit 11 EDX - SYSENTER Support
+        if ((EDX & (1 << 11)) == (1 << 11)) {
+            cpu_struct.SYSENTER = true;
+        }
+
+        // Bit 12 EDX - MTRR Support
+        if ((EDX & (1 << 12)) == (1 << 12)) {
+            cpu_struct.MTRR = true;
+        }
+
+        // Bit 13 EDX - PGE Support
+        if ((EDX & (1 << 13)) == (1 << 13)) {
+            cpu_struct.PGE = true;
+        }
+
+        // Bit 14 EDX - Machine Check Architecture Support
+        if ((EDX & (1 << 14)) == (1 << 14)) {
+            cpu_struct.MachineCheckArchitecture = true;
+        }
+
+        // Bit 15 EDX - CMOV Support
+        if ((EDX & (1 << 15)) == (1 << 15)) {
+            cpu_struct.CMOV = true;
+        }
+
+        // Bit 16 EDX - PAT
+        if ((EDX & (1 << 16)) == (1 << 16)) {
+            cpu_struct.PAT = true;
+        }
+
+        // Bit 17 EDX - PSE36 Support
+        if ((EDX & (1 << 17)) == (1 << 17)) {
+            cpu_struct.PSE36 = true;
+        }
+
+        // Bit 18 EDX - Processor Serial (PSN) Support
+        if ((EDX & (1 << 18)) == (1 << 18)) {
+            cpu_struct.PSN = true;
+        }
+
+        // Bit 19 EDX - CLFLUSH Support
+        if ((EDX & (1 << 19)) == (1 << 19)) {
+            cpu_struct.CLFLUSH = true;
+        }
+
+        // Bit 20 EDX - Reserved
+        
+        // Bit 21 EDX - DebugStore Support
+        if ((EDX & (1 << 21)) == (1 << 21)) {
+            cpu_struct.DebugStore = true;
+        }
+
+        // Bit 22 EDX - ACPI Support
+        if ((EDX & (1 << 22)) == (1 << 22)) {
+            cpu_struct.ACPI = true;
+        }
+
+        // Bit 23 EDX - MMX Support
+        if ((EDX & (1 << 23)) == (1 << 23)) {
+            cpu_struct.MMX = true;
+        }
+
+        // Bit 24 EDX - FXSAVE Support
+        if ((EDX & (1 << 24)) == (1 << 24)) {
+            cpu_struct.FXSAVE = true;
+        }
+
+        // Bit 25 EDX - SSE Support
+        if ((EDX & (1 << 25)) == (1 << 25)) {
+            cpu_struct.SSE = true;
+        }
+
+        // Bit 26 EDX - SSE2 Support
+        if ((EDX & (1 << 26)) == (1 << 26)) {
+            cpu_struct.SSE2 = true;
+        }
+
+        // Bit 27 EDX - Self Snoop Support
+        if ((EDX & (1 << 27)) == (1 << 27)) {
+            cpu_struct.SelfSnoop = true;
+        }
+
+        // Bit 28 EDX - HyperThreading Support
+        if ((EDX & (1 << 28)) == (1 << 28)) {
+            cpu_struct.HyperThreading = true;
+        }
+
+        // Bit 29 EDX - ThermalMonitor Support
+        if ((EDX & (1 << 29)) == (1 << 29)) {
+            cpu_struct.ThermalMonitor = true;
+        }
+
+        // Bit 30 EDX - Reserved
+        
+        // Bit 31 EDX - PBE Support
+        if ((EDX & (1 << 31)) == (1 << 31)) {
+            cpu_struct.PBE = true;
+        }
+    }
+
     // This cpuid function returns the maximum supported EAX value supported
     // by this cpu's cpuid function (hmmm...)
-    retval = baselib.AsmCpuid(0x80000000, @ptrCast(?[*]c_uint, &data), null, null, null);
-    if (data < 0x80000008) {
+    retval = baselib.AsmCpuid(0x80000000, @ptrCast(?[*]c_uint, &EAX), null, null, null);
+    if (EAX < 0x80000008) {
         @panic("Unable to determine CPU bit support (hardware & logical)");
     }
     
-    retval = baselib.AsmCpuid(0x80000008, @ptrCast(?[*]c_uint, &data), null, null, null);
+    retval = baselib.AsmCpuid(0x80000008, @ptrCast(?[*]c_uint, &EAX), null, null, null);
 
-    PhysicalAddressBits = @truncate(u8, (data & 0x000000FF));
-    LinearAddressBits = @truncate(u8, ((data & 0x0000FF00) >> 8));
+    cpu_struct.PhysicalAddressBits = @truncate(u8, (EAX & 0x000000FF));
+    cpu_struct.LinearAddressBits = @truncate(u8, ((EAX & 0x0000FF00) >> 8));
+}
+
+pub var cpu0: x86cpu = undefined;
+
+// Function to query the processor to determine the physical and linear
+// address bits supported
+pub fn InitCPU() void {
+    IdentifyCPU(&cpu0);
 }
 
 // x86 Segment Selector

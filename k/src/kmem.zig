@@ -43,7 +43,7 @@ const arch = @import("arch/x86_64.zig");
 // Initialize system memory
 pub fn InitMem() void {
     
-    arch.InitAddressBits();    
+    arch.InitCPU();    
     //memlib.InitMemSubsystem();
 }
 
