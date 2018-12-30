@@ -1,0 +1,3 @@
+[submodule "VisualUefi"]
+	path = VisualUefi
+	url = https://github.com/ionescu007/VisualUefi.git
