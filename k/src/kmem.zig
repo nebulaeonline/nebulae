@@ -65,4 +65,7 @@ pub fn InitMem() void {
         @ptrCast([*]c_ulonglong, &memmap_key),
         @ptrCast([*]c_ulonglong, &memmap_descriptor_size),
         @ptrCast([*]c_uint, &memmap_descriptor_version));
+
+    const m1 = c"Size required for memory map: %lu\n";
+    efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m1), memmap_size);
 }
