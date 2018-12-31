@@ -29,29 +29,36 @@
 // Compiler Builtins
 const builtin = @import("builtin");
 
-// Kernel Memory C Imports
-pub const memlib = @cImport({ 
-    @cInclude("kmem.h");
-});
-
 pub const PAGE_SIZE_4K: u64 = 0x1000;
 pub const PAGE_SIZE_2M: u64 = 0x200000;
 pub const PAGE_SIZE_1G: u64 = 0x40000000;
 
 const arch = @import("arch/x86_64.zig");
+const uefi = @import("kuefi.zig");
+
+pub const uefi_memory_map: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR = null;
+
+const GetMemoryMapPrototype = fn (MapSize: *u64, MemoryMap: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR, MapKey: *u64, DescriptorSize: *u64, DescriptorVersion: *u32) uefi.clib.EFI_STATUS;
+pub const GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.GetMemoryMap;
 
 // Initialize system memory
 pub fn InitMem() void {
     
-    arch.InitCPU();    
-    //memlib.InitMemSubsystem();
-}
+    // Initialize cpu first
+    arch.InitCPU();
 
-// Wrapper functions for underlying arch
-pub fn GetArchPhysicalBits() u8 {
-    return arch.PhysicalAddressBits;
-}
+    // The first call to GetMemoryMap(...) passes a NULL
+    // pointer to obtain the size of the memory
+    // map
+    var memmap_size: u64 = 0;
+    var memmap_key: u64 = 0;
+    var memmap_descriptor_size: u64 = 0;
+    var memmap_descriptor_version: u64 = 0;
 
-pub fn GetArchLinearBits() u8 {
-    return arch.LinearAddressBits;
+
+    var efi_result = GetMemoryMap(&memmap_size, 
+        null,
+        &memmap_key, 
+        &memmap_descriptor_size, 
+        &memmap_descriptor_version);
 }

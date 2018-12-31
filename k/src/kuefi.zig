@@ -25,33 +25,28 @@
 // CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
+// UEFI Includes
 
-// Zig Compiler Builtins
-const builtin = @import("builtin");
+// Our c library export
+pub const clib = @cImport({ 
+    // Basic UEFI Includes
+    @cInclude("Uefi.h");
+    @cInclude("Library/UefiLib.h");
+    @cInclude("Library/DebugLib.h"); 
+    @cInclude("Library/MemoryAllocationLib.h");
+    @cInclude("Library/BaseMemoryLib.h");
 
-// Additional imports
-const klib = @import("klib.zig");
-const kmem = @import("kmem.zig");
-const uefi = @import("kuefi.zig");
+    // Boot and Runtime Services
+    @cInclude("Library/UefiBootServicesTableLib.h");
+    @cInclude("Library/UefiRuntimeServicesTableLib.h");
 
-// True entrypoint to Zig code
-export fn kzig_main() noreturn {
+    // Shell Library
+    @cInclude("Library/ShellLib.h");
 
-    klib.kzig_main_called = true;
+    // CSPRNG
+    // UINT64 GetCSPRNG64(UINT64 min, UINT64 max)
+    @cInclude("isaac64.h");
+});
 
-    // Print a welcome message
-    const m1 = c"nebulae on Zig!\n";
-    var efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m1));
-    
-    // Initialize CSPRNG (isaac64)
-    uefi.clib.randinit(1);
-    const m2 = c"CSPRNG initialized.\n";
-    efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m2));
-
-    // Initialize memory subsystem
-    kmem.InitMem();
-    const m3 = c"Memory subsystem initialized.\n";
-    efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m3));
-
-    while (true) {}
-}
+// Support any version of UEFI
+export const _gUefiDriverRevision: u32 = 0;
