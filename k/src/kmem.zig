@@ -38,8 +38,8 @@ const uefi = @import("kuefi.zig");
 
 pub const uefi_memory_map: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR = null;
 
-const GetMemoryMapPrototype = fn (MapSize: *u64, MemoryMap: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR, MapKey: *u64, DescriptorSize: *u64, DescriptorVersion: *u32) uefi.clib.EFI_STATUS;
-pub const GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.GetMemoryMap;
+const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong, MemoryMap: ?[*]uefi.clib.EFI_MEMORY_DESCRIPTOR, MapKey: ?[*]c_ulonglong, DescriptorSize: ?[*]c_ulonglong, DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
+pub const GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.?[0].GetMemoryMap;
 
 // Initialize system memory
 pub fn InitMem() void {
