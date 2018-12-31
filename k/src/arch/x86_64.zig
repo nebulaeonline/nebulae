@@ -138,7 +138,7 @@ pub fn IdentifyCPU(cpu_struct: *x86cpu) void {
     cpu_struct.VendorString[12] = '\x00';
 
     // EAX == 01H
-    if (cpu_struct.MaxBasicCpuidEAX <= 0x01) {        
+    if (cpu_struct.MaxBasicCpuidEAX >= 0x01) {        
         retval = baselib.AsmCpuid(0x01, @ptrCast(?[*]c_uint, &EAX), @ptrCast(?[*]c_uint, &EBX), @ptrCast(?[*]c_uint, &ECX), @ptrCast(?[*]c_uint, &EDX));
         cpu_struct.Model = @truncate(u8, ((EAX & 0x000000F0) >> 4));
         cpu_struct.ExtModel = @truncate(u8, ((EAX & 0x000F0000) >> 16));

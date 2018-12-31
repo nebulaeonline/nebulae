@@ -40,17 +40,17 @@ export fn kzig_main() noreturn {
     klib.kzig_main_called = true;
 
     // Print a welcome message
-    const m1 = c"nebulae on Zig!\n";
+    const m1 = c"nebulae on Zig\n";
     var efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m1));
     
     // Initialize CSPRNG (isaac64)
     uefi.clib.randinit(1);
-    const m2 = c"CSPRNG initialized.\n";
+    const m2 = c"CSPRNG initialized\n";
     efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m2));
 
     // Initialize memory subsystem
     kmem.InitMem();
-    const m3 = c"Memory subsystem initialized.\n";
+    const m3 = c"Memory subsystem initialized\n";
     efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m3));
 
     while (true) {}
