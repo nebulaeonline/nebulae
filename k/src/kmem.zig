@@ -46,6 +46,7 @@ const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong,
     DescriptorSize: ?[*]c_ulonglong, 
     DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
 
+// Function pointers
 pub var GetMemoryMap: GetMemoryMapPrototype = undefined;
 
 // Initialize system memory
@@ -54,7 +55,7 @@ pub fn InitMem() void {
     // Initialize cpu first
     arch.InitCPU();
 
-    // Assign our GetMemoryMap function pointer
+    // Assign GetMemoryMap function pointer
     GetMemoryMap = uefi.clib.gBS.?[0].GetMemoryMap.?;
 
     var memmap_size: c_ulonglong = 0;
@@ -70,6 +71,7 @@ pub fn InitMem() void {
         @ptrCast([*]c_ulonglong, &memmap_descriptor_size),
         @ptrCast([*]c_uint, &memmap_descriptor_version));
 
+    // sanity check
     const m1 = c"Memory map size: %lu bytes\n";
     efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m1), memmap_size);
 }
