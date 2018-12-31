@@ -36,14 +36,15 @@ pub const PAGE_SIZE_1G: u64 = 0x40000000;
 const arch = @import("arch/x86_64.zig");
 const uefi = @import("kuefi.zig");
 
+// Pointer to the memory map
 pub const uefi_memory_map: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR = null;
 
+// Prototype for GetMemoryMap function
 const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong, 
     MemoryMap: ?[*]uefi.clib.EFI_MEMORY_DESCRIPTOR, 
     MapKey: ?[*]c_ulonglong, 
     DescriptorSize: ?[*]c_ulonglong, 
     DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
-
 
 // Initialize system memory
 pub fn InitMem() void {
@@ -51,14 +52,14 @@ pub fn InitMem() void {
     // Initialize cpu first
     arch.InitCPU();
 
-    // The first call to GetMemoryMap(...) passes a NULL
-    // pointer to obtain the size of the memory
-    // map
     var memmap_size: c_ulonglong = 0;
     var memmap_key: c_ulonglong = 0;
     var memmap_descriptor_size: c_ulonglong = 0;
     var memmap_descriptor_version: c_uint = 0;
 
+    // The first call to GetMemoryMap(...) passes a NULL
+    // pointer to obtain the size of the memory
+    // map
     var GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.?[0].GetMemoryMap.?;
     var efi_result = GetMemoryMap(@ptrCast([*]c_ulonglong, &memmap_size),
         null,
