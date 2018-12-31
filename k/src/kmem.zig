@@ -38,8 +38,12 @@ const uefi = @import("kuefi.zig");
 
 pub const uefi_memory_map: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR = null;
 
-const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong, MemoryMap: ?[*]uefi.clib.EFI_MEMORY_DESCRIPTOR, MapKey: ?[*]c_ulonglong, DescriptorSize: ?[*]c_ulonglong, DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
-pub const GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.?[0].GetMemoryMap;
+const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong, 
+    MemoryMap: ?[*]uefi.clib.EFI_MEMORY_DESCRIPTOR, 
+    MapKey: ?[*]c_ulonglong, 
+    DescriptorSize: ?[*]c_ulonglong, 
+    DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
+
 
 // Initialize system memory
 pub fn InitMem() void {
@@ -50,15 +54,15 @@ pub fn InitMem() void {
     // The first call to GetMemoryMap(...) passes a NULL
     // pointer to obtain the size of the memory
     // map
-    var memmap_size: u64 = 0;
-    var memmap_key: u64 = 0;
-    var memmap_descriptor_size: u64 = 0;
-    var memmap_descriptor_version: u64 = 0;
+    var memmap_size: c_ulonglong = 0;
+    var memmap_key: c_ulonglong = 0;
+    var memmap_descriptor_size: c_ulonglong = 0;
+    var memmap_descriptor_version: c_uint = 0;
 
-
-    var efi_result = GetMemoryMap(&memmap_size, 
+    var GetMemoryMap: GetMemoryMapPrototype = uefi.clib.gBS.?[0].GetMemoryMap.?;
+    var efi_result = GetMemoryMap(@ptrCast([*]c_ulonglong, &memmap_size),
         null,
-        &memmap_key, 
-        &memmap_descriptor_size, 
-        &memmap_descriptor_version);
+        @ptrCast([*]c_ulonglong, &memmap_key),
+        @ptrCast([*]c_ulonglong, &memmap_descriptor_size),
+        @ptrCast([*]c_uint, &memmap_descriptor_version));
 }
