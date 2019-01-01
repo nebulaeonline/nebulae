@@ -12,10 +12,10 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{78BD1962-09A3-42C6-8538-F4AE151AA7F3}</ProjectGuid>
-    <RootNamespace>kzig</RootNamespace>
+    <ProjectGuid>{2770B4D3-3A2B-4F3E-9111-1BCE2ED3AD38}</ProjectGuid>
+    <RootNamespace>k0</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
-    <ProjectName>kzig</ProjectName>
+    <ProjectName>k0</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -52,10 +52,10 @@
     </GenerateManifest>
     <CustomBuildAfterTargets>BscMake</CustomBuildAfterTargets>
     <CustomBuildBeforeTargets>PostBuildEvent</CustomBuildBeforeTargets>
-    <IntDir>$(SolutionDir)kzig\$(Platform)\$(Configuration)\obj\$(TargetName)\</IntDir>
+    <IntDir>$(SolutionDir)k0\$(Platform)\$(Configuration)\obj\$(TargetName)\</IntDir>
     <TargetExt>.efi</TargetExt>
     <ExtensionsToDeleteOnClean>$(ExtensionsToDeleteOnClean);$(TargetPath).manifest;$(OutDir)$(TargetName).tlb;$(OutDir)$(TargetName).pdb;$(TargetPath);$(OutDir)$(TargetName).bsc;$(OutDir)$(TargetName).ilk;$(TargetPath).intermediate.manifest</ExtensionsToDeleteOnClean>
-    <OutDir>$(SolutionDir)kzig\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)k0\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -104,7 +104,7 @@
       </EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <SpecifySectionAttributes>.xdata,D</SpecifySectionAttributes>
-      <AdditionalDependencies>UefiApplicationEntryPoint.lib;UefiRuntimeLib.lib;kzig.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>UefiApplicationEntryPoint.lib;UefiRuntimeLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>EFI Application</SubSystem>
@@ -127,12 +127,6 @@
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalOptions>/OPT:ICF=10 /IGNORE:4001 /IGNORE:4254 %(AdditionalOptions)</AdditionalOptions>
     </Link>
-    <PreLinkEvent>
-      <Command>zig build-obj src\kzig.zig --target-os uefi --target-arch x86_64 --target-environ msvc --subsystem efi_application -isystem src\include -isystem $(EDK_PATH)\MdePkg\Include -isystem $(EDK_PATH)\MdePkg\Include\X64 -isystem $(EDK_PATH)\ShellPkg\Include</Command>
-    </PreLinkEvent>
-    <PreLinkEvent>
-      <Message>Build Zig Code</Message>
-    </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\isaac64.c" />
@@ -149,10 +143,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
-    <None Include="src\arch\x86_64.zig" />
-    <None Include="src\klib.zig" />
-    <None Include="src\kmem.zig" />
-    <None Include="src\kzig.zig" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
