@@ -2,7 +2,6 @@
 
 nebulae is an experimental operating system:
 
-  - written in zig
   - modern
   - ~~Magic~~
 

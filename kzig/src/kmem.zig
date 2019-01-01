@@ -39,15 +39,26 @@ const uefi = @import("kuefi.zig");
 // Pointer to the memory map
 pub const uefi_memory_map: ?*uefi.clib.EFI_MEMORY_DESCRIPTOR = null;
 
-// Prototype for GetMemoryMap function
-const GetMemoryMapPrototype = extern fn (MapSize: ?[*]c_ulonglong, 
+// GetMemoryMap function prototype
+const GetMemoryMapPrototype = extern fn (
+    MapSize: ?[*]c_ulonglong, 
     MemoryMap: ?[*]uefi.clib.EFI_MEMORY_DESCRIPTOR, 
     MapKey: ?[*]c_ulonglong, 
     DescriptorSize: ?[*]c_ulonglong, 
-    DescriptorVersion: ?[*]c_uint) uefi.clib.EFI_STATUS;
+    DescriptorVersion: ?[*]c_uint
+) uefi.clib.EFI_STATUS;
+
+// AllocatePages function prototype
+const AllocatePagesPrototype = extern fn (
+    AllocateType: uefi.clib.EFI_ALLOCATE_TYPE,
+    MemoryType: uefi.clib.EFI_MEMORY_TYPE,
+    PageCount: c_ulonglong,
+    PhysicalAddress: ?[*]uefi.clib.EFI_PHYSICAL_ADDRESS
+) uefi.clib.EFI_STATUS;
 
 // Function pointers
 pub var GetMemoryMap: GetMemoryMapPrototype = undefined;
+pub var AllocatePages: AllocatePagesPrototype = undefined;
 
 // Initialize system memory
 pub fn InitMem() void {
@@ -55,9 +66,11 @@ pub fn InitMem() void {
     // Initialize cpu first
     arch.InitCPU();
 
-    // Assign GetMemoryMap function pointer
+    // Assign memory-related function pointers
     GetMemoryMap = uefi.clib.gBS.?[0].GetMemoryMap.?;
+    AllocatePages = uefi.clib.gBS.?[0].AllocatePages.?;
 
+    // Local memmap helper variables
     var memmap_size: c_ulonglong = 0;
     var memmap_key: c_ulonglong = 0;
     var memmap_descriptor_size: c_ulonglong = 0;
@@ -70,6 +83,7 @@ pub fn InitMem() void {
         @ptrCast([*]c_ulonglong, &memmap_key),
         @ptrCast([*]c_ulonglong, &memmap_descriptor_size),
         @ptrCast([*]c_uint, &memmap_descriptor_version));
+
 
     // sanity check
     const m1 = c"Memory map size: %lu bytes\n";

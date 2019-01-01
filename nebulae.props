@@ -3,13 +3,13 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup>
     <GenerateManifest />
-    <IntDir>$(SolutionDir)\k\$(Platform)\$(Configuration)\obj\$(TargetName)\</IntDir>
-    <OutDir>$(SolutionDir)\k\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\kzig\$(Platform)\$(Configuration)\obj\$(TargetName)\</IntDir>
+    <OutDir>$(SolutionDir)\kzig\$(Platform)\$(Configuration)\</OutDir>
     <TargetExt>.efi</TargetExt>
   </PropertyGroup>
   <PropertyGroup>
     <LocalDebuggerCommand>$(EDK_PATH)\..\debugger\qemu.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-name "VisualUEFI Debugger" -drive file=OVMF_CODE-need-smm.fd,if=pflash,format=raw,unit=0,readonly=on -drive file=OVMF_VARS-need-smm.fd,if=pflash,format=raw,unit=1 -drive file=fat:rw:..\..\nebulae\k\$(Platform)\$(Configuration)\,media=disk,if=virtio,format=raw -drive file=UefiShell.iso,format=raw -m 512 -machine q35,smm=on -nodefaults -vga std -global driver=cfi.pflash01,property=secure,value=on -global ICH9-LPC.disable_s3=1</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-name "VisualUEFI Debugger" -drive file=OVMF_CODE-need-smm.fd,if=pflash,format=raw,unit=0,readonly=on -drive file=OVMF_VARS-need-smm.fd,if=pflash,format=raw,unit=1 -drive file=fat:rw:..\..\nebulae\kzig\$(Platform)\$(Configuration)\,media=disk,if=virtio,format=raw -drive file=UefiShell.iso,format=raw -m 512 -machine q35,smm=on -nodefaults -vga std -global driver=cfi.pflash01,property=secure,value=on -global ICH9-LPC.disable_s3=1</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(EDK_PATH)\..\debugger</LocalDebuggerWorkingDirectory>
     <LocalDebuggerDebuggerType>Script</LocalDebuggerDebuggerType>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
