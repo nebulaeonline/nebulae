@@ -1,4 +1,4 @@
-// Copyright (c) 2018 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -34,7 +34,6 @@
 #include <Library/DebugLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/BaseMemoryLib.h>
-#include <Library/RngLib.h>
 //
 // Boot and Runtime Services
 //
@@ -85,7 +84,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     system_table->BootServices->SetWatchdogTimer(0, 0, 0, NULL);
 
     // Announce 
-    Print(L"k booting...\n");
+    Print(L"Welcome to nebulae!\n");
 
     // Init the shell for scroll breaking capability
     shell_status = ShellInitialize();
