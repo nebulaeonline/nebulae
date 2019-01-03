@@ -176,7 +176,7 @@ void InitMemSubsystem() {
     }
 
     // Initialize the isaac64 csprng
-    randinit(TRUE);
+    InitIsaac64CSPRNG(TRUE);
 
     /* GetCSPRNG64((UINT64)kmem_largest_block, (UINT64)kmem_largest_block + kmem_largest_block_size) */
 

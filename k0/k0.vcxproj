@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <PlatformToolset>v141_clang_c2</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -46,7 +46,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(EDK_PATH)\MdePkg\Include;$(EDK_PATH)\MdePkg\Include\X64;$(EDK_PATH)\ShellPkg\Include;$(EDK_PATH)\CryptoPkg\Include</IncludePath>
+    <IncludePath>$(EDK_PATH)\MdePkg\Include;$(EDK_PATH)\MdePkg\Include\X64;$(EDK_PATH)\ShellPkg\Include;$(EDK_PATH)\CryptoPkg\Include;src\include\lib</IncludePath>
     <LibraryPath>$(EDK_PATH)\..\EDK-II\$(Platform)\$(Configuration)</LibraryPath>
     <GenerateManifest>
     </GenerateManifest>
@@ -56,6 +56,9 @@
     <TargetExt>.efi</TargetExt>
     <ExtensionsToDeleteOnClean>$(ExtensionsToDeleteOnClean);$(TargetPath).manifest;$(OutDir)$(TargetName).tlb;$(OutDir)$(TargetName).pdb;$(TargetPath);$(OutDir)$(TargetName).bsc;$(OutDir)$(TargetName).ilk;$(TargetPath).intermediate.manifest</ExtensionsToDeleteOnClean>
     <OutDir>$(SolutionDir)k0\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Label="LLVM" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <UseLldLink>false</UseLldLink>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -73,9 +76,9 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level4</WarningLevel>
-      <Optimization>MinSpace</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>
       </SDLCheck>
@@ -84,9 +87,9 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;__NEBULAE_ARCH_X64;__NEBULAE_DEBUG;NO_MSABI_VA_FUNCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <ExceptionHandling>SyncCThrow</ExceptionHandling>
+      <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <ControlFlowGuard>false</ControlFlowGuard>
@@ -98,6 +101,14 @@
       <CallingConvention />
       <ForcedIncludeFiles>$(EDK_PATH)\..\EDK-II\BaseLib\vshacks.h</ForcedIncludeFiles>
       <ErrorReporting />
+      <MSCompatibility>false</MSCompatibility>
+      <DataLevelLinking>false</DataLevelLinking>
+      <PositionIndependentCode>false</PositionIndependentCode>
+      <MSExtensions>false</MSExtensions>
+      <PrecompiledHeaderCompileAs>CompileAsC</PrecompiledHeaderCompileAs>
+      <PrecompiledHeaderFile />
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>
@@ -106,7 +117,7 @@
       <SpecifySectionAttributes>.xdata,D</SpecifySectionAttributes>
       <AdditionalDependencies>UefiApplicationEntryPoint.lib;UefiRuntimeLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
-      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <SubSystem>EFI Application</SubSystem>
       <Driver>Driver</Driver>
       <ManifestFile />
@@ -126,19 +137,27 @@
       <SectionAlignment>32</SectionAlignment>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
       <AdditionalOptions>/OPT:ICF=10 /IGNORE:4001 /IGNORE:4254 %(AdditionalOptions)</AdditionalOptions>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\isaac64.c" />
-    <ClCompile Include="src\k.c" />
+    <ClCompile Include="src\jsmn.c" />
+    <ClCompile Include="src\kconfig.c" />
+    <ClCompile Include="src\kmain.c" />
+    <ClCompile Include="src\uefi_entrypoint.c" />
     <ClCompile Include="src\kmem.c" />
     <ClCompile Include="src\kstring.c" />
+    <ClCompile Include="src\x64.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\include\arch\x64.h" />
     <ClInclude Include="src\include\isaac64.h" />
-    <ClInclude Include="src\include\k.h" />
+    <ClInclude Include="src\include\jsmn.h" />
+    <ClInclude Include="src\include\k0.h" />
     <ClInclude Include="src\include\kmem.h" />
     <ClInclude Include="src\include\kstring.h" />
+    <ClInclude Include="src\include\lib\stddef.h" />
     <ClInclude Include="src\include\standard.h" />
   </ItemGroup>
   <ItemGroup>

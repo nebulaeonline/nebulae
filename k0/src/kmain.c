@@ -26,80 +26,71 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Basic UEFI Libraries
-//
-#include <Uefi.h>
+// UEFI Debug Library (ASSERT) & Boot Services
 #include <Library/UefiLib.h>
 #include <Library/DebugLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/BaseMemoryLib.h>
-//
-// Boot and Runtime Services
-//
 #include <Library/UefiBootServicesTableLib.h>
-#include <Library/UefiRuntimeServicesTableLib.h>
 
-//
-// Shell Library
-//
-#include <Library/ShellLib.h>
-
-// 
-// Kernel Headers
-//
-#include "include/k.h"
+// Kernel includes
+#include "include/k0.h"
 #include "include/kmem.h"
+#include "include/isaac64.h"
 
-//
-// We run on any UEFI Specification
-// **defining in zig
-extern CONST UINT32 _gUefiDriverRevision = 0;
+#include "include/arch/x64.h"
 
-//
-// Module name
-//
-CHAR8 *gEfiCallerBaseName = "k";
-
-//
-// Debugging Toggle
-//
-CONST BOOLEAN kDBG = KDBG;
-
-
-EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
+// Kernel Entrypoint
+NORETURN void kernel_main(void) {
     
-    // 
-    // This code should be compiled out and never called 
-    // 
-    ASSERT(FALSE);
-}
+    // Initialize the Isaac64 CSPRNG
+    InitIsaac64CSPRNG(TRUE);
 
-EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* system_table) {
-    
-    EFI_STATUS exit_status = EFI_SUCCESS;
-    EFI_STATUS shell_status = EFI_SUCCESS;
+    // Initialize the cpu architecture
+    InitArchCPU();
 
-    // Disable UEFI watchdog timer
-    system_table->BootServices->SetWatchdogTimer(0, 0, 0, NULL);
-
-    // Announce 
-    Print(L"Welcome to nebulae!\n");
-
-    // Init the shell for scroll breaking capability
-    shell_status = ShellInitialize();
-    if (EFI_ERROR(shell_status))
-    {
-        Print(L"Failed to initialize shell: %lx\n", shell_status);
-        exit_status = shell_status;
-        goto exit;
-    }
-    ShellSetPageBreakMode(TRUE);
-
-    // Init memory subsystem
+    // Initialize the memory subsystem
     InitMemSubsystem();
 
+    // Do something
+    BOOLEAN has_pcid = FALSE;
+    has_pcid = ReadCpuinfoFlag(X64_HAS_PCID);
 
-exit:
-    return exit_status;
+    if (k0_VERBOSE_DEBUG) {
+        if (has_pcid)
+            Print(L"Processor has support for PCID page tables\n");
+        else
+            Print(L"Processor has no support for PCID page tables\n");
+    }
+
+    BOOLEAN has_dtes64 = FALSE;
+    has_dtes64 = ReadCpuinfoFlag(X64_HAS_DTES64);
+
+    if (k0_VERBOSE_DEBUG) {
+        if (has_dtes64)
+            Print(L"Processor has support for processor DTES64\n");
+        else
+            Print(L"Processor has no support for DTES64\n");
+    
+        Print(L"Cpuid (0x01) ECX == 0x%x\n", cpu.cpuinfo->reg[X64_REG_ECX]);
+        Print(L"Cpuid (0x01) EDX == 0x%x\n", cpu.cpuinfo->reg[X64_REG_EDX]);
+        Print(L"X64_HAS_DTES64 == %lu\n", X64_HAS_DTES64);
+    }
+   
+    // Shutdown the memory subsystem
+    ShutdownMemSubsystem();
+
+    // Woo-hoo!
+    while (TRUE) {}
+}
+
+// Panic function
+NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...) {
+    VA_LIST Marker;
+
+    VA_START(Marker, Format);
+
+    InternalPrint(Format, gST->ConOut, Marker);
+
+    VA_END(Marker);
+    
+    while (TRUE) {}
 }

@@ -29,8 +29,10 @@
 #ifndef KMEM_H
 #define KMEM_H
 
-#define UEFI_PAGE_SIZE 4096
+#ifdef __NEBULAE_ARCH_X64
+#endif
 
-void InitMemSubsystem(void); 
+void InitMemSubsystem(void);
+void ShutdownMemSubsystem(void);
 
 #endif /* KMEM_H */

@@ -52,6 +52,18 @@ UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
     return len ? *s1 - *s2 : 0;
 }
 
+// Naive and horrible...
+UINTN kStrlen(CONST CHAR8* s) {
+    UINTN count = 0;
+
+    while (*s != '\0') {
+        count++;
+        s++;
+    }
+
+    return count;
+}
+
 VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
     
     UINTN len = length;

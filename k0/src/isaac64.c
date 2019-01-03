@@ -15,6 +15,8 @@ By Bob Jenkins, 1996.  Public Domain.
 #include <Library/UefiLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
+#include "include/k0.h"
+
 extern    ub8 randrsl[RANDSIZ], randcnt;
 static    ub8 mm[RANDSIZ];
 static    ub8 aa=0, bb=0, cc=0;
@@ -62,7 +64,7 @@ void isaac64()
    h-=d; e^=g<<14; g+=h; \
 }
 
-void randinit(word flag)
+void InitIsaac64CSPRNG(word flag)
 {
    word i;
    ub8 a,b,c,d,e,f,g,h;
@@ -77,15 +79,17 @@ void randinit(word flag)
 
    efi_time_result = gRT->GetTime(&system_time, &system_time_capabilities);
    if (EFI_ERROR(efi_time_result)) {
-       Print(L"Error obtaining system time from UEFI [%r]\n", efi_time_result);
-       flag = FALSE;
+       kernel_panic(L"Error obtaining system time from UEFI: %r\n", efi_time_result);
    }
    else {
-       Print(L"Obtained system time from UEFI\n");
+       if (k0_VERBOSE_DEBUG) {
+           Print(L"Obtained system time from UEFI\n");
+       }
        UINT8* raw_date = (UINT8*)(VOID*)(&system_time);
        UINT8* raw_randrsl = (UINT8*)(VOID*)(&randrsl);
-       for (int z = 0; z < (RANDSIZ / sizeof(system_time)); z++) {
-           for (int k = 0; k < sizeof(system_time); k++) {
+       int z, k;
+       for (z = 0; z < (RANDSIZ / (int)sizeof(system_time)); z++) {
+           for (k = 0; k < (int)sizeof(system_time); k++) {
                raw_randrsl[(z * sizeof(system_time)) + k] = raw_date[k];
            }
        }
@@ -122,6 +126,10 @@ void randinit(word flag)
 
    isaac64();          /* fill in the first set of results */
    randcnt=RANDSIZ;    /* prepare to use the first set of results */
+
+   if (k0_VERBOSE_DEBUG) {
+       Print(L"Isaac64 CSPRNG initialized\n");
+   }
 }
 
 UINT64 GetCSPRNG64(UINT64 minimum, UINT64 maximum) {

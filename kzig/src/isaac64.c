@@ -62,7 +62,7 @@ void isaac64()
    h-=d; e^=g<<14; g+=h; \
 }
 
-void randinit(word flag)
+void InitIsaac64CSPRNG(word flag)
 {
    word i;
    ub8 a,b,c,d,e,f,g,h;

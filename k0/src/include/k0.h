@@ -26,10 +26,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef K_H
-#define K_H
+#ifndef K0_H
+#define K0_H
 
-#define KDBG TRUE
-extern CONST BOOLEAN kDBG;
+// jsmn library mode constant
+#define JSMN_STRICT
 
-#endif /* K_H */
+// Debug mode(s)
+extern BOOLEAN k0_VERBOSE_DEBUG;
+extern BOOLEAN k0_PRECONFIG_DEBUG;
+
+// Handle to the kernel image 
+extern EFI_HANDLE nebulae_uefi_image_handle;
+
+// Pointer to the UEFI system table
+extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
+
+// Function signatures
+NORETURN void kernel_main(void);
+NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
+
+#endif /* K0_H */

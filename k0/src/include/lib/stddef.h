@@ -1,7 +1,4 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
-
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -29,12 +26,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KSTRING_H
-#define KSTRING_H
+#define NULL        ((void*)0)
+#define offsetof(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
-UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
-UINTN kStrlen(CHAR8* s);
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
+#if defined(_MSC_VER) 
+typedef __int64             ptrdiff_t;
+typedef unsigned __int64    size_t;
+#else
+typedef long long           ptrdiff_t;
+typedef unsigned long long  size_t;
+#endif
 
-#endif /* KSTRING_H */
+#if defined(_NEEDS_WCHAR_T) 
+typedef unsigned short      wchar_t;
+#endif
+

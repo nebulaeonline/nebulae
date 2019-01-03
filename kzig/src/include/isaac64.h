@@ -21,7 +21,7 @@ ub8 randrsl[RANDSIZ], randcnt;
  If (flag==TRUE), then use the contents of randrsl[0..255] as the seed.
 ------------------------------------------------------------------------------
 */
-void randinit(word flag);
+void InitIsaac64CSPRNG(word flag);
 
 void isaac64();
 

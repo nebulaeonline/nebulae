@@ -26,24 +26,23 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
 // Basic UEFI Libraries
-//
 #include <Library/UefiLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
 
-//
 // Boot and Runtime Services
-//
 #include <Library/UefiBootServicesTableLib.h>
 
-// 
 // Kernel Headers
-//
-#include "include/k.h"
+#include "include/k0.h"
 #include "include/kmem.h"
 #include "include/isaac64.h"
+
+// Architecure Headers
+#ifdef __NEBULAE_ARCH_X64
+#include "include/arch/x64.h"
+#endif
 
 // Memory Type Strings
 const CHAR16 *EFI_MEMORY_TYPES[] = {
@@ -80,113 +79,117 @@ const CHAR16 *EFI_MEMORY_TYPES[] = {
 #define EFI_MEMORY_PAL                  0x0D
 #define EFI_MEMORY_PERSISTENT           0x0E
 
-//
 // Memory Subsystem Vars 
-//
 UINTN kmem_conventional_pages = 0;
 VOID* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
 
+// Pointer to the UEFI memory map
+VOID* uefi_memory_map = NULL;
+UINT32 uefi_memory_map_pages = 0;
+
 //
 // Initialize the memory subsystem by performing the following tasks:
 // 
 //  1) Read UEFI memmap to obtain size of memory map
-//  2) Allocate a temporary buffer large enough to hold the memory map
+//  2) Allocate a buffer large enough to hold the memory map
 //  3) Calculate the number of free conventional memory pages, along
 //      with the size and location of the largest block of free
 //      conventional memory
-//  4) Initialize the CSPRNG
-//  5) Allocate enough pages for the memory map and the kernel page 
-//      stack at a random address in the largest contiguous block of
-//      conventional memory
+//  4) Query the UEFI memmap again
 void InitMemSubsystem() {
     
     EFI_STATUS exit_status = EFI_SUCCESS;
     
-    UINTN memmap_pages_to_alloc = 0;
-    VOID *memmap_ptr = NULL;
-    
     // Vars required for BootServices->GetMemoryMap call
-    EFI_STATUS memmap_status;
+    EFI_STATUS memmap_status = EFI_SUCCESS;
     UINTN memmap_size = 0;
     UINTN memmap_key = 0;
     UINTN memmap_descriptor_size = 0;
     UINT32 memmap_descriptor_version = 0;
     
     // Call GetMemoryMap first with a NULL pointer to get the (rough) size of the memory map
-    memmap_status = gBS->GetMemoryMap(&memmap_size, memmap_ptr, &memmap_key, &memmap_descriptor_size, &memmap_descriptor_version);
+    memmap_status = gBS->GetMemoryMap(&memmap_size, 
+        NULL, 
+        &memmap_key, 
+        &memmap_descriptor_size, 
+        &memmap_descriptor_version);
+
+    // Check for an error, but make sure that error is simply that the buffer
+    // wasn't too small, because it was.
     if (EFI_ERROR(memmap_status) && memmap_status != EFI_BUFFER_TOO_SMALL) {
-        Print(L"Unable to query UEFI for Memory Map size: %r\n", memmap_status);
-        exit_status = memmap_status;
-        goto exit;
+        kernel_panic(L"Unable to query UEFI for memory map size: %r\n", memmap_status);
     }
 
-    if (kDBG)
+    if (k0_VERBOSE_DEBUG) {
         Print(L"Map Size: %lu, Map Key: %lu, Desc. Size: %lu, Desc. Version: %u\n",
             memmap_size, memmap_key, memmap_descriptor_size, memmap_descriptor_version);
-
-    // Allocate enough memory to hold a temporary copy of the memory map
-    memmap_pages_to_alloc = (memmap_size / UEFI_PAGE_SIZE) + 1;
-    memmap_size = memmap_pages_to_alloc * UEFI_PAGE_SIZE;
-    memmap_ptr = AllocatePages(memmap_pages_to_alloc);
-    if (memmap_ptr == NULL) {
-        Print(L"Unable to allocate pages for Memory Map\n");
-        exit_status = EFI_BAD_BUFFER_SIZE;
-        goto exit;
     }
 
-    if (kDBG)
-        Print(L"Allocated %u page(s)\n", memmap_pages_to_alloc);
+    // Allocate enough memory to hold a temporary copy of the memory map
+    uefi_memory_map_pages = (memmap_size / EFI_PAGE_SIZE) + 1;
+    uefi_memory_map = AllocatePages(uefi_memory_map_pages);
+    if (uefi_memory_map == NULL) {
+        kernel_panic(L"Unable to allocate pages for memory map\n");
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Allocated %u page(s)\n", uefi_memory_map_pages);
+    }
 
     // Call GetMemoryMap again to get the actual memory map
-    memmap_status = gBS->GetMemoryMap(&memmap_size, memmap_ptr, &memmap_key, &memmap_descriptor_size, &memmap_descriptor_version);
+    memmap_status = gBS->GetMemoryMap(&memmap_size, 
+        uefi_memory_map, 
+        &memmap_key, 
+        &memmap_descriptor_size, 
+        &memmap_descriptor_version);
+
     if (EFI_ERROR(memmap_status)) {
-        Print(L"Unable to query UEFI for Memory Map: %r\n", memmap_status);
-        exit_status = memmap_status;
-        goto exit;
+        kernel_panic(L"Unable to query UEFI for memory map: %r\n", memmap_status);
     }
 
     // Parse the UEFI memory map in order to count the available
     // conventional memory
     EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
     UINT64 memmap_entries = memmap_size / memmap_descriptor_size;
-    VOID *memmap_iter = memmap_ptr;
+    VOID *memmap_iter = uefi_memory_map;
 
-    if (kDBG)
-        Print(L"Map Size: %lu, Map Key: %lu, Desc. Size: %lu, Desc. Version: %u\n",
-            memmap_size, memmap_key, memmap_descriptor_size, memmap_descriptor_version);
-
-    for (UINTN i = 0; i < memmap_entries; i++) {
+    UINTN i;
+    for (i = 0; i < memmap_entries; i++) {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
         if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
+            if (k0_VERBOSE_DEBUG) {
+                Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",
+                    EFI_MEMORY_TYPES[memmap_entry->Type], memmap_entry->PhysicalStart, memmap_entry->VirtualStart,
+                    memmap_entry->NumberOfPages, memmap_entry->Attribute);
+            }
             if (memmap_entry->NumberOfPages > kmem_largest_block_page_count) {
                 kmem_largest_block_page_count = memmap_entry->NumberOfPages;
-                kmem_largest_block_size = kmem_largest_block_page_count * UEFI_PAGE_SIZE;
+                kmem_largest_block_size = kmem_largest_block_page_count * EFI_PAGE_SIZE;
                 kmem_largest_block = (VOID*)memmap_entry->PhysicalStart;
             }
         }
 
-        if (kDBG)
-            Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",
-                EFI_MEMORY_TYPES[memmap_entry->Type], memmap_entry->PhysicalStart, memmap_entry->VirtualStart,
-                memmap_entry->NumberOfPages, memmap_entry->Attribute);
         memmap_iter = (CHAR8*)memmap_iter + memmap_descriptor_size;
     }
 
-    // Initialize the isaac64 csprng
-    randinit(TRUE);
-
-    /* GetCSPRNG64((UINT64)kmem_largest_block, (UINT64)kmem_largest_block + kmem_largest_block_size) */
-
-exit:
-    FreePages(memmap_ptr, memmap_pages_to_alloc);
-    if (kDBG) {
-        Print(L"Freed %u page(s)\n", memmap_pages_to_alloc);
+    if (k0_VERBOSE_DEBUG) {
         Print(L"Pages of Conventional Memory: %lu\n", kmem_conventional_pages);
         Print(L"Largest Block: %lu\n", kmem_largest_block);
         Print(L"Largest Block Size: %lu\n", kmem_largest_block_size);
-        Print(L"Largest Block Page Count: %lu\n", kmem_largest_block_page_count);            
+        Print(L"Largest Block Page Count: %lu\n", kmem_largest_block_page_count);
+        Print(L"Memory subsystem initialized\n");
+    }
+
+}
+
+// De-initialize the memory subsystem
+void ShutdownMemSubsystem() {
+    FreePages(uefi_memory_map, uefi_memory_map_pages);
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Freed %lu pages of memory @ %x\n", uefi_memory_map_pages, uefi_memory_map);
+        Print(L"Memory subsystem shutdown\n", kmem_largest_block);
     }
 }

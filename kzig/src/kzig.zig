@@ -44,7 +44,7 @@ export fn kzig_main() noreturn {
     var efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m1));
     
     // Initialize CSPRNG (isaac64)
-    uefi.clib.randinit(1);
+    uefi.clib.InitIsaac64CSPRNG(1);
     const m2 = c"CSPRNG initialized\n";
     efi_result = uefi.clib.AsciiPrint(@ptrCast(?[*]const u8, m2));
 
