@@ -141,8 +141,8 @@ BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
     UINT32 bit, cpuid, reg;
 
     bit = (UINT32)(flag & 0x00000000FFFFFFFFULL);
-    cpuid = (UINT32)((flag & X64_CPUID_MASK) >> 32);
-    reg = (UINT32)((flag & X64_CPUID_REG_MASK) >> 36);
+    cpuid = ((flag & X64_CPUID_MASK) >> 32ULL);
+    reg = ((flag & X64_CPUID_REG_MASK) >> 36ULL);
 
     if (k0_VERBOSE_DEBUG) {
         Print(L"ReadCpuinfoFlag(0x%x) called; bit == %lu / cpuid == %lu / reg == %lu\n",

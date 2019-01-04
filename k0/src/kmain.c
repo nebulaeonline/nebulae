@@ -51,29 +51,7 @@ NORETURN void kernel_main(void) {
     InitMemSubsystem();
 
     // Do something
-    BOOLEAN has_pcid = FALSE;
-    has_pcid = ReadCpuinfoFlag(X64_HAS_PCID);
-
-    if (k0_VERBOSE_DEBUG) {
-        if (has_pcid)
-            Print(L"Processor has support for PCID page tables\n");
-        else
-            Print(L"Processor has no support for PCID page tables\n");
-    }
-
-    BOOLEAN has_dtes64 = FALSE;
-    has_dtes64 = ReadCpuinfoFlag(X64_HAS_DTES64);
-
-    if (k0_VERBOSE_DEBUG) {
-        if (has_dtes64)
-            Print(L"Processor has support for processor DTES64\n");
-        else
-            Print(L"Processor has no support for DTES64\n");
     
-        Print(L"Cpuid (0x01) ECX == 0x%x\n", cpu.cpuinfo->reg[X64_REG_ECX]);
-        Print(L"Cpuid (0x01) EDX == 0x%x\n", cpu.cpuinfo->reg[X64_REG_EDX]);
-        Print(L"X64_HAS_DTES64 == %lu\n", X64_HAS_DTES64);
-    }
    
     // Shutdown the memory subsystem
     ShutdownMemSubsystem();
