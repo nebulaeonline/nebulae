@@ -22,9 +22,6 @@
     <ClCompile Include="src\jsmn.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\kconfig.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\isaac64.h">

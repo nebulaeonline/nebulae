@@ -143,7 +143,6 @@
   <ItemGroup>
     <ClCompile Include="src\isaac64.c" />
     <ClCompile Include="src\jsmn.c" />
-    <ClCompile Include="src\kconfig.c" />
     <ClCompile Include="src\kmain.c" />
     <ClCompile Include="src\uefi_entrypoint.c" />
     <ClCompile Include="src\kmem.c" />

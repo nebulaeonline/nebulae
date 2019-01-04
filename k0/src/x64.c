@@ -54,10 +54,6 @@ void InitArchCPU() {
         kernel_panic("Unable to query the cpu: %r\n", cpuid_result);
     }
 
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Cpuid called (eax == 0x00)\n");
-    }
-
     // Record the max eax value
     cpu.max_cpuid_eax = cpu.cpuinfo[0].reg[X64_REG_EAX];
 
@@ -72,10 +68,6 @@ void InitArchCPU() {
 
     if (EFI_ERROR(cpuid_result)) {
         kernel_panic("Unable to extended query the cpu: %r\n", cpuid_result);
-    }
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"CpuidEx called (eax == 0x80000000)\n");
     }
 
     // Record the max eax values for the cpuid
@@ -94,10 +86,6 @@ void InitArchCPU() {
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x01): %r\n", cpuid_result);
         }
-
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"Cpuid called (eax == 0x01)\n");
-        }
     }
 
     // cpuid eax == 0x02
@@ -110,10 +98,6 @@ void InitArchCPU() {
 
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x02): %r\n", cpuid_result);
-        }
-
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"Cpuid called (eax == 0x02)\n");
         }
     }
 
@@ -129,28 +113,17 @@ void InitArchCPU() {
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x%x): %r\n", current_cpuidex_fn, cpuid_result);
         }
-
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"CpuidEx called (eax == 0x%x)\n", current_cpuidex_fn);
-        }
     }
 }
 
-
+// Function to parse the cpuinfo structs for 
+// processor feature information
 BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
     UINT32 bit, cpuid, reg;
 
     bit = (UINT32)(flag & 0x00000000FFFFFFFFULL);
     cpuid = ((flag & X64_CPUID_MASK) >> 32ULL);
     reg = ((flag & X64_CPUID_REG_MASK) >> 36ULL);
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"ReadCpuinfoFlag(0x%x) called; bit == %lu / cpuid == %lu / reg == %lu\n",
-            flag,
-            bit,
-            cpuid,
-            reg);
-    }
 
     return ((cpu.cpuinfo[cpuid].reg[reg] & bit) == bit);
 }

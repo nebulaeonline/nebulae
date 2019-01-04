@@ -47,6 +47,10 @@ CONST UINT32 _gUefiDriverRevision = 0;
 // Module name
 CHAR8 *gEfiCallerBaseName = "k0";
 
+// Debugging flags
+BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
+BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
+
 // Helper function for json string matching without libc
 static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int)kStrlen(s) == tok->end - tok->start &&

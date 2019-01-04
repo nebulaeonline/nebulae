@@ -42,6 +42,9 @@
 NORETURN void kernel_main(void) {
     
     // Initialize the Isaac64 CSPRNG
+    // Isaac64 generates a 64-bit cryptographically
+    // secure pseudo-random number in 19 cycles 
+    // on x64
     InitIsaac64CSPRNG(TRUE);
 
     // Initialize the cpu architecture
