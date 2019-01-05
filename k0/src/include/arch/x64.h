@@ -116,17 +116,17 @@
 #define X64_HAS_PBE                 ((UINT64)BIT31 | X64_CPUID_0x01 | X64_CPUID_EDX)
 
 // x64 Paging
-#define X64_PAGE_PRESENT            BIT0
-#define X64_PAGE_READ_WRITE         BIT1
-#define X64_PAGE_USER_MODE          BIT2
-#define X64_PAGE_WRITE_THROUGH      BIT3
-#define X64_PAGE_CACHE_DISABLE      BIT4
-#define X64_PAGE_ACCESSED           BIT5
-#define X64_PAGE_DIRTY              BIT6
-#define X64_PAGE_IS_PAGES           BIT7
-#define X64_PAGE_GLOBAL             BIT8
-#define X64_PAGE_PAT                BIT12
-#define X64_PAGE_PTE_PAT            BIT7
+#define X64_PAGE_PRESENT            ((UINT64)BIT0)
+#define X64_PAGE_READ_WRITE         ((UINT64)BIT1)
+#define X64_PAGE_USER_MODE          ((UINT64)BIT2)
+#define X64_PAGE_WRITE_THROUGH      ((UINT64)BIT3)
+#define X64_PAGE_CACHE_DISABLE      ((UINT64)BIT4)
+#define X64_PAGE_ACCESSED           ((UINT64)BIT5)
+#define X64_PAGE_DIRTY              ((UINT64)BIT6)
+#define X64_PAGE_IS_PAGES           ((UINT64)BIT7)
+#define X64_PAGE_GLOBAL             ((UINT64)BIT8)
+#define X64_PAGE_PAT                ((UINT64)BIT12)
+#define X64_PAGE_PTE_PAT            ((UINT64)BIT7)
 #define X64_PAGE_NX                 BIT63
 
 // PML4 Entry (Top level of 4-level paging

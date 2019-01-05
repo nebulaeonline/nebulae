@@ -51,7 +51,7 @@ extern EFI_HANDLE nebulae_uefi_image_handle;
 extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 
 // Function signatures
-NORETURN void kernel_main(void);
+NORETURN void k0_main(void);
 NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
 
 #endif /* K0_H */

@@ -39,7 +39,7 @@
 #include "include/arch/x64.h"
 
 // Kernel Entrypoint
-NORETURN void kernel_main(void) {
+NORETURN void k0_main(void) {
     
     // Initialize the Isaac64 CSPRNG
     // Isaac64 generates a 64-bit cryptographically

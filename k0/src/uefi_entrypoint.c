@@ -70,7 +70,7 @@ EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
 }
 
 // Declare Kernel Entrypoint
-NORETURN void kernel_main(void);
+NORETURN void k0_main(void);
 
 // Declare Global Pointers to UEFI tables
 EFI_HANDLE nebulae_uefi_image_handle;
@@ -267,9 +267,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
         Print(L"Freed %lu page(s) for k0.config.json file data\n", 1);
     }
 
-    // Call our kernel_main() function
+    // Call our k0_main() function
 kernel_entry:
-    kernel_main();
+    k0_main();
 
 exit:
     return EFI_SUCCESS;
