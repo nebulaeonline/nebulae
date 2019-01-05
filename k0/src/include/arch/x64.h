@@ -36,24 +36,24 @@
 #define X64_REG_EDX                 0x03
 
 // CPU feature flags
-#define X64_CPUID_0x00              0x0000000000000000ULL
-#define X64_CPUID_0x01              0x0000000100000000ULL
-#define X64_CPUID_0x02              0x0000000200000000ULL
-#define X64_CPUID_0x03              0x0000000300000000ULL
-#define X64_CPUID_0x04              0x0000000400000000ULL
-#define X64_CPUID_0x05              0x0000000500000000ULL
-#define X64_CPUID_0x06              0x0000000600000000ULL
-#define X64_CPUID_0x07              0x0000000700000000ULL
-#define X64_CPUID_0x08              0x0000000800000000ULL
-#define X64_CPUID_0x09              0x0000000900000000ULL
-#define X64_CPUID_0x0A              0x0000000A00000000ULL
-#define X64_CPUID_MASK              0x0000000F00000000ULL
+#define X64_CPUID_0x00              0x00ULL
+#define X64_CPUID_0x01              (0x01ULL << 32)
+#define X64_CPUID_0x02              (0x02ULL << 32)
+#define X64_CPUID_0x03              (0x03ULL << 32)
+#define X64_CPUID_0x04              (0x04ULL << 32)
+#define X64_CPUID_0x05              (0x05ULL << 32)
+#define X64_CPUID_0x06              (0x06ULL << 32)
+#define X64_CPUID_0x07              (0x07ULL << 32)
+#define X64_CPUID_0x08              (0x08ULL << 32)
+#define X64_CPUID_0x09              (0x09ULL << 32)
+#define X64_CPUID_0x0A              (0x0AULL << 32)
+#define X64_CPUID_MASK              (0x0FULL << 32)
 
-#define X64_CPUID_EAX               0x0000000000000000ULL
-#define X64_CPUID_EBX               0x0000001000000000ULL
-#define X64_CPUID_ECX               0x0000002000000000ULL
-#define X64_CPUID_EDX               0x0000003000000000ULL
-#define X64_CPUID_REG_MASK          0x000000F000000000ULL
+#define X64_CPUID_EAX               0x00ULL
+#define X64_CPUID_EBX               (0x00ULL << 36)
+#define X64_CPUID_ECX               (0x01ULL << 36)
+#define X64_CPUID_EDX               (0x02ULL << 36)
+#define X64_CPUID_REG_MASK          (0x03ULL << 36)
 
 #define X64_HAS_SSE3                ((UINT64)BIT0 | X64_CPUID_0x01 | X64_CPUID_ECX)
 #define X64_HAS_PCLMULQDQ           ((UINT64)BIT1 | X64_CPUID_0x01 | X64_CPUID_ECX)
