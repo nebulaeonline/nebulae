@@ -104,7 +104,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     
     // Open the file
     SHELL_FILE_HANDLE configFileHandle;
-    EFI_STATUS config_file_result = ShellOpenFileByName(L"fs1:\\k0.config.json",
+    EFI_STATUS config_file_result = ShellOpenFileByName(L"k0.config.json",
         &configFileHandle,
         EFI_FILE_MODE_READ,
         0);
@@ -121,9 +121,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     EFI_FILE_INFO *configFileInfo = ShellGetFileInfo(configFileHandle);
     UINTN config_file_pages = (configFileInfo->FileSize / EFI_PAGE_SIZE) + 1;
     
-    if (configFileInfo->FileSize > SIZE_4KB) {
+    if (configFileInfo->FileSize > SIZE_1MB) {
         ShellCloseFile(configFileHandle);
-        kernel_panic(L"k0.config.json may not exceed 4KB in size! Actual size of k0.config.json == %lu\n", configFileInfo->FileSize);
+        kernel_panic(L"k0.config.json may not exceed 1MB in size! Actual size of k0.config.json == %lu\n", configFileInfo->FileSize);
     }
     else if (k0_PRECONFIG_DEBUG) {
         Print(L"k0.config.json FileSize == %lu\n", configFileInfo->FileSize);
@@ -162,14 +162,30 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     jsmn_parser jsonParser;
     jsmn_init(&jsonParser);
 
-    // Allocate a page for json parsing tokens
-    jsmntok_t *json_tokens = (jsmntok_t*)AllocatePages(1);
+    if (k0_PRECONFIG_DEBUG) {
+        Print(L"Config file buffer location: 0x%x\n", config_file_buffer);
+    }
 
+    // 1st time with NULL to get the token count
+    INT32 token_count = jsmn_parse(&jsonParser,
+        config_file_buffer,
+        config_file_read_size,
+        NULL,
+        0);
+
+    if (k0_PRECONFIG_DEBUG) {
+        Print(L"Located %d json tokens in k0.config.json\n", token_count);
+    }
+
+    // Allocate a page for json parsing tokens
+    UINTN json_pages_to_allocate = ((sizeof(jsmntok_t) * token_count) / EFI_PAGE_SIZE) + 1;
+    jsmntok_t *json_tokens = (jsmntok_t*)AllocatePages(json_pages_to_allocate);
+    
     if (json_tokens == NULL) {
-        kernel_panic(L"Unable to allocate pages to tokenize k0.config.json: %r\n", config_file_read_result);
+        kernel_panic(L"Unable to allocate %lu page(s) to tokenize k0.config.json: %r\n", json_pages_to_allocate, config_file_read_result);
     }
     else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Allocated %lu page(s) for k0.config.json token data\n", 1);
+        Print(L"Allocated %lu page(s) for k0.config.json token data\n", json_pages_to_allocate);
     }
 
     // Debug
@@ -177,35 +193,41 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
         Print(L"Calling jsmn_parse()\n");
     }
 
-    // 1st time with NULL to get the token count
-    UINT32 token_count = jsmn_parse(&jsonParser,
+    if (k0_PRECONFIG_DEBUG) {
+        Print(L"Config file buffer location: 0x%x\n", config_file_buffer);
+    }
+
+    // 2nd time with to actually tokenize
+    // Re-init parser
+    jsmn_init(&jsonParser);
+    INT32 actual_token_count = jsmn_parse(&jsonParser,
         config_file_buffer,
         config_file_read_size,
         json_tokens,
-        64);
+        token_count);
 
     if (k0_PRECONFIG_DEBUG) {
-        Print(L"k0.config.json token count (< 0 indicates error) == %lu\n", token_count);
+        Print(L"k0.config.json token count (< 0 indicates error) == %d\n", actual_token_count);
     }
 
     // token_count < 0 indicates an error
-    if (token_count < 0) {
+    if (actual_token_count < 0) {
         Print(L"Failed to parse k0.config.json; ignoring\n");
         goto kernel_entry;
     }
-    else if (token_count == 0) {
+    else if (actual_token_count == 0) {
         Print(L"Top level element is not an object in k0.config.json; ignoring\n");
         goto kernel_entry;
     }
     else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Located %lu json token(s) in k0.config.json\n", token_count);
+        Print(L"Located %lu json token(s) in k0.config.json\n", actual_token_count);
     }
 
     // Now check for important tokens
     // TODO separate the config file code
     UINTN current_json_element;
 
-    for (current_json_element = 0; current_json_element < token_count; ++current_json_element) {
+    for (current_json_element = 0; current_json_element < actual_token_count; ++current_json_element) {
         if (jsoneq(config_file_buffer, &json_tokens[current_json_element], "debug") == 0) {
             if (k0_PRECONFIG_DEBUG) {
                 Print(L"Debug token located in k0.config.json\n");
@@ -234,7 +256,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     }
 
     // Free our json token pages
-    FreePages(json_tokens, 1);
+    FreePages(json_tokens, json_pages_to_allocate);
     if (k0_PRECONFIG_DEBUG) {
         Print(L"Freed %lu page(s) for k0.config.json token data\n", 1);
     }
