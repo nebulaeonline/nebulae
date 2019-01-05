@@ -158,7 +158,9 @@ void InitMemSubsystem() {
     UINTN i;
     for (i = 0; i < memmap_entries; i++) {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
-        if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
+        if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL ||
+            memmap_entry->Type == EFI_MEMORY_BSCODE ||
+            memmap_entry->Type == EFI_MEMORY_BSDATA) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
             if (k0_VERBOSE_DEBUG) {
                 Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",

@@ -29,6 +29,14 @@
 #ifndef K0_H
 #define K0_H
 
+#ifdef _MSC_VER
+#define PACKED_MS     _declspec(align(1))
+#define PACKED_GNU
+#elif defined(__clang__) || defined(__GNUC__)
+#define PACKED_MS
+#define PACKED_GNU    __attribute__((packed))
+#endif
+
 // jsmn library mode constant
 #define JSMN_STRICT
 

@@ -35,29 +35,7 @@
 #define X64_REG_ECX                 0x02
 #define X64_REG_EDX                 0x03
 
-// cpuinfo results structure
-// cpuinfo returns its results in each
-// of eax, ebx, ecx & edx depending upon
-// the leaf function specified
-typedef struct s_x64_cpuinfo_results {
-    UINT32 reg[4];
-} x64_cpuinfo_results;
-
-// x64 cpu structure
-// cpuinfo [0..2] is for cpuid
-// cpuinfo [3..10] is for cpuidex
-typedef struct s_x64_cpu {
-    UINT32 max_cpuid_eax;
-    UINT32 max_cpuidex_eax;
-    x64_cpuinfo_results cpuinfo[11];
-} x64_cpu;
-
-// cpu struct
-extern x64_cpu cpu;
-
-// Function prototypes
-void InitArchCPU(void);
-
+// CPU feature flags
 #define X64_CPUID_0x00              0x0000000000000000ULL
 #define X64_CPUID_0x01              0x0000000100000000ULL
 #define X64_CPUID_0x02              0x0000000200000000ULL
@@ -137,6 +115,59 @@ void InitArchCPU(void);
 #define X64_HAS_THERMALMONITOR      ((UINT64)BIT29 | X64_CPUID_0x01 | X64_CPUID_EDX)
 #define X64_HAS_PBE                 ((UINT64)BIT31 | X64_CPUID_0x01 | X64_CPUID_EDX)
 
+// x64 Paging
+#define X64_PAGE_PRESENT            BIT0
+#define X64_PAGE_READ_WRITE         BIT1
+#define X64_PAGE_USER_MODE          BIT2
+#define X64_PAGE_WRITE_THROUGH      BIT3
+#define X64_PAGE_CACHE_DISABLE      BIT4
+#define X64_PAGE_ACCESSED           BIT5
+#define X64_PAGE_DIRTY              BIT6
+#define X64_PAGE_IS_PAGES           BIT7
+#define X64_PAGE_GLOBAL             BIT8
+#define X64_PAGE_PAT                BIT12
+#define X64_PAGE_PTE_PAT            BIT7
+#define X64_PAGE_NX                 BIT63
+
+// PML4 Entry (Top level of 4-level paging
+// structure on x64)
+// Maps 512GB
+typedef UINT64      s_pml4e;
+
+// Page Directory Pointer Table Entry
+// Maps 1GB page
+typedef UINT64      s_pdpte;
+
+// Page Directory Entry
+// Maps 2MB
+typedef UINT64      s_pde;
+
+// Page Table Entry
+// Maps 4KB
+typedef UINT64      s_pte;
+
+// cpuinfo results structure
+// cpuinfo returns its results in each
+// of eax, ebx, ecx & edx depending upon
+// the leaf function specified
+typedef struct s_x64_cpuinfo_results {
+    UINT32 reg[4];
+} x64_cpuinfo_results;
+
+// x64 cpu structure
+// cpuinfo [0..2] is for cpuid
+// cpuinfo [3..10] is for cpuidex
+typedef struct s_x64_cpu {
+    UINT32 max_cpuid_eax;
+    UINT32 max_cpuidex_eax;
+    x64_cpuinfo_results cpuinfo[11];
+} x64_cpu;
+
+// cpu struct
+extern x64_cpu cpu;
+
+// Function prototypes
+void InitArchCPU(void);
 BOOLEAN ReadCpuinfoFlag(UINT64 flag);
 
 #endif /* X64_H */
