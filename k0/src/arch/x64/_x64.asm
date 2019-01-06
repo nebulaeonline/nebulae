@@ -25,9 +25,11 @@
 ; CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 ; POSSIBILITY OF SUCH DAMAGE.
+;==================================
 
     .code
 
+;==================================
 ; VOID x64AsmOutportB(
 ;   UINT16 Port, 
 ;   UINT8  Value)
@@ -44,9 +46,9 @@ x64AsmOutportB PROC
     xor eax,eax
 
     ret
-
 x64AsmOutportB ENDP
 
+;==================================
 ; VOID x64AsmOutportW(
 ;   UINT16 Port, 
 ;   UINT16 Value)
@@ -63,9 +65,9 @@ x64AsmOutportW PROC
     xor eax,eax
 
     ret
-
 x64AsmOutportW ENDP
 
+;==================================
 ; UINT8 x64AsmInportB(
 ;   UINT16 Port)
 ;
@@ -76,9 +78,9 @@ x64AsmInportB PROC
     in al,dx
 
     ret
-
 x64AsmInportB ENDP
 
+;==================================
 ; UINT16 x64AsmInportW(
 ;   UINT16 Port)
 ;
@@ -89,27 +91,26 @@ x64AsmInportW PROC
     in eax,dx
 
     ret
-
 x64AsmInportW ENDP
 
+;==================================
 ; VOID x64EnableInterrupts()
 ;
 x64EnableInterrupts PROC
     cli
     xor eax,eax
     ret
-
 x64EnableInterrupts ENDP
 
-    END
-
+;==================================
 ; VOID x64DisableInterrupts()
 ;
 x64DisableInterrupts PROC
     sti
     xor eax,eax
     ret
-
 x64DisableInterrupts ENDP
 
+
+;==================================
     END
