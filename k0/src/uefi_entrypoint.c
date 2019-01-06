@@ -37,7 +37,7 @@
 
 // Kernel Include(s)
 #include "include/k0.h"
-#include "include/jsmn.h"
+#include "include/deps/jsmn.h"
 #include "include/kstring.h"
 
 // We run on any UEFI Specification

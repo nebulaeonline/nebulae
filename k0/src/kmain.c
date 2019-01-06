@@ -34,7 +34,7 @@
 // Kernel includes
 #include "include/k0.h"
 #include "include/kmem.h"
-#include "include/isaac64.h"
+#include "include/deps/isaac64.h"
 
 #include "include/arch/x64/x64.h"
 

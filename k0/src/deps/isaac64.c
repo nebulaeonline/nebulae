@@ -5,17 +5,17 @@ By Bob Jenkins, 1996.  Public Domain.
 ------------------------------------------------------------------------------
 */
 #ifndef STANDARD
-#include "include/standard.h"
+#include "../include/deps/standard.h"
 #endif
 #ifndef ISAAC64
-#include "include/isaac64.h"
+#include "../include/deps/isaac64.h"
 #endif
 
 #include <Uefi.h>
 #include <Library/UefiLib.h>
 #include <Library/UefiRuntimeServicesTableLib.h>
 
-#include "include/k0.h"
+#include "../include/k0.h"
 
 extern    ub8 randrsl[RANDSIZ], randcnt;
 static    ub8 mm[RANDSIZ];

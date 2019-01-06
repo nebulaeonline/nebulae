@@ -1,5 +1,5 @@
-#include "include/k0.h"
-#include "include/jsmn.h"
+#include "../include/k0.h"
+#include "../include/deps/jsmn.h"
 
 /**
  * Allocates a fresh unused token from the token pool.
