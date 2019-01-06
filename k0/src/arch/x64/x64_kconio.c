@@ -133,66 +133,9 @@ VOID WriteStringXY(UINT32 x, UINT32 y, CONST CHAR8 *s) {
     }
 }
 
-// Writes an 8-bit hexadecimal number to the console at the
+// Writes an integer as hexadecimal to the console at the
 // specified x,y position
-VOID WriteNumberHex8XY(UINT32 x, UINT32 y, UINT8 val) {
-    CHAR8 s[3], *p, c;
-
-    s[2] = 0;
-    s[1] = '0';
-    p = &s[1];
-    if (val) {
-        while (val) {
-            if ((c = val % 16 + '0') > '9') c += 'A' - '9' - 1;
-            *p-- = c;
-            val /= 16;
-        };
-        p++;
-    };
-    WriteStringXY(x, y, p);
-}
-
-// Writes a 16-bit hexadecimal number to the console at the
-// specified x,y position
-VOID WriteNumberHex16XY(UINT32 x, UINT32 y, UINT16 val) {
-    CHAR8 s[5], *p, c;
-
-    s[4] = 0;
-    s[3] = '0';
-    p = &s[3];
-    if (val) {
-        while (val) {
-            if ((c = val % 16 + '0') > '9') c += 'A' - '9' - 1;
-            *p-- = c;
-            val /= 16;
-        };
-        p++;
-    };
-    WriteStringXY(x, y, p);
-}
-
-// Writes a 32-bit hexadecimal number to the console at the
-// specified x,y position
-VOID WriteNumberHex32XY(UINT32 x, UINT32 y, UINT32 val) {
-    CHAR8 s[9], *p, c;
-
-    s[8] = 0;
-    s[7] = '0';
-    p = &s[7];
-    if (val) {
-        while (val) {
-            if ((c = val % 16 + '0') > '9') c += 'A' - '9' - 1;
-            *p-- = c;
-            val /= 16;
-        };
-        p++;
-    };
-    WriteStringXY(x, y, p);
-}
-
-// Writes a 64-bit hexadecimal number to the console at the
-// specified x,y position
-VOID WriteNumberHex64XY(UINT32 x, UINT32 y, UINT64 val) {
+VOID WriteHexXY(UINT32 x, UINT32 y, UINT64 val) {
     CHAR8 s[17], *p, c;
 
     s[16] = 0;
@@ -209,14 +152,14 @@ VOID WriteNumberHex64XY(UINT32 x, UINT32 y, UINT64 val) {
     WriteStringXY(x, y, p);
 }
 
-// Writes an 8-bit unsigned decimal number to the 
-// console at the specified x,y position
-VOID WriteNumberDecU8XY(UINT32 x, UINT32 y, UINT8 d) {
-    char s[4], *p;
+// Writes an unsigned integer to the console at the 
+// specified x,y position
+VOID WriteIntUnsignedXY(UINT32 x, UINT32 y, UINT64 d) {
+    char s[22], *p;
 
-    s[3] = 0;
-    s[2] = '0';
-    p = &s[2];
+    s[21] = 0;
+    s[20] = '0';
+    p = &s[20];
     if (d) {
         while (d) {
             *p-- = d % 10 + '0';
@@ -227,46 +170,9 @@ VOID WriteNumberDecU8XY(UINT32 x, UINT32 y, UINT8 d) {
     WriteStringXY(x, y, p);
 }
 
-// Writes a 16-bit unsigned decimal number to the 
-// console at the specified x,y position
-VOID WriteNumberDecU16XY(UINT32 x, UINT32 y, UINT16 d) {
-    char s[6], *p;
-
-    s[5] = 0;
-    s[4] = '0';
-    p = &s[4];
-    if (d) {
-        while (d) {
-            *p-- = d % 10 + '0';
-            d /= 10;
-        };
-        p++;
-    };
-    WriteStringXY(x, y, p);
-}
-
-
-// Writes a 32-bit unsigned decimal number to the 
-// console at the specified x,y position
-VOID WriteNumberDecU32XY(UINT32 x, UINT32 y, UINT32 d) {
-    char s[11], *p;
-
-    s[10] = 0;
-    s[9] = '0';
-    p = &s[9];
-    if (d) {
-        while (d) {
-            *p-- = d % 10 + '0';
-            d /= 10;
-        };
-        p++;
-    };
-    WriteStringXY(x, y, p);
-}
-
-// Writes a 64-bit unsigned decimal number to the 
-// console at the specified x,y position
-VOID WriteNumberDecU64XY(UINT32 x, UINT32 y, UINT64 d) {
+// Writes a signed integer to the console at the 
+// specified x,y position
+VOID WriteIntXY(UINT32 x, UINT32 y, INT64 d) {
     char s[21], *p;
 
     s[20] = 0;
@@ -277,14 +183,17 @@ VOID WriteNumberDecU64XY(UINT32 x, UINT32 y, UINT64 d) {
             *p-- = d % 10 + '0';
             d /= 10;
         };
+        if (d < 0) {
+            *p-- = '-';
+        }
         p++;
     };
+
     WriteStringXY(x, y, p);
 }
 
-
 // Writes a character to the console at the specified position
-VOID WriteChar(UINT32 x, UINT32 y, CHAR8 c) {
+VOID WriteCharXY(UINT32 x, UINT32 y, CHAR8 c) {
     int offset;
     EFI_PHYSICAL_ADDRESS *video_ptr;
 
@@ -346,7 +255,7 @@ VOID PutChar(CONST CHAR8 c) {
         x64_kconsole_currentX = CONSOLE_SCREEN_X_MAX;
     }
     else {
-        WriteChar(x64_kconsole_currentX, x64_kconsole_currentY, c);
+        WriteCharXY(x64_kconsole_currentX, x64_kconsole_currentY, c);
     };
     X64InternalIncrementX();
 }
