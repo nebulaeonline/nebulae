@@ -29,12 +29,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KSTRING_H
-#define KSTRING_H
+#ifndef __K0_KSTRING_H
+#define __K0_KSTRING_H
 
 UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
 UINTN kStrlen(CHAR8* s);
 VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
 VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
 
-#endif /* KSTRING_H */
+#endif /* __K0_KSTRING_H */

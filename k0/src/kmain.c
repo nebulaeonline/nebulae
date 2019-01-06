@@ -36,7 +36,7 @@
 #include "include/kmem.h"
 #include "include/isaac64.h"
 
-#include "include/arch/x64.h"
+#include "include/arch/x64/x64.h"
 
 // Kernel Entrypoint
 NORETURN void k0_main(void) {

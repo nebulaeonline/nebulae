@@ -26,8 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KMEM_H
-#define KMEM_H
+#ifndef __K0_KMEM_H
+#define __K0_KMEM_H
 
 #ifdef __NEBULAE_ARCH_X64
 #endif
@@ -35,4 +35,4 @@
 void InitMemSubsystem(void);
 void ShutdownMemSubsystem(void);
 
-#endif /* KMEM_H */
+#endif /* __K0_KMEM_H */

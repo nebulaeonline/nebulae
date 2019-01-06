@@ -41,7 +41,7 @@
 
 // Architecure Headers
 #ifdef __NEBULAE_ARCH_X64
-#include "include/arch/x64.h"
+#include "include/arch/x64/x64.h"
 #endif
 
 // Memory Type Strings

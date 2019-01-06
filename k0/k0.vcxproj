@@ -34,6 +34,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -141,6 +142,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\arch\x64\x64_kconio.c" />
     <ClCompile Include="src\isaac64.c" />
     <ClCompile Include="src\jsmn.c" />
     <ClCompile Include="src\kmain.c" />
@@ -150,7 +152,8 @@
     <ClCompile Include="src\x64.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\arch\x64.h" />
+    <ClInclude Include="src\include\arch\x64\x64_kconio.h" />
+    <ClInclude Include="src\include\arch\x64\x64.h" />
     <ClInclude Include="src\include\isaac64.h" />
     <ClInclude Include="src\include\jsmn.h" />
     <ClInclude Include="src\include\k0.h" />
@@ -165,7 +168,11 @@
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <MASM Include="src\arch\x64\_x64.asm" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

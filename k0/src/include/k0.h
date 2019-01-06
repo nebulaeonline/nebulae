@@ -26,8 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef K0_H
-#define K0_H
+#ifndef __K0_K0_H
+#define __K0_K0_H
 
 // jsmn library mode constant
 #define JSMN_STRICT
@@ -46,4 +46,4 @@ extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 NORETURN void k0_main(void);
 NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
 
-#endif /* K0_H */
+#endif /* __K0_K0_H */
