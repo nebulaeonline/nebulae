@@ -201,12 +201,12 @@ typedef PACKED_MS struct s_x64_u128 {
 #define X64_SEG_PRESENT                 BIT47
 #define X64_SEG_LIMIT_IN_PAGES          BIT55
 
-#define X64_TYPE_LDT                    0x02ULL
-#define X64_TYPE_TSS_AVAILABLE          0x09ULL
-#define X64_TYPE_TSS_BUSY               0x0BULL
-#define X64_TYPE_CALL_GATE              0x0CULL
-#define X64_TYPE_INT_GATE               0x0EULL
-#define X64_TYPE_TRAP_GATE              0x0FULL
+#define X64_TYPE_LDT                    0x02
+#define X64_TYPE_TSS_AVAILABLE          0x09
+#define X64_TYPE_TSS_BUSY_FLAG          BIT1
+#define X64_TYPE_CALL_GATE              0x0C
+#define X64_TYPE_INT_GATE               0x0E
+#define X64_TYPE_TRAP_GATE              0x0F
 
 #define X64_GATE_DPL_MASK               (BIT5 | BIT6)
 #define X64_GATE_SEG_PRESENT_BIT        BIT7
@@ -260,6 +260,17 @@ typedef PACKED_MS struct s_x64_inttrap_gate {
     UINT32 procedure_entry_offset_32_63;
     UINT32 reserved;
 } PACKED_GNU x64_inttrap_gate;
+
+// Task State Segment
+typedef PACKED_MS struct s_x64_tss {
+    UINT32 reserved1;
+    UINT64 rsp[3];
+    UINT64 reserved2;
+    UINT64 ist[7];
+    UINT64 reserved3;
+    UINT16 reserved4;
+    UINT16 io_map_base_address;
+} PACKED_GNU x64_tss;
 
 // cpuinfo results structure
 // cpuinfo returns its results in each
