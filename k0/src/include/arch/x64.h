@@ -29,11 +29,55 @@
 #ifndef X64_H
 #define X64_H
 
+#include <Library/UefiLib.h>
+
+// Structure packing
+#ifdef _MSC_VER
+#define PACKED_MS     _declspec(align(1))
+#define PACKED_GNU
+#elif defined(__clang__) || defined(__GNUC__)
+#define PACKED_MS
+#define PACKED_GNU    __attribute__((packed))
+#endif
+
 // Helpful constants
-#define X64_REG_EAX                 0x00
-#define X64_REG_EBX                 0x01
-#define X64_REG_ECX                 0x02
-#define X64_REG_EDX                 0x03
+#define X64_REG_EAX                 0x00ULL
+#define X64_REG_EBX                 0x01ULL
+#define X64_REG_ECX                 0x02ULL
+#define X64_REG_EDX                 0x03ULL
+
+#define BIT0_64                     0x01ULL
+#define BIT1_64                     (0x01ULL << 1)
+#define BIT2_64                     (0x01ULL << 2)
+#define BIT3_64                     (0x01ULL << 3)
+#define BIT4_64                     (0x01ULL << 4)
+#define BIT5_64                     (0x01ULL << 5)
+#define BIT6_64                     (0x01ULL << 6)
+#define BIT7_64                     (0x01ULL << 7)
+#define BIT8_64                     (0x01ULL << 8)
+#define BIT9_64                     (0x01ULL << 9)
+#define BIT10_64                    (0x01ULL << 10)
+#define BIT11_64                    (0x01ULL << 11)
+#define BIT12_64                    (0x01ULL << 12)
+#define BIT13_64                    (0x01ULL << 13)
+#define BIT14_64                    (0x01ULL << 14)
+#define BIT15_64                    (0x01ULL << 15)
+#define BIT16_64                    (0x01ULL << 16)
+#define BIT17_64                    (0x01ULL << 17)
+#define BIT18_64                    (0x01ULL << 18)
+#define BIT19_64                    (0x01ULL << 19)
+#define BIT20_64                    (0x01ULL << 20)
+#define BIT21_64                    (0x01ULL << 21)
+#define BIT22_64                    (0x01ULL << 22)
+#define BIT23_64                    (0x01ULL << 23)
+#define BIT24_64                    (0x01ULL << 24)
+#define BIT25_64                    (0x01ULL << 25)
+#define BIT26_64                    (0x01ULL << 26)
+#define BIT27_64                    (0x01ULL << 27)
+#define BIT28_64                    (0x01ULL << 28)
+#define BIT29_64                    (0x01ULL << 29)
+#define BIT30_64                    (0x01ULL << 20)
+#define BIT31_64                    (0x01ULL << 31)
 
 // CPU feature flags
 #define X64_CPUID_0x00              0x00ULL
@@ -50,101 +94,136 @@
 #define X64_CPUID_MASK              (0x0FULL << 32)
 
 #define X64_CPUID_EAX               0x00ULL
-#define X64_CPUID_EBX               (0x00ULL << 36)
-#define X64_CPUID_ECX               (0x01ULL << 36)
-#define X64_CPUID_EDX               (0x02ULL << 36)
-#define X64_CPUID_REG_MASK          (0x03ULL << 36)
+#define X64_CPUID_EBX               (0x01ULL << 36)
+#define X64_CPUID_ECX               (0x02ULL << 36)
+#define X64_CPUID_EDX               (0x03ULL << 36)
+#define X64_CPUID_REG_MASK          (0x0FULL << 36)
 
-#define X64_HAS_SSE3                ((UINT64)BIT0 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_PCLMULQDQ           ((UINT64)BIT1 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_DTES64              ((UINT64)BIT2 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_MONITOR             ((UINT64)BIT3 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_CPLDEBUGSTORE       ((UINT64)BIT4 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_VMX                 ((UINT64)BIT5 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SMX                 ((UINT64)BIT6 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SPEEDSTEP           ((UINT64)BIT7 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_THERMALMONITOR2     ((UINT64)BIT8 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SSSE3               ((UINT64)BIT9 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_L1CONTEXTID         ((UINT64)BIT10 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SILICONDEBUG        ((UINT64)BIT11 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_FMA                 ((UINT64)BIT12 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_CMPXCHG16B          ((UINT64)BIT13 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_TPRUPDATECONTROL    ((UINT64)BIT14 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_PDCM                ((UINT64)BIT15 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_PCID                ((UINT64)BIT17 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_DCA                 ((UINT64)BIT18 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SSE41               ((UINT64)BIT19 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_SSE42               ((UINT64)BIT20 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_X2APIC              ((UINT64)BIT21 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_MOVBE               ((UINT64)BIT22 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_POPCNT              ((UINT64)BIT23 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_TSCDEADLINE         ((UINT64)BIT24 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_AESNI               ((UINT64)BIT25 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_XSAVE               ((UINT64)BIT26 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_OSXSAVE             ((UINT64)BIT27 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_AVX                 ((UINT64)BIT28 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_F16C                ((UINT64)BIT29 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_RDRAND              ((UINT64)BIT30 | X64_CPUID_0x01 | X64_CPUID_ECX)
-#define X64_HAS_FPU                 ((UINT64)BIT0 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_V8086               ((UINT64)BIT1 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_DEBUG               ((UINT64)BIT2 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PSE                 ((UINT64)BIT3 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_RDTSC               ((UINT64)BIT4 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_MSR                 ((UINT64)BIT5 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PAE                 ((UINT64)BIT6 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_MACHINECHECKEXCEPTION ((UINT64)BIT7 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_CMPXCHG8B           ((UINT64)BIT8 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_APIC                ((UINT64)BIT9 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_SYSENTER            ((UINT64)BIT11 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_MTRR                ((UINT64)BIT12 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PGE                 ((UINT64)BIT13 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_MACHINECHECKARCHITECTURE ((UINT64)BIT14 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_CMOV                ((UINT64)BIT15 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PAT                 ((UINT64)BIT16 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PSE36               ((UINT64)BIT17 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PSN                 ((UINT64)BIT18 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_CLFLUSH             ((UINT64)BIT19 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_DEBUGSTORE          ((UINT64)BIT21 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_ACPI                ((UINT64)BIT22 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_MMX                 ((UINT64)BIT23 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_FXSAVE              ((UINT64)BIT24 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_SSE                 ((UINT64)BIT25 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_SSE2                ((UINT64)BIT26 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_SELFSNOOP           ((UINT64)BIT27 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_HYPERTHREADING      ((UINT64)BIT28 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_THERMALMONITOR      ((UINT64)BIT29 | X64_CPUID_0x01 | X64_CPUID_EDX)
-#define X64_HAS_PBE                 ((UINT64)BIT31 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_SSE3                (BIT0_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_PCLMULQDQ           (BIT1_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_DTES64              (BIT2_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_MONITOR             (BIT3_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_CPLDEBUGSTORE       (BIT4_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_VMX                 (BIT5_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SMX                 (BIT6_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SPEEDSTEP           (BIT7_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_THERMALMONITOR2     (BIT8_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SSSE3               (BIT9_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_L1CONTEXTID         (BIT10_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SILICONDEBUG        (BIT11_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_FMA                 (BIT12_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_CMPXCHG16B          (BIT13_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_TPRUPDATECONTROL    (BIT14_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_PDCM                (BIT15_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_PCID                (BIT17_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_DCA                 (BIT18_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SSE41               (BIT19_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_SSE42               (BIT20_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_X2APIC              (BIT21_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_MOVBE               (BIT22_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_POPCNT              (BIT23_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_TSCDEADLINE         (BIT24_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_AESNI               (BIT25_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_XSAVE               (BIT26_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_OSXSAVE             (BIT27_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_AVX                 (BIT28_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_F16C                (BIT29_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_RDRAND              (BIT30_64 | X64_CPUID_0x01 | X64_CPUID_ECX)
+#define X64_HAS_FPU                 (BIT0_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_V8086               (BIT1_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_DEBUG               (BIT2_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PSE                 (BIT3_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_RDTSC               (BIT4_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_MSR                 (BIT5_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PAE                 (BIT6_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_MACHINECHECKEXCEPTION (BIT7_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_CMPXCHG8B           (BIT8_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_APIC                (BIT9_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_SYSENTER            (BIT11_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_MTRR                (BIT12_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PGE                 (BIT13_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_MACHINECHECKARCHITECTURE (BIT14_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_CMOV                (BIT15_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PAT                 (BIT16_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PSE36               (BIT17_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PSN                 (BIT18_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_CLFLUSH             (BIT19_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_DEBUGSTORE          (BIT21_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_ACPI                (BIT22_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_MMX                 (BIT23_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_FXSAVE              (BIT24_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_SSE                 (BIT25_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_SSE2                (BIT26_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_SELFSNOOP           (BIT27_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_HYPERTHREADING      (BIT28_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_THERMALMONITOR      (BIT29_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
+#define X64_HAS_PBE                 (BIT31_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
 
 // x64 Paging
-#define X64_PAGE_PRESENT            ((UINT64)BIT0)
-#define X64_PAGE_READ_WRITE         ((UINT64)BIT1)
-#define X64_PAGE_USER_MODE          ((UINT64)BIT2)
-#define X64_PAGE_WRITE_THROUGH      ((UINT64)BIT3)
-#define X64_PAGE_CACHE_DISABLE      ((UINT64)BIT4)
-#define X64_PAGE_ACCESSED           ((UINT64)BIT5)
-#define X64_PAGE_DIRTY              ((UINT64)BIT6)
-#define X64_PAGE_IS_PAGES           ((UINT64)BIT7)
-#define X64_PAGE_GLOBAL             ((UINT64)BIT8)
-#define X64_PAGE_PAT                ((UINT64)BIT12)
-#define X64_PAGE_PTE_PAT            ((UINT64)BIT7)
-#define X64_PAGE_NX                 BIT63
+#define X64_PAGING_PRESENT            BIT0_64
+#define X64_PAGING_WRITEABLE          BIT1_64
+#define X64_PAGING_USER_MODE          BIT2_64
+#define X64_PAGING_WRITE_THROUGH      BIT3_64
+#define X64_PAGING_CACHE_DISABLE      BIT4_64
+#define X64_PAGING_ACCESSED           BIT5_64
+#define X64_PAGING_DIRTY              BIT6_64
+#define X64_PAGING_IS_PAGES           BIT7_64
+#define X64_PAGING_GLOBAL             BIT8_64
+#define X64_PAGING_PAT                BIT12_64
+#define X64_PAGING_PTE_PAT            BIT7_64
+#define X64_PAGING_NX                 BIT63
+
+#define X64_SEG_ACCESSED            BIT40
+#define X64_SEG_DATA                0x00ULL
+#define X64_SEG_DATA_WRITEABLE      BIT41
+#define X64_SEG_DATA_EXPAND_DOWN    BIT42
+#define X64_SEG_DATA_BIG            BIT54
+#define X64_SEG_CODE                BIT43
+#define X64_SEG_CODE_READABLE       BIT41
+#define X64_SEG_CODE_CONFORMING     BIT42
+#define X64_SEG_CODE_64BIT          BIT53
+#define X64_SEG_CODE_DEFAULT32      BIT54
+#define X64_SEG_NON_SYSTEM_SEGMENT  BIT44
+#define X64_SEG_DPL0                0x00ULL
+#define X64_SEG_DPL1                BIT45
+#define X64_SEG_DPL2                BIT46
+#define X64_SEG_DPL3                (BIT45 | BIT46)
+#define X64_SEG_PRESENT             BIT47
+#define X64_SEG_LIMIT_IN_PAGES      BIT55
+
+#define X64_SEG_SYS_LDT             (0x02ULL << 40)
+#define X64_SEG_SYS_TSS_AVAILABLE   (0x09ULL << 40)
+#define X64_SEG_SYS_TSS_BUSY        (0x0BULL << 40)
+#define X64_SEG_SYS_CALL_GATE       (0x0CULL << 40)
+#define X64_SEG_SYS_INT_GATE        (0x0EULL << 40)
+#define X64_SEG_SYS_TRAP_GATE       (0x0FULL << 40)
+
 
 // PML4 Entry (Top level of 4-level paging
 // structure on x64)
 // Maps 512GB
-typedef UINT64      s_pml4e;
+typedef UINT64      x64_pml4e;
 
 // Page Directory Pointer Table Entry
 // Maps 1GB page
-typedef UINT64      s_pdpte;
+typedef UINT64      x64_pdpte;
 
 // Page Directory Entry
 // Maps 2MB
-typedef UINT64      s_pde;
+typedef UINT64      x64_pde;
 
 // Page Table Entry
 // Maps 4KB
-typedef UINT64      s_pte;
+typedef UINT64      x64_pte;
+
+// Segment Descriptor
+typedef UINT64      x64_seg_descr;
+
+// Call Gate
+typedef PACKED_MS struct s_x64_call_gate {
+    UINT64 low;
+    UINT64 high;
+} PACKED_GNU x64_call_gate;
 
 // cpuinfo results structure
 // cpuinfo returns its results in each

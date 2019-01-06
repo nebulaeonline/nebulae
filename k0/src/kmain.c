@@ -54,8 +54,11 @@ NORETURN void k0_main(void) {
     InitMemSubsystem();
 
     // Do something
-    
-   
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Cpuid (0x01) ecx == 0x%x / edx == 0x%x\n", cpu.cpuinfo[1].reg[X64_REG_ECX], cpu.cpuinfo[1].reg[X64_REG_EDX]);
+        Print(L"X64_SEG_SYS_CALL_GATE == %lx\n", X64_SEG_SYS_CALL_GATE);
+    }
+
     // Shutdown the memory subsystem
     ShutdownMemSubsystem();
 
