@@ -198,26 +198,33 @@
 #define X64_SEG_SYS_INT_GATE        (0x0EULL << 40)
 #define X64_SEG_SYS_TRAP_GATE       (0x0FULL << 40)
 
-
 // PML4 Entry (Top level of 4-level paging
 // structure on x64)
 // Maps 512GB
 typedef UINT64      x64_pml4e;
+#define PML4E_FORMAT_PDPT_ADDR(X)       (X & 0x000FFFFFFFFFF000ULL)
 
 // Page Directory Pointer Table Entry
 // Maps 1GB page
 typedef UINT64      x64_pdpte;
+#define PDPTE_FORMAT_1GB_PAGE_ADDR(X)   (X & 0x000FFFFFE0000000ULL)
+#define PDPTE_FORMAT_PAGE_DIR_ADDR(X)   (X & 0x000FFFFFFFFFF000ULL)
 
 // Page Directory Entry
 // Maps 2MB
 typedef UINT64      x64_pde;
+#define PDE_FORMAT_2MB_PAGE_ADDR(X)     (X & 0x000FFFFFFFF00000ULL)
+#define PDE_FORMAT_PAGE_TABLE_ADDR(X)   (X & 0x000FFFFFFFFFF000ULL)
 
 // Page Table Entry
 // Maps 4KB
 typedef UINT64      x64_pte;
+#define PTE_FORMAT_4KB_PAGE_ADDR(X)     (X & 0x000FFFFFFFFFF000ULL)
 
 // Segment Descriptor
 typedef UINT64      x64_seg_descr;
+#define SEG_DESCR_FORMAT_LIMIT(X)       ((((UINT64)X & 0x000F0000ULL) << 32) | ((UINT64)X & 0x0000FFFFULL))
+#define SEG_DESCR_FORMAT_BASE_ADDR(X)   ((((UINT64)X & 0xFF000000ULL) << 32) | ((UINT64)X & 0x00FF0000ULL << 16) | (((UINT64)X & 0x0000FFFFULL) << 16))
 
 // Call Gate
 typedef PACKED_MS struct s_x64_call_gate {
