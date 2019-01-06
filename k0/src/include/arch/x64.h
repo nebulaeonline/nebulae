@@ -31,6 +31,9 @@
 
 #include <Library/UefiLib.h>
 
+// Helpful macros
+#define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
+
 // Structure packing
 #ifdef _MSC_VER
 #define PACKED_MS     _declspec(align(1))
@@ -39,6 +42,12 @@
 #define PACKED_MS
 #define PACKED_GNU    __attribute__((packed))
 #endif
+
+// 128-bit wide unsigned integer data type
+typedef PACKED_MS struct s_x64_u128 {
+    UINT64 lo;
+    UINT64 hi;
+} PACKED_GNU x64_u128;
 
 // Helpful constants
 #define X64_REG_EAX                     0x00ULL
@@ -173,6 +182,7 @@
 #define X64_PAGING_PTE_PAT              BIT7_64
 #define X64_PAGING_NX                   BIT63
 
+// x64 Segments
 #define X64_SEG_ACCESSED                BIT40
 #define X64_SEG_DATA                    0x00ULL
 #define X64_SEG_DATA_WRITEABLE          BIT41
@@ -191,12 +201,15 @@
 #define X64_SEG_PRESENT                 BIT47
 #define X64_SEG_LIMIT_IN_PAGES          BIT55
 
-#define X64_SEG_SYS_LDT                 (0x02ULL << 40)
-#define X64_SEG_SYS_TSS_AVAILABLE       (0x09ULL << 40)
-#define X64_SEG_SYS_TSS_BUSY            (0x0BULL << 40)
-#define X64_SEG_SYS_CALL_GATE           (0x0CULL << 40)
-#define X64_SEG_SYS_INT_GATE            (0x0EULL << 40)
-#define X64_SEG_SYS_TRAP_GATE           (0x0FULL << 40)
+#define X64_TYPE_LDT                    0x02ULL
+#define X64_TYPE_TSS_AVAILABLE          0x09ULL
+#define X64_TYPE_TSS_BUSY               0x0BULL
+#define X64_TYPE_CALL_GATE              0x0CULL
+#define X64_TYPE_INT_GATE               0x0EULL
+#define X64_TYPE_TRAP_GATE              0x0FULL
+
+#define X64_GATE_DPL_MASK               (BIT5 | BIT6)
+#define X64_GATE_SEG_PRESENT_BIT        BIT7
 
 // PML4 Entry (Top level of 4-level paging
 // structure on x64)
@@ -228,9 +241,25 @@ typedef UINT64      x64_seg_descr;
 
 // Call Gate
 typedef PACKED_MS struct s_x64_call_gate {
-    UINT64 low;
-    UINT64 high;
+    UINT16 segment_offset_00_15;
+    UINT16 segment_selector;
+    UINT8  reserved1;
+    UINT8  typeflags;
+    UINT16 segment_offset_16_31;
+    UINT32 segment_offset_31_63;
+    UINT32 high_bits;
 } PACKED_GNU x64_call_gate;
+
+// Interrupt Trap Gate
+typedef PACKED_MS struct s_x64_inttrap_gate {
+    UINT16 procedure_entry_offset_00_15;
+    UINT16 segment_selector;
+    UINT8  ist;
+    UINT8  typeflags;
+    UINT16 procedure_entry_offset_16_31;
+    UINT32 procedure_entry_offset_32_63;
+    UINT32 reserved;
+} PACKED_GNU x64_inttrap_gate;
 
 // cpuinfo results structure
 // cpuinfo returns its results in each

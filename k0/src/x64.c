@@ -125,7 +125,7 @@ BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
     cpuid = ((flag & X64_CPUID_MASK) >> 32);
     reg = ((flag & X64_CPUID_REG_MASK) >> 36);
 
-    return ((cpu.cpuinfo[cpuid].reg[reg] & bit) == bit);
+    return CHECK_BIT(cpu.cpuinfo[cpuid].reg[reg], bit);
 }
 
 #endif
