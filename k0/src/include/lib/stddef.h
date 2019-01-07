@@ -26,18 +26,22 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#define NULL        ((void*)0)
+#ifndef NEBULAE_STDDEF_H
+#define NEBULAE_STDDEF_H
+
+#define NULL                    ((void*)0)
 #define offsetof(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 #if defined(_MSC_VER) 
-typedef __int64             ptrdiff_t;
-typedef unsigned __int64    size_t;
+typedef __int64                 ptrdiff_t;
+typedef unsigned __int64        size_t;
 #else
-typedef long long           ptrdiff_t;
-typedef unsigned long long  size_t;
+typedef long long               ptrdiff_t;
+typedef unsigned long long      size_t;
 #endif
 
 #if defined(_NEEDS_WCHAR_T) 
-typedef unsigned short      wchar_t;
+typedef unsigned short          wchar_t;
 #endif
 
+#endif // NEBULAE_STDDEF_H
