@@ -29,9 +29,6 @@
 #ifndef __K0_K0_H
 #define __K0_K0_H
 
-// jsmn library mode constant
-#define JSMN_STRICT
-
 // Debug mode(s)
 extern BOOLEAN k0_VERBOSE_DEBUG;
 extern BOOLEAN k0_PRECONFIG_DEBUG;

@@ -52,6 +52,9 @@ NORETURN void k0_main(void) {
     // Do something
     Print(L"entered main nebulae kernel...\n");
 
+    // Draw a blue triangle to the screen
+    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 50, 0x000000ff);
+
     // Shutdown the memory subsystem
     ShutdownMemSubsystem();
 
