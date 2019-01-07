@@ -111,6 +111,5 @@ x64DisableInterrupts PROC
     ret
 x64DisableInterrupts ENDP
 
-
 ;==================================
     END

@@ -36,9 +36,9 @@
 #include "../../include/arch/uefi/graphics.h"
 
 // Graphics Options
-#define GOP_DESIRED_HREZ            1024
-#define GOP_DESIRED_VREZ            768
-#define GOP_DESIRED_PIXEL_FORMAT    PixelBlueGreenRedReserved8BitPerColor
+#define GOP_DESIRED_SCREEN_WIDTH            1024
+#define GOP_DESIRED_SCREEN_HEIGHT           768
+#define GOP_DESIRED_PIXEL_FORMAT            PixelBlueGreenRedReserved8BitPerColor
 
 VOID InitGraphics() {
     UINTN mode_num;
@@ -66,8 +66,8 @@ VOID InitGraphics() {
     for (mode_num = 0;
         (status = gfx_info.gop->QueryMode(gfx_info.gop, mode_num, &gfx_info.size_of_info, &gfx_info.gop_mode_info)) == EFI_SUCCESS;
         mode_num++) {
-        if (gfx_info.gop_mode_info->HorizontalResolution == GOP_DESIRED_HREZ &&
-            gfx_info.gop_mode_info->VerticalResolution == GOP_DESIRED_VREZ &&
+        if (gfx_info.gop_mode_info->HorizontalResolution == GOP_DESIRED_SCREEN_WIDTH &&
+            gfx_info.gop_mode_info->VerticalResolution == GOP_DESIRED_SCREEN_HEIGHT &&
             gfx_info.gop_mode_info->PixelFormat == GOP_DESIRED_PIXEL_FORMAT)
             break;
     }
@@ -80,22 +80,22 @@ VOID InitGraphics() {
         kernel_panic(L"Setting the graphics mode of the Graphics Output Protocol failed!\n");
     }
 
-    boot_display.width = GOP_DESIRED_HREZ;
-    boot_display.height = GOP_DESIRED_VREZ;
+    boot_display.width = GOP_DESIRED_SCREEN_WIDTH;
+    boot_display.height = GOP_DESIRED_SCREEN_HEIGHT;
 }
 
 VOID drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color) {
     UINT32* at = (UINT32*)lfb_base_addr;
     UINTN row, col;
 
-    at += (GOP_DESIRED_HREZ * (center_y - width / 2) + center_x - width / 2);
+    at += (GOP_DESIRED_SCREEN_WIDTH * (center_y - width / 2) + center_x - width / 2);
 
     for (row = 0; row < width / 2; row++) {
         for (col = 0; col < width - row * 2; col++)
             *at++ = color;
-        at += (GOP_DESIRED_HREZ - col);
+        at += (GOP_DESIRED_SCREEN_WIDTH - col);
         for (col = 0; col < width - row * 2; col++)
             *at++ = color;
-        at += (GOP_DESIRED_HREZ - col + 1);
+        at += (GOP_DESIRED_SCREEN_WIDTH - col + 1);
     }
 }

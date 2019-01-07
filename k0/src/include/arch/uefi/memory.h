@@ -42,7 +42,7 @@ typedef struct s_uefi_memory_map_info {
 
 uefi_memory_map_info memmap;
 
-UINTN InitMemSubsystem(void);
+UINTN ReadUefiMemoryMap(void);
 VOID ShutdownMemSubsystem(void);
 
 #endif /* __K0_KMEM_H */

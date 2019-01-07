@@ -96,7 +96,7 @@ UINTN kmem_largest_block_page_count = 0;
 //      with the size and location of the largest block of free
 //      conventional memory
 //  4) Query the UEFI memmap again
-UINTN InitMemSubsystem() {
+UINTN ReadUefiMemoryMap() {
     
     // Function exit status
     EFI_STATUS exit_status = EFI_SUCCESS;

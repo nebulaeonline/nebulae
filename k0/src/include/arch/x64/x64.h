@@ -32,23 +32,7 @@
 #include <Library/UefiLib.h>
 #include <X64/ProcessorBind.h>
 
-// Helpful macros
-#define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
-
-// Structure packing
-#ifdef _MSC_VER
-#define PACKED_MS     _declspec(align(1))
-#define PACKED_GNU
-#elif defined(__clang__) || defined(__GNUC__)
-#define PACKED_MS
-#define PACKED_GNU    __attribute__((packed))
-#endif
-
-// 128-bit wide unsigned integer data type
-typedef PACKED_MS struct s_x64_u128 {
-    UINT64 lo;
-    UINT64 hi;
-} PACKED_GNU x64_u128;
+#include "../../k0.h"
 
 // Helpful constants
 #define X64_REG_EAX                     0x00ULL
@@ -171,8 +155,10 @@ typedef PACKED_MS struct s_x64_u128 {
 
 // x64 Paging
 #define X64_PAGING_PRESENT              BIT0_64
-#define X64_PAGING_WRITEABLE            BIT1_64
+#define X64_PAGING_DATA_WRITEABLE       BIT1_64
+#define X64_PAGING_CODE_READABLE        BIT1_64
 #define X64_PAGING_USER_MODE            BIT2_64
+#define X64_PAGING_SUPERVISOR_MODE      0x00ULL
 #define X64_PAGING_WRITE_THROUGH        BIT3_64
 #define X64_PAGING_CACHE_DISABLE        BIT4_64
 #define X64_PAGING_ACCESSED             BIT5_64
@@ -287,22 +273,29 @@ typedef struct s_x64_cpuinfo_results {
 typedef struct s_x64_cpu {
     UINT32 max_cpuid_eax;
     UINT32 max_cpuidex_eax;
+    UINT16 physical_address_bits;
+    UINT16 linear_address_bits;
     x64_cpuinfo_results cpuinfo[11];
 } x64_cpu;
 
 // cpu struct
 extern x64_cpu cpu;
 
+// for paging structure masks
+#define MAXPHYADDR  cpu.physical_address_bits
+
 // Function prototypes
 void InitArchCPU(void);
 BOOLEAN ReadCpuinfoFlag(UINT64 flag);
+EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(VOID);
 
-VOID EFIAPI x64EnableInterrupts(VOID);
-VOID EFIAPI x64DisableInterrupts(VOID);
+// Functions defined in assembler
+extern VOID EFIAPI x64EnableInterrupts(VOID);
+extern VOID EFIAPI x64DisableInterrupts(VOID);
 
-VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
-VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
-UINT8 EFIAPI x64AsmInportB(UINT16 Port);
-UINT16 EFIAPI x64AsmInportW(UINT16 Port);
+extern VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
+extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
+extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
+extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
 
 #endif /* __K0_X64_H */

@@ -29,6 +29,24 @@
 #ifndef __K0_K0_H
 #define __K0_K0_H
 
+// Structure packing
+#ifdef _MSC_VER
+#define PACKED_MS     _declspec(align(1))
+#define PACKED_GNU
+#elif defined(__clang__) || defined(__GNUC__)
+#define PACKED_MS
+#define PACKED_GNU    __attribute__((packed))
+#endif
+
+// Helpful macros
+#define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
+
+// 128-bit wide unsigned integer data type
+typedef PACKED_MS struct s_x64_u128 {
+    UINT64 lo;
+    UINT64 hi;
+} PACKED_GNU x64_u128;
+
 // Debug mode(s)
 extern BOOLEAN k0_VERBOSE_DEBUG;
 extern BOOLEAN k0_PRECONFIG_DEBUG;

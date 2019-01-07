@@ -283,9 +283,9 @@ kernel_entry:
     InitArchCPU();
 
     // Initialize the memory subsystem
-    UINTN uefi_mem_key = InitMemSubsystem();
+    UINTN uefi_mem_key = ReadUefiMemoryMap();
 
-    Print(L"Changing graphics mode and exiting UEFI Boot Servicies!\n");
+    Print(L"Changing graphics mode and exiting UEFI Boot Services!\n");
 
     // Disable scrolling
     ShellSetPageBreakMode(FALSE);
