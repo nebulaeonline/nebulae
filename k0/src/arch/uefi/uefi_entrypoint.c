@@ -40,7 +40,7 @@
 #include "../../include/deps/jsmn.h"
 #include "../../include/klib/kstring.h"
 
-#include "../../include/arch/uefi/kmem.h"
+#include "../../include/arch/uefi/memory.h"
 
 // We run on any UEFI Specification
 extern CONST UINT32 _gUefiDriverRevision;

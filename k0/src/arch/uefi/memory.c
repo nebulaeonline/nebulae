@@ -39,7 +39,7 @@
 #include "../../include/deps/isaac64.h"
 
 // Uefi Memory Header
-#include "../../include/arch/uefi/kmem.h"
+#include "../../include/arch/uefi/memory.h"
 
 // Architecure Specific Headers
 #ifdef __NEBULAE_ARCH_X64

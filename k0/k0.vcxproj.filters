@@ -16,13 +16,13 @@
     <ClCompile Include="src\arch\x64\x64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\uefi\kmem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\arch\uefi\uefi_entrypoint.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\uefi\graphics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\uefi\memory.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -48,10 +48,10 @@
     <ClInclude Include="src\include\klib\kstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\uefi\kmem.h">
+    <ClInclude Include="src\include\arch\uefi\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\uefi\graphics.h">
+    <ClInclude Include="src\include\arch\uefi\memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
