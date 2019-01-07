@@ -129,12 +129,6 @@ void InitArchCPU() {
     if (cpu.physical_address_bits == 0 || cpu.linear_address_bits == 0) {
         kernel_panic(L"Unable to determine the physical and linear address bit counts of the cpu(s)!\n");
     }
-
-    // Make sure we have PCID support.  Sorry guys, advanced
-    // features only (for now -- this is an IN_TESTING area)
-    if (!ReadCpuinfoFlag(X64_HAS_PCID)) {
-        kernel_panic(L"This version of nebulae requires PCID support on x64!\n");
-    }
 }
 
 // Function to parse the cpuinfo structs for 
