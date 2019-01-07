@@ -225,6 +225,7 @@
   <ItemGroup>
     <ClCompile Include="src\arch\uefi\graphics.c" />
     <ClCompile Include="src\arch\uefi\memory.c" />
+    <ClCompile Include="src\arch\uefi\panic.c" />
     <ClCompile Include="src\arch\uefi\uefi_entrypoint.c" />
     <ClCompile Include="src\arch\x64\x64.c" />
     <ClCompile Include="src\deps\isaac64.c" />
@@ -235,6 +236,7 @@
   <ItemGroup>
     <ClInclude Include="src\include\arch\uefi\graphics.h" />
     <ClInclude Include="src\include\arch\uefi\memory.h" />
+    <ClInclude Include="src\include\arch\uefi\panic.h" />
     <ClInclude Include="src\include\arch\x64\x64.h" />
     <ClInclude Include="src\include\deps\isaac64.h" />
     <ClInclude Include="src\include\deps\jsmn.h" />

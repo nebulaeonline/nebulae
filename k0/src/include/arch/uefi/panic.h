@@ -26,35 +26,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-// UEFI Debug Library (ASSERT) & Boot Services
-#include <Library/UefiLib.h>
-#include <Library/DebugLib.h>
-#include <Library/ShellLib.h>
-#include <Library/UefiBootServicesTableLib.h>
+#ifndef __K0_PANIC_H
+#define __K0_PANIC_H
 
-// Kernel includes
-#include "include/k0.h"
-#include "include/deps/isaac64.h"
+#include <Uefi.h>
 
-// Uefi Memory Header
-#include "include/arch/uefi/memory.h"
-#include "include/arch/uefi/graphics.h"
-#include "include/arch/uefi/panic.h"
+// Panic function
+NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
 
-#ifdef __NEBULAE_ARCH_X64
-#include "include/arch/x64/x64.h"
-#endif
-
-// Kernel Entrypoint
-// Graphics are initialized, we're flying solo!
-NORETURN void k0_main(void) {
-    
-    // Do something
-    Print(L"entered main nebulae kernel...\n");
-
-    // Shutdown the memory subsystem
-    ShutdownMemSubsystem();
-
-    // Woo-hoo!
-    while (TRUE) {}
-}
+#endif // __K0_GRAPHICS_H

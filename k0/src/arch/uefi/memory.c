@@ -189,8 +189,8 @@ UINTN InitMemSubsystem() {
 
 // De-initialize the memory subsystem
 void ShutdownMemSubsystem() {
-    // No Uefi, so can't use FreePages
-    // TODO: free those pages!
+    FreePages(memmap.memory_map, memmap.page_count);
+
     if (k0_VERBOSE_DEBUG) {
         Print(L"Freed %lu pages of memory @ %x\n", memmap.page_count, memmap.memory_map);
         Print(L"Memory subsystem shutdown\n", kmem_largest_block);
