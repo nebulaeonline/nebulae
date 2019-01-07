@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src\kmem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\kstring.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -16,20 +13,17 @@
     <ClCompile Include="src\x64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\x64\x64_kconio.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\deps\isaac64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\deps\jsmn.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\arch\x64\kmem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\include\kmem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\kstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,9 +36,6 @@
     <ClInclude Include="src\include\arch\x64\x64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\x64\x64_kconio.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\deps\isaac64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -52,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\deps\standard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\x64\kmem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

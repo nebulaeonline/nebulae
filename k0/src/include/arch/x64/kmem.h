@@ -29,10 +29,20 @@
 #ifndef __K0_KMEM_H
 #define __K0_KMEM_H
 
-#ifdef __NEBULAE_ARCH_X64
-#endif
+// Structure to hold info about
+// the uefi memory map
+typedef struct s_uefi_memory_map_info {
+    EFI_MEMORY_DESCRIPTOR* memory_map;
+    UINTN page_count;
+    UINTN size;
+    UINTN key;
+    UINTN descr_size;
+    UINT32 descr_version;
+} uefi_memory_map_info;
 
-void InitMemSubsystem(void);
-void ShutdownMemSubsystem(void);
+uefi_memory_map_info memmap;
+
+UINTN InitMemSubsystem(void);
+VOID ShutdownMemSubsystem(void);
 
 #endif /* __K0_KMEM_H */

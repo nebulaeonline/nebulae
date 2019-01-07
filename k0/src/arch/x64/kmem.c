@@ -85,10 +85,6 @@ VOID* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
 
-// Pointer to the UEFI memory map
-VOID* uefi_memory_map = NULL;
-UINT32 uefi_memory_map_pages = 0;
-
 //
 // Initialize the memory subsystem by performing the following tasks:
 // 
@@ -98,23 +94,24 @@ UINT32 uefi_memory_map_pages = 0;
 //      with the size and location of the largest block of free
 //      conventional memory
 //  4) Query the UEFI memmap again
-void InitMemSubsystem() {
+UINTN InitMemSubsystem() {
     
+    // Function exit status
     EFI_STATUS exit_status = EFI_SUCCESS;
     
     // Vars required for BootServices->GetMemoryMap call
     EFI_STATUS memmap_status = EFI_SUCCESS;
-    UINTN memmap_size = 0;
-    UINTN memmap_key = 0;
-    UINTN memmap_descriptor_size = 0;
-    UINT32 memmap_descriptor_version = 0;
+    memmap.size = 0;
+    memmap.key = 0;
+    memmap.descr_size = 0;
+    memmap.descr_version = 0;
     
     // Call GetMemoryMap first with a NULL pointer to get the (rough) size of the memory map
-    memmap_status = gBS->GetMemoryMap(&memmap_size, 
+    memmap_status = gBS->GetMemoryMap(&memmap.size, 
         NULL, 
-        &memmap_key, 
-        &memmap_descriptor_size, 
-        &memmap_descriptor_version);
+        &memmap.key, 
+        &memmap.descr_size, 
+        &memmap.descr_version);
 
     // Check for an error, but make sure that error is simply that the buffer
     // wasn't too small, because it was.
@@ -124,26 +121,26 @@ void InitMemSubsystem() {
 
     if (k0_VERBOSE_DEBUG) {
         Print(L"Map Size: %lu, Map Key: %lu, Desc. Size: %lu, Desc. Version: %u\n",
-            memmap_size, memmap_key, memmap_descriptor_size, memmap_descriptor_version);
+            memmap.size, memmap.key, memmap.descr_size, memmap.descr_version);
     }
 
     // Allocate enough memory to hold a temporary copy of the memory map
-    uefi_memory_map_pages = (memmap_size / EFI_PAGE_SIZE) + 1;
-    uefi_memory_map = AllocatePages(uefi_memory_map_pages);
-    if (uefi_memory_map == NULL) {
+    memmap.page_count = (memmap.size / EFI_PAGE_SIZE) + 1;
+    memmap.memory_map = (EFI_MEMORY_DESCRIPTOR*)AllocatePages(memmap.page_count);
+    if (memmap.memory_map == NULL) {
         kernel_panic(L"Unable to allocate pages for memory map\n");
     }
 
     if (k0_VERBOSE_DEBUG) {
-        Print(L"Allocated %u page(s)\n", uefi_memory_map_pages);
+        Print(L"Allocated %u page(s)\n", memmap.page_count);
     }
 
     // Call GetMemoryMap again to get the actual memory map
-    memmap_status = gBS->GetMemoryMap(&memmap_size, 
-        uefi_memory_map, 
-        &memmap_key, 
-        &memmap_descriptor_size, 
-        &memmap_descriptor_version);
+    memmap_status = gBS->GetMemoryMap(&memmap.size, 
+        memmap.memory_map, 
+        &memmap.key, 
+        &memmap.descr_size, 
+        &memmap.descr_version);
 
     if (EFI_ERROR(memmap_status)) {
         kernel_panic(L"Unable to query UEFI for memory map: %r\n", memmap_status);
@@ -152,8 +149,8 @@ void InitMemSubsystem() {
     // Parse the UEFI memory map in order to count the available
     // conventional memory
     EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
-    UINT64 memmap_entries = memmap_size / memmap_descriptor_size;
-    VOID *memmap_iter = uefi_memory_map;
+    UINT64 memmap_entries = memmap.size / memmap.descr_size;
+    VOID *memmap_iter = memmap.memory_map;
 
     UINTN i;
     for (i = 0; i < memmap_entries; i++) {
@@ -174,7 +171,7 @@ void InitMemSubsystem() {
             }
         }
 
-        memmap_iter = (CHAR8*)memmap_iter + memmap_descriptor_size;
+        memmap_iter = (CHAR8*)memmap_iter + memmap.descr_size;
     }
 
     if (k0_VERBOSE_DEBUG) {
@@ -185,13 +182,15 @@ void InitMemSubsystem() {
         Print(L"Memory subsystem initialized\n");
     }
 
+    return memmap.key;
 }
 
 // De-initialize the memory subsystem
 void ShutdownMemSubsystem() {
-    FreePages(uefi_memory_map, uefi_memory_map_pages);
+    // No Uefi, so can't use FreePages
+    // TODO: free those pages!
     if (k0_VERBOSE_DEBUG) {
-        Print(L"Freed %lu pages of memory @ %x\n", uefi_memory_map_pages, uefi_memory_map);
+        Print(L"Freed %lu pages of memory @ %x\n", memmap.page_count, memmap.memory_map);
         Print(L"Memory subsystem shutdown\n", kmem_largest_block);
     }
 }

@@ -33,10 +33,12 @@
 
 // Kernel includes
 #include "include/k0.h"
-#include "include/kmem.h"
 #include "include/deps/isaac64.h"
 
+#ifdef __NEBULAE_ARCH_X64
 #include "include/arch/x64/x64.h"
+#include "include/arch/x64/kmem.h"
+#endif
 
 // Kernel Entrypoint
 NORETURN void k0_main(void) {
@@ -51,7 +53,7 @@ NORETURN void k0_main(void) {
     InitArchCPU();
 
     // Initialize the memory subsystem
-    InitMemSubsystem();
+    UINTN uefi_mem_key = InitMemSubsystem();
 
     // Do something
     if (k0_VERBOSE_DEBUG) {
@@ -59,8 +61,14 @@ NORETURN void k0_main(void) {
         Print(L"X64_TYPE_CALL_GATE == %lx\n", X64_TYPE_CALL_GATE);
     }
 
+    Print(L"Exiting UEFI Boot Servicies!\n");
+    gBS->ExitBootServices(nebulae_uefi_image_handle, uefi_mem_key);
+    gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
+
+    // PutChar('a');
+
     // Shutdown the memory subsystem
-    ShutdownMemSubsystem();
+    // ShutdownMemSubsystem();
 
     // Woo-hoo!
     while (TRUE) {}
