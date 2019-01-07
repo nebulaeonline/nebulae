@@ -26,7 +26,6 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifdef __NEBULAE_ARCH_X64
 #include <Library/BaseLib.h>
 #include <Library/UefiLib.h>
 
@@ -127,5 +126,3 @@ BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
 
     return CHECK_BIT(cpu.cpuinfo[cpuid].reg[reg], bit);
 }
-
-#endif

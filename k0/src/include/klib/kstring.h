@@ -1,7 +1,6 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
 // Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
 // Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
-
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
