@@ -28,6 +28,9 @@
     <ClCompile Include="src\arch\uefi\panic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\klib\kelf64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">
@@ -58,6 +61,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\arch\uefi\panic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\klib\kelf64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
