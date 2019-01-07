@@ -35,13 +35,13 @@
 #include <Library/UefiBootServicesTableLib.h>
 
 // Kernel Headers
-#include "include/k0.h"
-#include "include/kmem.h"
-#include "include/deps/isaac64.h"
+#include "../../include/k0.h"
+#include "../../include/deps/isaac64.h"
 
 // Architecure Headers
 #ifdef __NEBULAE_ARCH_X64
-#include "include/arch/x64/x64.h"
+#include "../../include/arch/x64/x64.h"
+#include "../../include/arch/x64/kmem.h"
 #endif
 
 // Memory Type Strings

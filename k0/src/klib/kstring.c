@@ -36,7 +36,9 @@
 #include <Library/BaseMemoryLib.h>
 #include <Library/MemoryAllocationLib.h>
 
-#include "include/kmem.h"
+#ifdef __NEBULAE_ARCH_X64
+#include "../include/arch/x64/kmem.h"
+#endif
 
 UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
     

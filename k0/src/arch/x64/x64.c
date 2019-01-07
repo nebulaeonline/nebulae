@@ -30,8 +30,8 @@
 #include <Library/BaseLib.h>
 #include <Library/UefiLib.h>
 
-#include "include/k0.h"
-#include "include/arch/x64/x64.h"
+#include "../../include/k0.h"
+#include "../../include/arch/x64/x64.h"
 
 x64_cpu cpu;
 

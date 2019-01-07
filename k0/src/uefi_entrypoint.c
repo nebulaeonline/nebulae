@@ -38,7 +38,7 @@
 // Kernel Include(s)
 #include "include/k0.h"
 #include "include/deps/jsmn.h"
-#include "include/kstring.h"
+#include "include/klib/kstring.h"
 
 // We run on any UEFI Specification
 extern CONST UINT32 _gUefiDriverRevision;
