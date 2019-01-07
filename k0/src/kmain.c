@@ -36,7 +36,7 @@
 #include "include/k0.h"
 #include "include/deps/isaac64.h"
 
-// Uefi Memory Header
+// nebulae-Uefi Headers
 #include "include/arch/uefi/memory.h"
 #include "include/arch/uefi/graphics.h"
 #include "include/arch/uefi/panic.h"

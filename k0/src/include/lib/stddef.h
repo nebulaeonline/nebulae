@@ -29,9 +29,6 @@
 #ifndef NEBULAE_STDDEF_H
 #define NEBULAE_STDDEF_H
 
-#define NULL                    ((void*)0)
-#define offsetof(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-
 #if defined(_MSC_VER) 
 typedef __int64                 ptrdiff_t;
 typedef unsigned __int64        size_t;
@@ -43,5 +40,8 @@ typedef unsigned long long      size_t;
 #if defined(_NEEDS_WCHAR_T) 
 typedef unsigned short          wchar_t;
 #endif
+
+#define NULL                    ((void*)0)
+#define offsetof(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 #endif // NEBULAE_STDDEF_H
