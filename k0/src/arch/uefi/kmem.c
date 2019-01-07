@@ -38,10 +38,12 @@
 #include "../../include/k0.h"
 #include "../../include/deps/isaac64.h"
 
-// Architecure Headers
+// Uefi Memory Header
+#include "../../include/arch/uefi/kmem.h"
+
+// Architecure Specific Headers
 #ifdef __NEBULAE_ARCH_X64
 #include "../../include/arch/x64/x64.h"
-#include "../../include/arch/x64/kmem.h"
 #endif
 
 // Memory Type Strings

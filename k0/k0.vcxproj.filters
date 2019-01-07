@@ -1,9 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="src\uefi_entrypoint.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\kmain.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -13,13 +10,19 @@
     <ClCompile Include="src\deps\jsmn.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\x64\kmem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\klib\kstring.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\x64\x64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\uefi\kmem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\uefi\uefi_entrypoint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\uefi\graphics.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -42,10 +45,13 @@
     <ClInclude Include="src\include\deps\standard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\x64\kmem.h">
+    <ClInclude Include="src\include\klib\kstring.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\klib\kstring.h">
+    <ClInclude Include="src\include\arch\uefi\kmem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\uefi\graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

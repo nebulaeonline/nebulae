@@ -1,6 +1,4 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -28,58 +26,32 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-//
-// Basic UEFI Libraries
-//
-#include <Library/UefiLib.h>
+#ifndef __K0_GRAPHICS_H
+#define __K0_GRAPHICS_H
 
-UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
-    
-    while (*s1 && len) {
-        if (*s1 != *s2) {
-            break;
-        }
-        s1 += 1;
-        s2 += 1;
-        len -= 1;
-    }
+typedef struct s_uefi_gfx_info {
+    EFI_HANDLE* handle_buffer;
+    UINTN handle_count;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL* gop;
+    EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* gop_mode_info;
+    UINTN size_of_info;
+} uefi_gfx_info;
 
-    return len ? *s1 - *s2 : 0;
-}
+uefi_gfx_info gfx_info;
 
-// Naive and horrible...
-UINTN kStrlen(CONST CHAR8* s) {
+typedef struct s_uefi_display {
+    UINT32 width;
+    UINT32 height;
+} uefi_display;
 
-    const char *sc;
+uefi_display boot_display;
 
-    for (sc = s; *sc != '\0'; ++sc)
-        /* do nothing */;
-    return (sc - s);
-}
+VOID InitGraphics(VOID);
 
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
-    
-    UINTN len = length;
+VOID drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, 
+    UINTN center_x, 
+    UINTN center_y, 
+    UINTN width, 
+    UINT32 color);
 
-    while (*String != '\0' && len > 0) {
-        *(UniString++) = (CHAR16) *(String++);
-        len--;
-    }
-    *UniString = '\0';
-}
-
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
-    
-    UnicodeSPrint(buffer, buffsiz, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-        guid->Data1,
-        guid->Data2,
-        guid->Data3,
-        guid->Data4[0],
-        guid->Data4[1],
-        guid->Data4[2],
-        guid->Data4[3],
-        guid->Data4[4],
-        guid->Data4[5],
-        guid->Data4[6],
-        guid->Data4[7]);
-}
+#endif // __K0_GRAPHICS_H

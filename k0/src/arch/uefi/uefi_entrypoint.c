@@ -36,9 +36,11 @@
 #include <Library/ShellLib.h>
 
 // Kernel Include(s)
-#include "include/k0.h"
-#include "include/deps/jsmn.h"
-#include "include/klib/kstring.h"
+#include "../../include/k0.h"
+#include "../../include/deps/jsmn.h"
+#include "../../include/klib/kstring.h"
+
+#include "../../include/arch/uefi/kmem.h"
 
 // We run on any UEFI Specification
 extern CONST UINT32 _gUefiDriverRevision;
@@ -267,8 +269,34 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
         Print(L"Freed %lu page(s) for k0.config.json file data\n", 1);
     }
 
-    // Call our k0_main() function
+    // Do the last bit of set and then call 
+    // the k0_main() function
 kernel_entry:
+    
+    // Initialize the Isaac64 CSPRNG
+    // Isaac64 generates a 64-bit cryptographically
+    // secure pseudo-random number in 19 cycles 
+    // on x64
+    InitIsaac64CSPRNG(TRUE);
+
+    // Initialize the cpu architecture
+    InitArchCPU();
+
+    // Initialize the memory subsystem
+    UINTN uefi_mem_key = InitMemSubsystem();
+
+    Print(L"Changing graphics mode and exiting UEFI Boot Servicies!\n");
+
+    // Disable scrolling
+    ShellSetPageBreakMode(FALSE);
+
+    // Initialize the graphics engine to 1024x768
+    InitGraphics();
+
+    // Exit Boot Services and start flying solo
+    gBS->ExitBootServices(nebulae_uefi_image_handle, uefi_mem_key);
+    gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
+        
     k0_main();
 
 exit:

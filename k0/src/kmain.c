@@ -29,46 +29,30 @@
 // UEFI Debug Library (ASSERT) & Boot Services
 #include <Library/UefiLib.h>
 #include <Library/DebugLib.h>
+#include <Library/ShellLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 
 // Kernel includes
 #include "include/k0.h"
 #include "include/deps/isaac64.h"
 
+// Uefi Memory Header
+#include "include/arch/uefi/kmem.h"
+#include "include/arch/uefi/graphics.h"
+
 #ifdef __NEBULAE_ARCH_X64
 #include "include/arch/x64/x64.h"
-#include "include/arch/x64/kmem.h"
 #endif
 
 // Kernel Entrypoint
+// Graphics are initialized, we're flying solo!
 NORETURN void k0_main(void) {
     
-    // Initialize the Isaac64 CSPRNG
-    // Isaac64 generates a 64-bit cryptographically
-    // secure pseudo-random number in 19 cycles 
-    // on x64
-    InitIsaac64CSPRNG(TRUE);
-
-    // Initialize the cpu architecture
-    InitArchCPU();
-
-    // Initialize the memory subsystem
-    UINTN uefi_mem_key = InitMemSubsystem();
-
     // Do something
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Cpuid (0x01) ecx == 0x%x / edx == 0x%x\n", cpu.cpuinfo[1].reg[X64_REG_ECX], cpu.cpuinfo[1].reg[X64_REG_EDX]);
-        Print(L"X64_TYPE_CALL_GATE == %lx\n", X64_TYPE_CALL_GATE);
-    }
-
-    Print(L"Exiting UEFI Boot Servicies!\n");
-    gBS->ExitBootServices(nebulae_uefi_image_handle, uefi_mem_key);
-    gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
-
-    // PutChar('a');
+    Print(L"entered main nebulae kernel...\n");
 
     // Shutdown the memory subsystem
-    // ShutdownMemSubsystem();
+    ShutdownMemSubsystem();
 
     // Woo-hoo!
     while (TRUE) {}
