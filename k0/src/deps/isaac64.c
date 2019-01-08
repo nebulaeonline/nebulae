@@ -7,9 +7,6 @@ By Bob Jenkins, 1996.  Public Domain.
 #ifndef STANDARD
 #include "../include/deps/standard.h"
 #endif
-#ifndef ISAAC64
-#include "../include/deps/isaac64.h"
-#endif
 
 #include <Uefi.h>
 #include <Library/UefiLib.h>
@@ -85,8 +82,8 @@ void InitIsaac64CSPRNG(word flag)
        if (k0_VERBOSE_DEBUG) {
            Print(L"Obtained system time from UEFI\n");
        }
-       UINT8* raw_date = (UINT8*)(VOID*)(&system_time);
-       UINT8* raw_randrsl = (UINT8*)(VOID*)(&randrsl);
+       UINT8* raw_date = (UINT8*)(void*)(&system_time);
+       UINT8* raw_randrsl = (UINT8*)(void*)(&randrsl);
        int z, k;
        for (z = 0; z < (RANDSIZ / (int)sizeof(system_time)); z++) {
            for (k = 0; k < (int)sizeof(system_time); k++) {

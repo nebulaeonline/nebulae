@@ -46,9 +46,9 @@ typedef struct s_uefi_display {
 
 uefi_display boot_display;
 
-VOID InitGraphics(VOID);
+void InitGraphics(void);
 
-VOID drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, 
+void drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, 
     UINTN center_x, 
     UINTN center_y, 
     UINTN width, 

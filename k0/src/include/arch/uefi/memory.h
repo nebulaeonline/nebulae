@@ -41,8 +41,9 @@ typedef struct s_uefi_memory_map_info {
 } uefi_memory_map_info;
 
 uefi_memory_map_info memmap;
+EFI_PHYSICAL_ADDRESS* nebulae_system_table;
 
 UINTN ReadUefiMemoryMap(void);
-VOID ShutdownMemSubsystem(void);
-
+void ShutdownMemSubsystem(void);
+void AllocateSystemStruct(void);
 #endif /* __K0_KMEM_H */

@@ -57,7 +57,7 @@ UINTN kStrlen(CONST CHAR8* s) {
     return (sc - s);
 }
 
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
+void kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
     
     UINTN len = length;
 
@@ -68,7 +68,7 @@ VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
     *UniString = '\0';
 }
 
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
+void kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
     
     UnicodeSPrint(buffer, buffsiz, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         guid->Data1,

@@ -82,8 +82,8 @@ void InitIsaac64CSPRNG(word flag)
    }
    else {
        Print(L"Obtained system time from UEFI\n");
-       UINT8* raw_date = (UINT8*)(VOID*)(&system_time);
-       UINT8* raw_randrsl = (UINT8*)(VOID*)(&randrsl);
+       UINT8* raw_date = (UINT8*)(void*)(&system_time);
+       UINT8* raw_randrsl = (UINT8*)(void*)(&randrsl);
        for (int z = 0; z < (RANDSIZ / sizeof(system_time)); z++) {
            for (int k = 0; k < sizeof(system_time); k++) {
                raw_randrsl[(z * sizeof(system_time)) + k] = raw_date[k];

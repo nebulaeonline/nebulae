@@ -33,7 +33,7 @@
 #define KSTRING_H
 
 UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
+void kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
+void kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
 
 #endif /* KSTRING_H */

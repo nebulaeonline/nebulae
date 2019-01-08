@@ -101,7 +101,7 @@ typedef struct s_Elf64_Ehdr {
 #define	ELFOSABI_CLOUDABI	17	    /* Nuxi CloudABI */
 #define	ELFOSABI_ARM_AEABI	64	    /* ARM EABI */
 #define	ELFOSABI_ARM		97	    /* ARM */
-#define ELFOSABI_NEBULAE    254     /* NEBULAE */
+#define ELFOSABI_NEBULAE    254     /* nebulae */
 #define	ELFOSABI_STANDALONE	255	    /* Standalone (embedded) application */
 
 #define	ELFOSABI_SYSV		ELFOSABI_NONE	/* symbol used in old spec */

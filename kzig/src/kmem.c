@@ -84,7 +84,7 @@ const CHAR16 *EFI_MEMORY_TYPES[] = {
 // Memory Subsystem Vars 
 //
 UINTN kmem_conventional_pages = 0;
-VOID* kmem_largest_block = NULL;
+void* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
 
@@ -105,7 +105,7 @@ void InitMemSubsystem() {
     EFI_STATUS exit_status = EFI_SUCCESS;
     
     UINTN memmap_pages_to_alloc = 0;
-    VOID *memmap_ptr = NULL;
+    void *memmap_ptr = NULL;
     
     // Vars required for BootServices->GetMemoryMap call
     EFI_STATUS memmap_status;
@@ -151,7 +151,7 @@ void InitMemSubsystem() {
     // conventional memory
     EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
     UINT64 memmap_entries = memmap_size / memmap_descriptor_size;
-    VOID *memmap_iter = memmap_ptr;
+    void *memmap_iter = memmap_ptr;
 
     if (kDBG)
         Print(L"Map Size: %lu, Map Key: %lu, Desc. Size: %lu, Desc. Version: %u\n",
@@ -164,7 +164,7 @@ void InitMemSubsystem() {
             if (memmap_entry->NumberOfPages > kmem_largest_block_page_count) {
                 kmem_largest_block_page_count = memmap_entry->NumberOfPages;
                 kmem_largest_block_size = kmem_largest_block_page_count * UEFI_PAGE_SIZE;
-                kmem_largest_block = (VOID*)memmap_entry->PhysicalStart;
+                kmem_largest_block = (void*)memmap_entry->PhysicalStart;
             }
         }
 

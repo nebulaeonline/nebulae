@@ -36,7 +36,6 @@
 
 // Kernel Headers
 #include "../../include/k0.h"
-#include "../../include/deps/isaac64.h"
 
 // Uefi Memory Header
 #include "../../include/arch/uefi/memory.h"
@@ -83,12 +82,14 @@ const CHAR16 *EFI_MEMORY_TYPES[] = {
 
 // Memory Subsystem Vars 
 UINTN kmem_conventional_pages = 0;
-VOID* kmem_largest_block = NULL;
+void* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
 
+EFI_PHYSICAL_ADDRESS* nebulae_system_table = NULL;
+
 //
-// Initialize the memory subsystem by performing the following tasks:
+// Reads the memory map, performing the following tasks:
 // 
 //  1) Read UEFI memmap to obtain size of memory map
 //  2) Allocate a buffer large enough to hold the memory map
@@ -152,14 +153,12 @@ UINTN ReadUefiMemoryMap() {
     // conventional memory
     EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
     UINT64 memmap_entries = memmap.size / memmap.descr_size;
-    VOID *memmap_iter = memmap.memory_map;
+    void *memmap_iter = memmap.memory_map;
 
     UINTN i;
     for (i = 0; i < memmap_entries; i++) {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
-        if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL ||
-            memmap_entry->Type == EFI_MEMORY_BSCODE ||
-            memmap_entry->Type == EFI_MEMORY_BSDATA) {
+        if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
             if (k0_VERBOSE_DEBUG) {
                 Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",
@@ -169,7 +168,7 @@ UINTN ReadUefiMemoryMap() {
             if (memmap_entry->NumberOfPages > kmem_largest_block_page_count) {
                 kmem_largest_block_page_count = memmap_entry->NumberOfPages;
                 kmem_largest_block_size = kmem_largest_block_page_count * EFI_PAGE_SIZE;
-                kmem_largest_block = (VOID*)memmap_entry->PhysicalStart;
+                kmem_largest_block = (void*)memmap_entry->PhysicalStart;
             }
         }
 
@@ -185,6 +184,13 @@ UINTN ReadUefiMemoryMap() {
     }
 
     return memmap.key;
+}
+
+// Allocate 8 kb of system memory at a random
+// 4KB aligned address in conventional memory
+void AllocateSystemStruct() {
+    nebulae_system_table = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block, (UINT64)(kmem_largest_block + kmem_largest_block_size)) & 0xFFFFFFFFFFFFF000);
+    ZeroMem(nebulae_system_table, SIZE_8KB);
 }
 
 // De-initialize the memory subsystem

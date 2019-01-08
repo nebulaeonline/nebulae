@@ -30,7 +30,7 @@
     .code
 
 ;==================================
-; VOID x64AsmOutportB(
+; void x64AsmOutportB(
 ;   UINT16 Port, 
 ;   UINT8  Value)
 ;
@@ -49,7 +49,7 @@ x64AsmOutportB PROC
 x64AsmOutportB ENDP
 
 ;==================================
-; VOID x64AsmOutportW(
+; void x64AsmOutportW(
 ;   UINT16 Port, 
 ;   UINT16 Value)
 ;
@@ -94,7 +94,7 @@ x64AsmInportW PROC
 x64AsmInportW ENDP
 
 ;==================================
-; VOID x64EnableInterrupts()
+; void x64EnableInterrupts()
 ;
 x64EnableInterrupts PROC
     cli
@@ -103,7 +103,7 @@ x64EnableInterrupts PROC
 x64EnableInterrupts ENDP
 
 ;==================================
-; VOID x64DisableInterrupts()
+; void x64DisableInterrupts()
 ;
 x64DisableInterrupts PROC
     sti

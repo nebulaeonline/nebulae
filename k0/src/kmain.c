@@ -34,7 +34,6 @@
 
 // Kernel includes
 #include "include/k0.h"
-#include "include/deps/isaac64.h"
 
 // nebulae-Uefi Headers
 #include "include/arch/uefi/memory.h"

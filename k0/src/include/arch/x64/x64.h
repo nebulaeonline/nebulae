@@ -287,14 +287,13 @@ extern x64_cpu cpu;
 // Function prototypes
 void InitArchCPU(void);
 BOOLEAN ReadCpuinfoFlag(UINT64 flag);
-EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(VOID);
+EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(void);
 
 // Functions defined in assembler
-extern VOID EFIAPI x64EnableInterrupts(VOID);
-extern VOID EFIAPI x64DisableInterrupts(VOID);
-
-extern VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
-extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
+extern void EFIAPI x64EnableInterrupts(void);
+extern void EFIAPI x64DisableInterrupts(void);
+extern void EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
+extern void EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
 

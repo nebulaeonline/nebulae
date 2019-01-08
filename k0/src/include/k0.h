@@ -61,4 +61,7 @@ extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 NORETURN void k0_main(void);
 NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
 
+// We always want issac64 a step away
+#include "../deps/isaac64.h"
+
 #endif /* __K0_K0_H */
