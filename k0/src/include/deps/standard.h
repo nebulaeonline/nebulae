@@ -38,7 +38,7 @@ typedef                 int  word;  /* fastest type available */
 # define max(a,b) (((a)<(b)) ? (b) : (a))
 #endif /* max */
 #ifndef align
-# define align(a) (((ub4)a+(sizeof(void *)-1))&(~(sizeof(void *)-1)))
+# define align(a) (((ub4)a+(sizeof(VOID *)-1))&(~(sizeof(VOID *)-1)))
 #endif /* align */
 #ifndef abs
 # define abs(a)   (((a)>0) ? (a) : -(a))

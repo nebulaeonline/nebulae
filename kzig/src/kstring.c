@@ -52,7 +52,7 @@ UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
     return len ? *s1 - *s2 : 0;
 }
 
-void kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
+VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
     
     UINTN len = length;
 
@@ -63,7 +63,7 @@ void kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
     *UniString = '\0';
 }
 
-void kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
+VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
     
     UnicodeSPrint(buffer, buffsiz, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         guid->Data1,

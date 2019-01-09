@@ -30,7 +30,7 @@
 #include <Library/UefiBootServicesTableLib.h>
 
 // Panic function
-NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...) {
+NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...) {
     VA_LIST Marker;
 
     VA_START(Marker, Format);

@@ -41,7 +41,7 @@ typedef unsigned long long      size_t;
 typedef unsigned short          wchar_t;
 #endif
 
-#define NULL                    ((void*)0)
+#define NULL                    ((VOID*)0)
 #define offsetof(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 #endif // NEBULAE_STDDEF_H

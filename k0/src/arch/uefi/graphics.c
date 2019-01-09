@@ -40,7 +40,7 @@
 #define GOP_DESIRED_SCREEN_HEIGHT           768
 #define GOP_DESIRED_PIXEL_FORMAT            PixelBlueGreenRedReserved8BitPerColor
 
-void InitGraphics() {
+VOID InitGraphics() {
     UINTN mode_num;
 
     gfx_info.handle_count = 0;
@@ -57,7 +57,7 @@ void InitGraphics() {
 
     status = gBS->HandleProtocol(gfx_info.handle_buffer[0],
         &gEfiGraphicsOutputProtocolGuid,
-        (void **)&gfx_info.gop);
+        (VOID **)&gfx_info.gop);
 
     if (EFI_ERROR(status)) {
         kernel_panic(L"Unable to acquire handle to Graphics Output Protocol!\n");
@@ -84,7 +84,7 @@ void InitGraphics() {
     boot_display.height = GOP_DESIRED_SCREEN_HEIGHT;
 }
 
-void drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color) {
+VOID drawTriangle(EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color) {
     UINT32* at = (UINT32*)lfb_base_addr;
     UINTN row, col;
 

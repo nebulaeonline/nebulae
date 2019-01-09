@@ -82,7 +82,7 @@ const CHAR16 *EFI_MEMORY_TYPES[] = {
 
 // Memory Subsystem Vars 
 UINTN kmem_conventional_pages = 0;
-void* kmem_largest_block = NULL;
+VOID* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
 
@@ -153,7 +153,7 @@ UINTN ReadUefiMemoryMap() {
     // conventional memory
     EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
     UINT64 memmap_entries = memmap.size / memmap.descr_size;
-    void *memmap_iter = memmap.memory_map;
+    VOID *memmap_iter = memmap.memory_map;
 
     UINTN i;
     for (i = 0; i < memmap_entries; i++) {
@@ -168,7 +168,7 @@ UINTN ReadUefiMemoryMap() {
             if (memmap_entry->NumberOfPages > kmem_largest_block_page_count) {
                 kmem_largest_block_page_count = memmap_entry->NumberOfPages;
                 kmem_largest_block_size = kmem_largest_block_page_count * EFI_PAGE_SIZE;
-                kmem_largest_block = (void*)memmap_entry->PhysicalStart;
+                kmem_largest_block = (VOID*)memmap_entry->PhysicalStart;
             }
         }
 
@@ -188,13 +188,25 @@ UINTN ReadUefiMemoryMap() {
 
 // Allocate 8 kb of system memory at a random
 // 4KB aligned address in conventional memory
-void AllocateSystemStruct() {
-    nebulae_system_table = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block, (UINT64)(kmem_largest_block + kmem_largest_block_size)) & 0xFFFFFFFFFFFFF000);
-    ZeroMem(nebulae_system_table, SIZE_8KB);
+VOID AllocateSystemStruct() {
+
+#ifdef __NEBULAE_ARCH_X64
+    x64AllocateSystemStruct();
+#endif
+}
+
+// Returns the raw paging structure for a given
+// virtual address (only in kernel address space)
+UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
+
+#ifdef __NEBULAE_ARCH_X64
+    x64GetPageInfo(addr);
+#endif
+
 }
 
 // De-initialize the memory subsystem
-void ShutdownMemSubsystem() {
+VOID ShutdownMemSubsystem() {
     FreePages(memmap.memory_map, memmap.page_count);
 
     if (k0_VERBOSE_DEBUG) {

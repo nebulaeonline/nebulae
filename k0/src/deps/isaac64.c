@@ -27,7 +27,7 @@ static    ub8 aa=0, bb=0, cc=0;
   *(r++) = b = ind(mm,y>>RANDSIZL) + x; \
 }
 
-void isaac64()
+VOID isaac64()
 {
   register ub8 a,b,x,y,*m,*m2,*r,*mend;
   m=mm; r=randrsl;
@@ -61,7 +61,7 @@ void isaac64()
    h-=d; e^=g<<14; g+=h; \
 }
 
-void InitIsaac64CSPRNG(word flag)
+VOID InitIsaac64CSPRNG(word flag)
 {
    word i;
    ub8 a,b,c,d,e,f,g,h;
@@ -82,8 +82,8 @@ void InitIsaac64CSPRNG(word flag)
        if (k0_VERBOSE_DEBUG) {
            Print(L"Obtained system time from UEFI\n");
        }
-       UINT8* raw_date = (UINT8*)(void*)(&system_time);
-       UINT8* raw_randrsl = (UINT8*)(void*)(&randrsl);
+       UINT8* raw_date = (UINT8*)(VOID*)(&system_time);
+       UINT8* raw_randrsl = (UINT8*)(VOID*)(&randrsl);
        int z, k;
        for (z = 0; z < (RANDSIZ / (int)sizeof(system_time)); z++) {
            for (k = 0; k < (int)sizeof(system_time); k++) {

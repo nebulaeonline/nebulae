@@ -198,28 +198,38 @@
 #define X64_GATE_DPL_MASK               (BIT5 | BIT6)
 #define X64_GATE_SEG_PRESENT_BIT        BIT7
 
+#define X64_4KB_ALIGN_MASK              0x000FFFFFFFFFF000ULL
+#define X64_2MB_ALIGN_MASK              0x000FFFFFFFE00000ULL
+#define X64_1GB_ALIGN_MASK              0x000FFFFFC0000000ULL
+
 // PML4 Entry (Top level of 4-level paging
 // structure on x64)
 // Maps 512GB
 typedef UINT64      x64_pml4e;
-#define PML4E_FORMAT_PDPT_ADDR(X)       (X & 0x000FFFFFFFFFF000ULL)
+#define PML4E_FORMAT_PDPT_ADDR(X)       (X & X64_4KB_ALIGN_MASK)
 
 // Page Directory Pointer Table Entry
 // Maps 1GB page
 typedef UINT64      x64_pdpte;
-#define PDPTE_FORMAT_1GB_PAGE_ADDR(X)   (X & 0x000FFFFFE0000000ULL)
-#define PDPTE_FORMAT_PAGE_DIR_ADDR(X)   (X & 0x000FFFFFFFFFF000ULL)
+#define PDPTE_FORMAT_1GB_PAGE_ADDR(X)   (X & X64_1GB_ALIGN_MASK)
+#define PDPTE_FORMAT_PAGE_DIR_ADDR(X)   (X & X64_4KB_ALIGN_MASK)
 
 // Page Directory Entry
 // Maps 2MB
 typedef UINT64      x64_pde;
-#define PDE_FORMAT_2MB_PAGE_ADDR(X)     (X & 0x000FFFFFFFF00000ULL)
-#define PDE_FORMAT_PAGE_TABLE_ADDR(X)   (X & 0x000FFFFFFFFFF000ULL)
+#define PDE_FORMAT_2MB_PAGE_ADDR(X)     (X & X64_2MB_ALIGN_MASK)
+#define PDE_FORMAT_PAGE_TABLE_ADDR(X)   (X & X64_4KB_ALIGN_MASK)
 
 // Page Table Entry
 // Maps 4KB
 typedef UINT64      x64_pte;
-#define PTE_FORMAT_4KB_PAGE_ADDR(X)     (X & 0x000FFFFFFFFFF000ULL)
+#define PTE_FORMAT_4KB_PAGE_ADDR(X)     (X & X64_4KB_ALIGN_MASK)
+
+// Helpful virtual address macros
+#define PML4_INDEX(X)                   (((UINT64)X & 0x7F8000000000ULL) >> 39)
+#define PAGE_DIR_PTR_INDEX(X)           (((UINT64)X & 0x7FC0000000ULL) >> 30)
+#define PAGE_DIR_INDEX(X)               (((UINT64)X & 0x3FE00000ULL) >> 21)
+#define PAGE_TABLE_INDEX(X)             (((UINT64)X & 0x1FF000ULL) >> 12)
 
 // Segment Descriptor
 typedef UINT64      x64_seg_descr;
@@ -285,15 +295,16 @@ extern x64_cpu cpu;
 #define MAXPHYADDR  cpu.physical_address_bits
 
 // Function prototypes
-void InitArchCPU(void);
+VOID InitArchCPU(VOID);
 BOOLEAN ReadCpuinfoFlag(UINT64 flag);
-EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(void);
+EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(VOID);
+UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
-extern void EFIAPI x64EnableInterrupts(void);
-extern void EFIAPI x64DisableInterrupts(void);
-extern void EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
-extern void EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
+extern VOID EFIAPI x64EnableInterrupts(VOID);
+extern VOID EFIAPI x64DisableInterrupts(VOID);
+extern VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
+extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
 

@@ -38,8 +38,18 @@
 #define PACKED_GNU    __attribute__((packed))
 #endif
 
+// Helpful constants
+#define HI32_MASK                       0xFFFFFFFF00000000
+#define LO32_MASK                       0x00000000FFFFFFFF
+
+#define PAGE_SIZE_4KB                   SIZE_4KB
+#define PAGE_SIZE_2MB                   SIZE_2MB
+#define PAGE_SIZE_1GB                   SIZE_1GB
+
 // Helpful macros
 #define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
+#define HI32(X)                         (UINT32)((((UINT64)(X)) & HI32_MASK) >> 32)
+#define LO32(X)                         (UINT32)(((UINT64)(X)) & LO32_MASK)
 
 // 128-bit wide unsigned integer data type
 typedef PACKED_MS struct s_x64_u128 {
@@ -58,8 +68,8 @@ extern EFI_HANDLE nebulae_uefi_image_handle;
 extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 
 // Function signatures
-NORETURN void k0_main(void);
-NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
+NORETURN VOID k0_main(VOID);
+NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);
 
 // We always want issac64 a step away
 #include "../deps/isaac64.h"

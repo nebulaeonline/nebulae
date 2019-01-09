@@ -1,4 +1,6 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright(c) 2017, Intel Corporation. All rights reserved.
+// Copyright(c) 2017, AMD Incorporated. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -29,6 +31,14 @@
 #ifndef __K0_KMEM_H
 #define __K0_KMEM_H
 
+#ifdef __NEBULAE_ARCH_X64
+#include "../x64/x64.h"
+
+#define ALIGN_MASK_4KB                  X64_4KB_ALIGN_MASK
+#define ALIGN_MASK_2MB                  X64_2MB_ALIGN_MASK
+#define ALIGN_MASK_1GB                  X64_1GB_ALIGN_MASK
+#endif
+
 // Structure to hold info about
 // the uefi memory map
 typedef struct s_uefi_memory_map_info {
@@ -41,9 +51,10 @@ typedef struct s_uefi_memory_map_info {
 } uefi_memory_map_info;
 
 uefi_memory_map_info memmap;
-EFI_PHYSICAL_ADDRESS* nebulae_system_table;
 
-UINTN ReadUefiMemoryMap(void);
-void ShutdownMemSubsystem(void);
-void AllocateSystemStruct(void);
+UINTN ReadUefiMemoryMap(VOID);
+VOID  ShutdownMemSubsystem(VOID);
+VOID  AllocateSystemStruct(VOID);
+UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
+
 #endif /* __K0_KMEM_H */

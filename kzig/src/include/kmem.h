@@ -31,6 +31,6 @@
 
 #define UEFI_PAGE_SIZE 4096
 
-void InitMemSubsystem(void); 
+VOID InitMemSubsystem(VOID); 
 
 #endif /* KMEM_H */

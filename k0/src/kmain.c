@@ -34,6 +34,7 @@
 
 // Kernel includes
 #include "include/k0.h"
+#include "include/klib/kstring.h"
 
 // nebulae-Uefi Headers
 #include "include/arch/uefi/memory.h"
@@ -44,15 +45,20 @@
 #include "include/arch/x64/x64.h"
 #endif
 
+// Main system table
+EFI_PHYSICAL_ADDRESS* nebulae_system_table;
+
 // Kernel Entrypoint
 // Graphics are initialized, we're flying solo!
-NORETURN void k0_main(void) {
+NORETURN VOID k0_main(VOID) {
     
     // Do something
     Print(L"entered main nebulae kernel...\n");
 
     // Draw a blue triangle to the screen
     drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 50, 0x000000ff);
+
+    Print(L"sizeof(x64_call_gate) == 0x%lx\n", sizeof(x64_call_gate));
 
     // Shutdown the memory subsystem
     ShutdownMemSubsystem();

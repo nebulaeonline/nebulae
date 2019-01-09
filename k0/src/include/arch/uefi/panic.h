@@ -32,6 +32,6 @@
 #include <Uefi.h>
 
 // Panic function
-NORETURN void kernel_panic(IN CONST CHAR16  *Format, ...);
+NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);
 
 #endif // __K0_GRAPHICS_H

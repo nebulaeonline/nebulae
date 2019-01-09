@@ -61,7 +61,7 @@ pub var GetMemoryMap: GetMemoryMapPrototype = undefined;
 pub var AllocatePages: AllocatePagesPrototype = undefined;
 
 // Initialize system memory
-pub fn InitMem() void {
+pub fn InitMem() VOID {
     
     // Initialize cpu first
     arch.InitCPU();

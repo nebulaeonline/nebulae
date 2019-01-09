@@ -72,11 +72,14 @@ EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
 }
 
 // Declare Kernel Entrypoint
-NORETURN void k0_main(void);
+NORETURN VOID k0_main(VOID);
 
 // Declare Global Pointers to UEFI tables
 EFI_HANDLE nebulae_uefi_image_handle;
 EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
+
+// System table structure symbol
+extern EFI_PHYSICAL_ADDRESS* nebulae_system_table;
 
 // UEFI Entrypoint
 EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* system_table) {
@@ -296,7 +299,11 @@ kernel_entry:
     // Exit Boot Services and start flying solo
     gBS->ExitBootServices(nebulae_uefi_image_handle, uefi_mem_key);
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
-        
+    
+    // Set aside our system data structure
+    AllocateSystemStruct();
+    Print(L"System struct allocated at %lx\n", nebulae_system_table);
+
     k0_main();
 
 exit:

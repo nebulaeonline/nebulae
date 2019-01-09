@@ -28,13 +28,14 @@
 
 #include <Library/BaseLib.h>
 #include <Library/UefiLib.h>
+#include <Library/BaseMemoryLib.h>
 
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
 
 x64_cpu cpu;
 
-void InitArchCPU() {
+VOID InitArchCPU() {
 
     // First call cpuid with eax == 0x00
     // this call returns both the maximum
@@ -136,7 +137,7 @@ void InitArchCPU() {
 BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
     UINT32 bit, cpuid, reg;
 
-    bit = (UINT32)(flag & 0x00000000FFFFFFFFULL);
+    bit = LO32(flag);
     cpuid = ((flag & X64_CPUID_MASK) >> 32);
     reg = ((flag & X64_CPUID_REG_MASK) >> 36);
 
@@ -146,5 +147,129 @@ BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
 // Read CR3 to obtain the address of the PML4 Table
 EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr() {
     UINT64 cr3 = AsmReadCr3();
-    return (cr3 & 0xFFFFFFFFFFFFF000ULL);
+    return (cr3 & X64_4KB_ALIGN_MASK);
+}
+
+// Finds a random 8KB block of memory that begins on a page boundary
+// and zeroes it.
+VOID x64AllocateSystemStruct() {
+
+    // Memory Subsystem Vars
+    extern EFI_PHYSICAL_ADDRESS* nebulae_system_table;
+    extern UINTN kmem_conventional_pages;
+    extern VOID* kmem_largest_block;
+    extern UINTN kmem_largest_block_size;
+    extern UINTN kmem_largest_block_page_count;
+
+    // We are randomly choosing an 8KB area in the largest block of free conventional memory
+    // this buffer is 4KB aligned no matter the page size
+    nebulae_system_table = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block, (UINT64)(kmem_largest_block + kmem_largest_block_size)) & X64_4KB_ALIGN_MASK);
+
+    if (nebulae_system_table != NULL && ZeroMem(nebulae_system_table, SIZE_8KB) != nebulae_system_table) {
+        kernel_panic(L"There was a problem initializing the kernel's private memory area!\n");
+    }
+    
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Page table entry for 0x%lx == 0x%lx\n", nebulae_system_table, x64GetPageInfo(nebulae_system_table));
+    }
+
+    // Sanity checks
+    *nebulae_system_table = 0xDEADBEEFULL;
+    *(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)) = L"HELLO";
+
+    if (*nebulae_system_table != 0xDEADBEEFULL) {
+        kernel_panic(L"Problem writing integer to memory location 0x%lx\n", nebulae_system_table);
+    }
+    else if (StrCmp(*(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)), L"HELLO") != 0) {
+        kernel_panic(L"Problem writing wide string to memory location 0x%lx\n", (nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)));
+    }
+    
+    // Clear the sanity check values
+    *nebulae_system_table = 0x0ULL;
+    SetMem16(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS), 6, 0);
+}
+
+UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
+    
+    x64_pml4e *l4_table = NULL;
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"cr3 == 0x%lx\n", AsmReadCr3());
+    }
+
+    // Attempt to locate the pml4 table
+    if (!(l4_table = (x64_pml4e*)GetCurrentPML4TableAddr())) {
+        kernel_panic("Unable to locate address to PML4 data structures!\n");
+    } else if (k0_VERBOSE_DEBUG) {    
+        Print(L"PML4 Table found at 0x%lx == 0x%lx\n", l4_table, *l4_table);
+    }
+    
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"PML4Entry at PML4Table[0x%lx] found at 0x%lx == 0x%lx\n", PML4_INDEX(addr), &l4_table[PML4_INDEX(addr)], l4_table[PML4_INDEX(addr)]);
+    }
+
+    if (l4_table[PML4_INDEX(addr)] == 0) {
+        return 0;
+    }
+
+    x64_pdpte *l3_table = l4_table[PML4_INDEX(addr)] & X64_4KB_ALIGN_MASK;
+
+    if (l3_table[PAGE_DIR_PTR_INDEX(addr)] == 0) {
+        return 0;
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"PDPT @ 0x%lx\n", l3_table);
+        Print(L"PDPT[0x%lx] @ 0x%lx == 0x%lx\n", PAGE_DIR_PTR_INDEX(addr), &l3_table[PAGE_DIR_PTR_INDEX(addr)], l3_table[PAGE_DIR_PTR_INDEX(addr)]);
+    }
+
+    if (CHECK_BIT(l3_table[PAGE_DIR_PTR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
+        Print(L"1GB pages found\n");
+        if (addr == 0) {
+            return X64_1GB_ALIGN_MASK;
+        }
+        else {
+            return l3_table[PAGE_DIR_PTR_INDEX(addr)];
+        }
+    } 
+
+    x64_pde *l2_table = l3_table[PAGE_DIR_PTR_INDEX(addr)] & X64_4KB_ALIGN_MASK;
+
+    if (l2_table[PAGE_DIR_INDEX(addr)] == 0) {
+        return 0;
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"PD @ 0x%lx\n", l2_table);
+        Print(L"PD[0x%lx] @ 0x%lx == 0x%lx\n", PAGE_DIR_INDEX(addr), &l2_table[PAGE_DIR_INDEX(addr)], l2_table[PAGE_DIR_INDEX(addr)]);
+    }
+
+    if (CHECK_BIT(l2_table[PAGE_DIR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
+        Print(L"2MB pages found\n");
+        if (addr == 0) {
+            return X64_2MB_ALIGN_MASK;
+        }
+        else {
+            return l2_table[PAGE_DIR_INDEX(addr)];
+        }
+    }
+
+    x64_pte *l1_table = l2_table[PAGE_DIR_INDEX(addr)];
+
+    if (l1_table[PAGE_TABLE_INDEX(addr)] == 0) {
+        return 0;
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"PT @ 0x%lx\n", l1_table);
+        Print(L"PT[0x%lx] @ 0x%lx == 0x%lx\n", PAGE_TABLE_INDEX(addr), &l1_table[PAGE_TABLE_INDEX(addr)], l1_table[PAGE_TABLE_INDEX(addr)]);
+        Print(L"4KB pages found\n");
+    }
+
+    if (addr == 0) {
+        return X64_4KB_ALIGN_MASK;
+    }
+    else {
+        return l1_table[PAGE_TABLE_INDEX(addr)];
+    }
 }

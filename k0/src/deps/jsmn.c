@@ -22,7 +22,7 @@ static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
 /**
  * Fills token type and boundaries.
  */
-static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
+static VOID jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
                             int start, int end) {
 	token->type = type;
 	token->start = start;
@@ -307,7 +307,7 @@ int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
  * Creates a new parser based over a given  buffer with an array of tokens
  * available.
  */
-void jsmn_init(jsmn_parser *parser) {
+VOID jsmn_init(jsmn_parser *parser) {
 	parser->pos = 0;
 	parser->toknext = 0;
 	parser->toksuper = -1;

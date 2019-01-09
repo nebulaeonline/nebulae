@@ -57,7 +57,7 @@ export fn UefiMain(image_handle: uefi.clib.EFI_HANDLE, system_table: [*]uefi.cli
 // if it gets brought in. TODO figure out why (it's also a builtin 
 // on msvc, so that prevents us from implementing memcpy in C).
 export fn memcpy(noalias dest: ?[*]u8, noalias src: ?[*]const u8, n: usize) ?[*]u8 {
-    var efi_result = uefi.clib.CopyMem(@ptrCast(?*c_void, dest), @ptrCast(*const c_void, src), n);
+    var efi_result = uefi.clib.CopyMem(@ptrCast(?*c_VOID, dest), @ptrCast(*const c_VOID, src), n);
     return dest;
 }
 
