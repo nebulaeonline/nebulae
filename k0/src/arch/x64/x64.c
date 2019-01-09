@@ -150,7 +150,7 @@ EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr() {
     return (cr3 & X64_4KB_ALIGN_MASK);
 }
 
-// Finds a random 8KB block of memory that begins on a page boundary
+// Finds a random 8KB block of memory that begins on a 4KB boundary
 // and zeroes it.
 VOID x64AllocateSystemStruct() {
 
