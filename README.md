@@ -14,7 +14,7 @@ The environment aims to be beginner friendly&mdash; well, OS developer beginner 
 
 ## Why all the Visual Studio stuff?
 
-Well, the project files make it easy for someone to grab VS Community, clone the Github repo, and get started!  The project files can be used with MSVC, ~~Clang with lld-link~~ (lld-link does not like the object files, even ones it created), or Clang with MSVC link.  The project itself is self-contained, including debugger (qemu).
+Well, the project files make it easy for someone to grab VS Community, clone the Github repo, and get started!  The project files can be used with MSVC, Clang ~~with lld-link~~ (lld-link does not like the object files, even ones it created), or Clang with MSVC link.  The project itself is self-contained, including debugger (qemu).
 
 Additionally, I have to give major kudos to Alex Ionescu for his excellent VisualUefi repo. 
  
