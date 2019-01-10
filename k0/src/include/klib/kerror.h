@@ -1,6 +1,4 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -28,15 +26,16 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __K0_KSTRING_H
-#define __K0_KSTRING_H
+#ifndef __K0_KERROR_H
+#define __K0_KERROR_H
 
-#include "../deps/jsmn.h"
+// System-wide Status Code type
+typedef INT64 nebStatus;
+#define NEB_ERROR(X)                    ((X < 0) ? TRUE : FALSE)
+#define NEB_SUCCESS(X)                  ((X >= 0) ? TRUE : FALSE)
+#define NEB_OK                          0
 
-INT64  kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
-UINT64 kStrlen(CHAR8 *s);
-INT64  kAscii2UnicodeStr(CHAR8 *String, CHAR16 *UniString, UINTN length);
-INT64  kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
-INT32  jsoneq(CONST CHAR8 *json, jsmntok_t *tok, CONST CHAR8 *s);
+// Error Codes
+#define NEBERROR_NULL_PTR_UNEXPECTED    -1
 
-#endif /* __K0_KSTRING_H */
+#endif // __K0_KERROR_H

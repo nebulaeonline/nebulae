@@ -53,15 +53,6 @@ CHAR8 *gEfiCallerBaseName = "k0";
 BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
 BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
 
-// Helper function for json string matching without libc
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
-    if (tok->type == JSMN_STRING && (int)kStrlen(s) == tok->end - tok->start &&
-        kStrnCmpA(json + tok->start, s, tok->end - tok->start) == 0) {
-        return 0;
-    }
-    return -1;
-}
-
 // Placeholder
 EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
     
@@ -283,7 +274,9 @@ kernel_entry:
     InitIsaac64CSPRNG(TRUE);
 
     // Initialize the cpu architecture
-    InitArchCPU();
+#ifdef __NEBULAE_ARCH_X64    
+    x64InitCPU();
+#endif
 
     // Initialize the memory subsystem
     UINTN uefi_mem_key = ReadUefiMemoryMap();

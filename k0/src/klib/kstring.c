@@ -33,8 +33,15 @@
 //
 #include <Library/UefiLib.h>
 
-UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
+#include "../include/k0.h"
+
+// Poor man's strncmp
+INT64 kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
     
+    if (ISNULL(s1) || ISNULL(s2)) {
+        return NEBERROR_NULL_PTR_UNEXPECTED;
+    }
+
     while (*s1 && len) {
         if (*s1 != *s2) {
             break;
@@ -47,29 +54,45 @@ UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len) {
     return len ? *s1 - *s2 : 0;
 }
 
-// Naive and horrible...
-UINTN kStrlen(CONST CHAR8* s) {
+// use sparingly...
+UINT64 kStrlen(CHAR8 *s) {
 
-    const char *sc;
+    CONST CHAR8 *sc;
+
+    if (ISNULL(s)) {
+        return 0;
+    }
 
     for (sc = s; *sc != '\0'; ++sc)
         /* do nothing */;
     return (sc - s);
 }
 
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length) {
+// Converts an Ascii string to a unicode string
+INT64 kAscii2UnicodeStr(CHAR8 *String, CHAR16 *UniString, UINTN length) {
     
     UINTN len = length;
+    
+    if (ISNULL(String) || ISNULL(UniString)) {
+        return NEBERROR_NULL_PTR_UNEXPECTED;
+    }
 
     while (*String != '\0' && len > 0) {
         *(UniString++) = (CHAR16) *(String++);
         len--;
     }
     *UniString = '\0';
+
+    return NEB_OK;
 }
 
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
+// Converts a guid to a wide character string
+INT64 kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
     
+    if (ISNULL(buffer) || ISNULL(guid)) {
+        return NEBERROR_NULL_PTR_UNEXPECTED;
+    }
+
     UnicodeSPrint(buffer, buffsiz, L"%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
         guid->Data1,
         guid->Data2,
@@ -82,4 +105,19 @@ VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
         guid->Data4[5],
         guid->Data4[6],
         guid->Data4[7]);
+
+    return NEB_OK;
+}
+
+// Helper function for json string matching without libc
+INT32 jsoneq(CONST CHAR8 *json, jsmntok_t *tok, CONST CHAR8 *s) {
+    if (ISNULL(json) || ISNULL(tok) || ISNULL(s)) {
+        return NEBERROR_NULL_PTR_UNEXPECTED;
+    }
+
+    if (tok->type == JSMN_STRING && (int)kStrlen(s) == tok->end - tok->start &&
+        kStrnCmpA(json + tok->start, s, tok->end - tok->start) == 0) {
+        return 0;
+    }
+    return -1;
 }

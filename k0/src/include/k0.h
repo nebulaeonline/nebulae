@@ -50,6 +50,7 @@
 #define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
 #define HI32(X)                         (UINT32)((((UINT64)(X)) & HI32_MASK) >> 32)
 #define LO32(X)                         (UINT32)(((UINT64)(X)) & LO32_MASK)
+#define ISNULL(X)                       (X == NULL)
 
 // 128-bit wide unsigned integer data type
 typedef PACKED_MS struct s_x64_u128 {
@@ -71,7 +72,13 @@ extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 NORETURN VOID k0_main(VOID);
 NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);
 
+// Error type
+#include "../include/klib/kerror.h"
+
 // We always want issac64 a step away
 #include "../deps/isaac64.h"
+
+// jsmn too
+#include "../deps/jsmn.h"
 
 #endif /* __K0_K0_H */

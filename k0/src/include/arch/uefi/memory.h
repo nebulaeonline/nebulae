@@ -53,7 +53,6 @@ typedef struct s_uefi_memory_map_info {
 uefi_memory_map_info memmap;
 
 UINTN ReadUefiMemoryMap(VOID);
-VOID  ShutdownMemSubsystem(VOID);
 VOID  AllocateSystemStruct(VOID);
 UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 

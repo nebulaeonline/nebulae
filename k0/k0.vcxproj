@@ -244,6 +244,7 @@
     <ClInclude Include="src\include\deps\standard.h" />
     <ClInclude Include="src\include\k0.h" />
     <ClInclude Include="src\include\klib\kelf64.h" />
+    <ClInclude Include="src\include\klib\kerror.h" />
     <ClInclude Include="src\include\klib\kstring.h" />
     <ClInclude Include="src\include\lib\stddef.h" />
   </ItemGroup>

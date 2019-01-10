@@ -204,13 +204,3 @@ UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 #endif
 
 }
-
-// De-initialize the memory subsystem
-VOID ShutdownMemSubsystem() {
-    FreePages(memmap.memory_map, memmap.page_count);
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Freed %lu pages of memory @ %x\n", memmap.page_count, memmap.memory_map);
-        Print(L"Memory subsystem shutdown\n", kmem_largest_block);
-    }
-}

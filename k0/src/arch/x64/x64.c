@@ -33,9 +33,31 @@
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
 
+// This 4KB structure represents a virtual address space mapping
+typedef PACKED_MS struct s_x64_virtual_address_space {
+    x64_pml4e pml4e[512];
+} PACKED_GNU x64_virtual_address_space;
+
 x64_cpu cpu;
 
-VOID InitArchCPU() {
+
+// This function zeros a 512-entry pml4 table
+// representing a virtual address space
+nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
+    
+    if (ISNULL(vas)) {
+        return NEBERROR_NULL_PTR_UNEXPECTED;
+    }
+
+    ZeroMem(vas, sizeof(x64_pml4e) * X64_PAGING_TABLE_MAX);
+
+    return NEB_OK;
+}
+
+// Executes various cpuinfo leaf functions
+// and obtains the bit counts for the linear
+// and physical address space
+VOID x64InitCPU() {
 
     // First call cpuid with eax == 0x00
     // this call returns both the maximum
@@ -134,7 +156,7 @@ VOID InitArchCPU() {
 
 // Function to parse the cpuinfo structs for 
 // processor feature information
-BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
+BOOLEAN x64ReadCpuinfoFlags(UINT64 flag) {
     UINT32 bit, cpuid, reg;
 
     bit = LO32(flag);
@@ -145,7 +167,7 @@ BOOLEAN ReadCpuinfoFlag(UINT64 flag) {
 }
 
 // Read CR3 to obtain the address of the PML4 Table
-EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr() {
+EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
     UINT64 cr3 = AsmReadCr3();
     return (cr3 & X64_4KB_ALIGN_MASK);
 }
@@ -189,6 +211,10 @@ VOID x64AllocateSystemStruct() {
     SetMem16(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS), 6, 0);
 }
 
+// This function will return either the curent page table
+// information for the page that contains this address, 
+// or if the address is 0, it will return the page size
+// of the page containing the first page of the address space
 UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     
     x64_pml4e *l4_table = NULL;
@@ -198,7 +224,7 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     // Attempt to locate the pml4 table
-    if (!(l4_table = (x64_pml4e*)GetCurrentPML4TableAddr())) {
+    if (!(l4_table = (x64_pml4e*)x64GetCurrentPML4TableAddr())) {
         kernel_panic("Unable to locate address to PML4 data structures!\n");
     } else if (k0_VERBOSE_DEBUG) {    
         Print(L"PML4 Table found at 0x%lx == 0x%lx\n", l4_table, *l4_table);
@@ -224,7 +250,9 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (CHECK_BIT(l3_table[PAGE_DIR_PTR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
-        Print(L"1GB pages found\n");
+        if (k0_VERBOSE_DEBUG) {
+            Print(L"1GB pages found\n");
+        }
         if (addr == 0) {
             return X64_1GB_ALIGN_MASK;
         }
@@ -245,7 +273,10 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (CHECK_BIT(l2_table[PAGE_DIR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
-        Print(L"2MB pages found\n");
+        if (k0_VERBOSE_DEBUG) {
+            Print(L"2MB pages found\n");
+        }
+
         if (addr == 0) {
             return X64_2MB_ALIGN_MASK;
         }

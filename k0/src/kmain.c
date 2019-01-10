@@ -56,12 +56,7 @@ NORETURN VOID k0_main(VOID) {
     Print(L"entered main nebulae kernel...\n");
 
     // Draw a blue triangle to the screen
-    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 50, 0x000000ff);
-
-    Print(L"sizeof(x64_call_gate) == 0x%lx\n", sizeof(x64_call_gate));
-
-    // Shutdown the memory subsystem
-    ShutdownMemSubsystem();
+    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
 
     // Woo-hoo!
     while (TRUE) {}

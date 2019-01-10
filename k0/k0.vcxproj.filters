@@ -66,6 +66,9 @@
     <ClInclude Include="src\include\klib\kelf64.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\klib\kerror.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

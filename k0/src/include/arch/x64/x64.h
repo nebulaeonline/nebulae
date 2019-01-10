@@ -154,6 +154,7 @@
 #define X64_HAS_PBE                     (BIT31_64 | X64_CPUID_0x01 | X64_CPUID_EDX)
 
 // x64 Paging
+#define X64_PAGING_TABLE_MAX            0x200ULL
 #define X64_PAGING_PRESENT              BIT0_64
 #define X64_PAGING_DATA_WRITEABLE       BIT1_64
 #define X64_PAGING_CODE_READABLE        BIT1_64
@@ -295,9 +296,9 @@ extern x64_cpu cpu;
 #define MAXPHYADDR  cpu.physical_address_bits
 
 // Function prototypes
-VOID InitArchCPU(VOID);
-BOOLEAN ReadCpuinfoFlag(UINT64 flag);
-EFI_VIRTUAL_ADDRESS GetCurrentPML4TableAddr(VOID);
+VOID x64InitCPU(VOID);
+BOOLEAN x64ReadCpuinfoFlags(UINT64 flag);
+EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr(VOID);
 UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
