@@ -31,6 +31,9 @@
     <ClCompile Include="src\klib\kelf64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\klib\kstack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">
@@ -67,6 +70,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\klib\kerror.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\klib\kstack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

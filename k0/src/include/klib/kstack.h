@@ -26,44 +26,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-// UEFI Debug Library (ASSERT) & Boot Services
-#include <Library/UefiLib.h>
-#include <Library/DebugLib.h>
-#include <Library/ShellLib.h>
-#include <Library/UefiBootServicesTableLib.h>
+#ifndef __K0_KSTACK_H
+#define __K0_KSTACK_H
 
-// Kernel includes
-#include "include/k0.h"
-#include "include/klib/kstring.h"
+#include "../k0.h"
 
-// nebulae-Uefi Headers
-#include "include/arch/uefi/memory.h"
-#include "include/arch/uefi/graphics.h"
-#include "include/arch/uefi/panic.h"
+#define KSTACK_DIRECTION_GROW_UP    1
+#define KSTACK_DIRECTION_GROW_DOWN  -1
 
-#ifdef __NEBULAE_ARCH_X64
-#include "include/arch/x64/x64.h"
-#endif
+#define KSTACK_UNIT_SIZE            8
 
-// Main system table
-EFI_PHYSICAL_ADDRESS* nebulae_system_table;
+typedef struct s_kstack {
+    UINT64 *base;
+    UINT32 size;
+    UINT64 *top;
+    INT32  dir;
+} kstack;
 
-// Have we been called?
-BOOLEAN k0_main_called = FALSE;
+nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UINTN size_in_bytes, INT32 dir);
+EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value);
+UINT64 kStackPop(kstack *stack);
+UINT64 kStackPeek(kstack *stack);
 
-// Kernel Entrypoint
-// Graphics are initialized, we're flying solo!
-NORETURN VOID k0_main(VOID) {
-    
-    // We're here!
-    k0_main_called = TRUE;
-
-    // Do something
-    Print(L"entered main nebulae kernel...\n");
-
-    // Draw a blue triangle to the screen
-    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
-
-    // Woo-hoo!
-    while (TRUE) {}
-}
+#endif // __K0_KSTACK_H

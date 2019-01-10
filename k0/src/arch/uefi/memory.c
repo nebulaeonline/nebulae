@@ -102,6 +102,11 @@ UINTN ReadUefiMemoryMap() {
     // Function exit status
     EFI_STATUS exit_status = EFI_SUCCESS;
     
+    // If we've already left boot services, this call is worthless
+    if (k0_main_called) {
+        return 0;
+    }
+
     // Vars required for BootServices->GetMemoryMap call
     EFI_STATUS memmap_status = EFI_SUCCESS;
     memmap.size = 0;
@@ -197,7 +202,7 @@ VOID AllocateSystemStruct() {
 
 // Returns the raw paging structure for a given
 // virtual address (only in kernel address space)
-UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
+UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 
 #ifdef __NEBULAE_ARCH_X64
     x64GetPageInfo(addr);

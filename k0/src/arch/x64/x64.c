@@ -192,7 +192,7 @@ VOID x64AllocateSystemStruct() {
     }
     
     if (k0_VERBOSE_DEBUG) {
-        Print(L"Page table entry for 0x%lx == 0x%lx\n", nebulae_system_table, x64GetPageInfo(nebulae_system_table));
+        Print(L"Page table entry for 0x%lx == 0x%lx\n", nebulae_system_table, *x64GetPageInfo(nebulae_system_table));
     }
 
     // Sanity checks
@@ -215,7 +215,7 @@ VOID x64AllocateSystemStruct() {
 // information for the page that contains this address, 
 // or if the address is 0, it will return the page size
 // of the page containing the first page of the address space
-UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
+UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     
     x64_pml4e *l4_table = NULL;
 
@@ -235,13 +235,13 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (l4_table[PML4_INDEX(addr)] == 0) {
-        return 0;
+        return NULL;
     }
 
     x64_pdpte *l3_table = l4_table[PML4_INDEX(addr)] & X64_4KB_ALIGN_MASK;
 
     if (l3_table[PAGE_DIR_PTR_INDEX(addr)] == 0) {
-        return 0;
+        return NULL;
     }
 
     if (k0_VERBOSE_DEBUG) {
@@ -257,7 +257,7 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
             return X64_1GB_ALIGN_MASK;
         }
         else {
-            return l3_table[PAGE_DIR_PTR_INDEX(addr)];
+            return &l3_table[PAGE_DIR_PTR_INDEX(addr)];
         }
     } 
 
@@ -281,7 +281,7 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
             return X64_2MB_ALIGN_MASK;
         }
         else {
-            return l2_table[PAGE_DIR_INDEX(addr)];
+            return &l2_table[PAGE_DIR_INDEX(addr)];
         }
     }
 
@@ -301,6 +301,6 @@ UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
         return X64_4KB_ALIGN_MASK;
     }
     else {
-        return l1_table[PAGE_TABLE_INDEX(addr)];
+        return &l1_table[PAGE_TABLE_INDEX(addr)];
     }
 }

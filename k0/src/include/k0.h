@@ -68,6 +68,9 @@ extern EFI_HANDLE nebulae_uefi_image_handle;
 // Pointer to the UEFI system table
 extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
 
+// Have we called our actual kernel entry function yet?
+extern BOOLEAN k0_main_called;
+
 // Function signatures
 NORETURN VOID k0_main(VOID);
 NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);

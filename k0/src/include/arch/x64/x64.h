@@ -299,7 +299,7 @@ extern x64_cpu cpu;
 VOID x64InitCPU(VOID);
 BOOLEAN x64ReadCpuinfoFlags(UINT64 flag);
 EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr(VOID);
-UINT64 x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
+UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
 extern VOID EFIAPI x64EnableInterrupts(VOID);

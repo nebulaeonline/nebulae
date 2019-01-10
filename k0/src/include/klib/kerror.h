@@ -36,6 +36,11 @@ typedef INT64 nebStatus;
 #define NEB_OK                          0
 
 // Error Codes
-#define NEBERROR_NULL_PTR_UNEXPECTED    -1
+#define NEBERROR_NULL_PTR_UNEXPECTED    -1LL
+#define NEBERROR_MEM_ALLOCATION_ERR     -2LL
+#define NEBERROR_MEM_ZERO_ERR           -3LL
+
+#define NEBERROR_BAD_STACK_DIRECTION    -1000LL
+#define NEBERROR_BAD_STACK_SIZE         -1001LL
 
 #endif // __K0_KERROR_H
