@@ -50,10 +50,11 @@ typedef struct s_uefi_memory_map_info {
     UINT32 descr_version;
 } uefi_memory_map_info;
 
+// Our memory map
 uefi_memory_map_info memmap;
 
-UINTN ReadUefiMemoryMap(VOID);
-VOID  AllocateSystemStruct(VOID);
+UINTN  ReadUefiMemoryMap(VOID);
+VOID   AllocateSystemStruct(VOID);
 UINT64 GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 #endif /* __K0_KMEM_H */
