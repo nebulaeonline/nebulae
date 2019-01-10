@@ -77,7 +77,10 @@ EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value) {
 
     // see if the stack is already full
     // remember top is always 1 step ahead
-    if (stack->top > (stack->base + (stack->dir * stack->size))) {
+    if (stack->dir == KSTACK_DIRECTION_GROW_UP && stack->top > (stack->base + (stack->dir * stack->size))) {
+        return NULL;
+    }
+    else if (stack->dir == KSTACK_DIRECTION_GROW_DOWN && stack->top < (stack->base + (stack->dir * stack->size))) {
         return NULL;
     }
 
