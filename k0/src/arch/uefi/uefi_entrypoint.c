@@ -279,7 +279,20 @@ kernel_entry:
 #endif
 
     // Initialize the memory subsystem
+    nebStatus init_mem_status = InitMem();
+
+    if (NEB_ERROR(init_mem_status)) {
+        kernel_panic(L"There was a problem initializing the memory management subsystem: %ld\n", init_mem_status);
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Physical memory page stacks initialized\n");
+    }
+
+    // Read the UEFI memory map
     UINTN uefi_mem_key = ReadUefiMemoryMap();
+    //Print(L"UEFI Mem Key == 0x%lx\n", uefi_mem_key);
+    
+    
 
     Print(L"Changing graphics mode and exiting UEFI Boot Services!\n");
 
@@ -294,8 +307,16 @@ kernel_entry:
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
     // Set aside our system data structure
-    AllocateSystemStruct();
-    Print(L"System struct allocated at %lx\n", nebulae_system_table);
+    //AllocateSystemStruct();
+    //Print(L"System struct allocated at %lx\n", nebulae_system_table);
+    
+    // Inform the user about our memory situation
+    UINT64 count_pages_2MB = GetMemStackCount(SIZE_2MB);
+    UINT64 count_pages_4KB = GetMemStackCount(SIZE_4KB);
+
+    Print(L"Located %lu 2MB pages of available physical memory\n", count_pages_2MB);
+    Print(L"Located %lu 4KB pages of available physical memory\n", count_pages_4KB);
+    Print(L"Total available physical memory == %lu KB\n", ((count_pages_2MB * SIZE_2MB) + (count_pages_4KB * SIZE_4KB)) / 1024);
 
     k0_main();
 

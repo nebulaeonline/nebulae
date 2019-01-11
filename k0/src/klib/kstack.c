@@ -26,6 +26,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <Library/UefiLib.h>
 #include <Library/BaseMemoryLib.h>
 #include "../include/klib/kstack.h"
 
@@ -49,18 +50,17 @@ nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UI
     }
     
     // Zero the memory
-    if (dir == KSTACK_DIRECTION_GROW_UP) {
-        if (ZeroMem(base_addr, size_in_bytes) != base_addr) {
-            return NEBERROR_MEM_ZERO_ERR;
-        }
-    }
-    else if (dir == KSTACK_DIRECTION_GROW_DOWN) {
-        if (ZeroMem(base_addr - size_in_bytes, size_in_bytes) != base_addr) {
-            return NEBERROR_MEM_ZERO_ERR;
-        }
+    if (ZeroMem(base_addr, size_in_bytes) != base_addr) {
+        return NEBERROR_MEM_ZERO_ERR;
     }
 
-    stack->base = stack->top = stack;
+    if (dir > 0) {
+        stack->base = stack->top = base_addr;
+    }
+    else {
+        stack->base = stack->top = (EFI_PHYSICAL_ADDRESS*)((UINT64)base_addr + size_in_bytes);
+    }
+
     stack->size = size_in_bytes;
     stack->dir = dir;
 
@@ -68,6 +68,7 @@ nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UI
 }
 
 // Push a value onto the stack
+// Returns the address of the object's location in the structure
 EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value) {
     
     // can't do anything if the passed address is NULL
@@ -77,10 +78,12 @@ EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value) {
 
     // see if the stack is already full
     // remember top is always 1 step ahead
-    if (stack->dir == KSTACK_DIRECTION_GROW_UP && stack->top > (stack->base + (stack->dir * stack->size))) {
+    if (stack->dir == KSTACK_DIRECTION_GROW_UP && (UINT64)stack->top >= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
+        Print(L"Grow up stack top (@ 0x%lx) too big. base == 0x%lx / size == %lu\n", stack->top, stack->base, stack->size);
         return NULL;
     }
-    else if (stack->dir == KSTACK_DIRECTION_GROW_DOWN && stack->top < (stack->base + (stack->dir * stack->size))) {
+    else if (stack->dir == KSTACK_DIRECTION_GROW_DOWN && (UINT64)stack->top <= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
+        Print(L"Grow down stack bottom (@ 0x%lx) too small. base == 0x%lx / eqn == %ld\n", stack->top, stack->base, (EFI_PHYSICAL_ADDRESS*)((UINT64)stack->base + (stack->dir * stack->size)));
         return NULL;
     }
 
@@ -115,6 +118,8 @@ UINT64 kStackPop(kstack *stack) {
     return ret;
 }
 
+// Returns the value on top of the specified stack,
+// but does not actually adjust any internal pointers
 UINT64 kStackPeek(kstack *stack) {
 
     // no NULLs
@@ -130,4 +135,21 @@ UINT64 kStackPeek(kstack *stack) {
     // remember top is always 1 step ahead
     // just return the value, pointers stay the same
     return *(stack->top - (stack->dir * KSTACK_UNIT_SIZE));
+}
+
+// Returns the count of entries in the stack
+UINT64 kGetStackCount(kstack *stack) {
+    
+    if (stack->top == stack->base) {
+        return 0;
+    }
+
+    switch (stack->dir) {
+    case KSTACK_DIRECTION_GROW_UP:
+        return (stack->top - stack->base) / KSTACK_UNIT_SIZE;
+    case KSTACK_DIRECTION_GROW_DOWN:
+        return (stack->base - stack->top) / KSTACK_UNIT_SIZE;
+    default:
+        return 0;
+    }
 }

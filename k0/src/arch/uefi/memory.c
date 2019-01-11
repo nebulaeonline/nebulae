@@ -36,6 +36,7 @@
 
 // Kernel Headers
 #include "../../include/k0.h"
+#include "../../include/klib/kstack.h"
 
 // Uefi Memory Header
 #include "../../include/arch/uefi/memory.h"
@@ -88,6 +89,59 @@ UINTN kmem_largest_block_page_count = 0;
 
 EFI_PHYSICAL_ADDRESS* nebulae_system_table = NULL;
 
+// The ultimate goal here, at the lowest level, is to have
+// a per-NUMA node stack of available 2MB & 4k pages.
+// Since we do not yet have the functionality to parse
+// the ACPI tables that contain the information necessary
+// to properly build those stacks of pages, we'll have
+// to settle for 2 stacks right now, a 2MB page stack and
+// a 4KB page stack
+BOOLEAN physical_mem_stacks_allocated = FALSE;
+
+kstack kmem_2MB_pages;
+kstack kmem_4KB_pages;
+
+// Get the count of a stack
+UINT64 GetMemStackCount(UINT32 which_size) {
+    switch (which_size) {
+    case SIZE_4KB:
+        return kGetStackCount(&kmem_4KB_pages);
+    case SIZE_2MB:
+        return kGetStackCount(&kmem_2MB_pages);
+    default:
+        return 0;
+    }
+}
+
+// This function allocates 2MB of space for 2MB pages and 2MB of 
+// space for 4KB pages in 2 separate kernel "stack" data structures
+nebStatus InitMem() {
+    
+    UINT64 ret = NEB_OK;
+
+    EFI_PHYSICAL_ADDRESS *base_2MB = AllocatePages(512);
+    EFI_PHYSICAL_ADDRESS *base_4KB = AllocatePages(512);
+
+    if (ISNULL(base_2MB) || ISNULL(base_4KB)) {
+        return NEBERROR_STACK_MEM_ALLOC_ERR;
+    }
+
+    ret = kInitStackStructure(&kmem_2MB_pages, base_2MB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+
+    if (NEB_ERROR(ret)) {
+        return ret;
+    }
+
+    ret = kInitStackStructure(&kmem_4KB_pages, base_4KB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+
+    if (NEB_ERROR(ret)) {
+        return ret;
+    }
+
+    physical_mem_stacks_allocated = TRUE;
+    return ret;
+}
+
 //
 // Reads the memory map, performing the following tasks:
 // 
@@ -103,7 +157,9 @@ UINTN ReadUefiMemoryMap() {
     EFI_STATUS exit_status = EFI_SUCCESS;
     
     // If we've already left boot services, this call is worthless
-    if (k0_main_called) {
+    // Ditto if we haven't allocated any page stacks yet
+    if (k0_main_called || !physical_mem_stacks_allocated) {
+        Print(L"Bailed on ReadUefiMemoryMap, k0_main_called == %u, physical_mem_stacks_allocated == %u\n", k0_main_called, physical_mem_stacks_allocated);
         return 0;
     }
 
@@ -165,6 +221,41 @@ UINTN ReadUefiMemoryMap() {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
         if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
+            Print(L"Found conventional memory block\n");
+
+            // Begin pushing pages onto the free page stack
+            UINT64 current_address = (UINT64)memmap_entry->PhysicalStart;
+            UINT64 mem_block_end = current_address + ((UINT64)memmap_entry->NumberOfPages * (UINT64)EFI_PAGE_SIZE);
+
+            while (current_address < mem_block_end) {
+                UINT64 *stack_result = NULL;
+
+                if ((current_address % SIZE_2MB) == 0 && (current_address + SIZE_2MB) <= mem_block_end) {
+                    stack_result = kStackPush(&kmem_2MB_pages, current_address);
+                    current_address += SIZE_2MB;
+
+                    if (stack_result == NULL) {
+                        kernel_panic(L"Problem pushing 2MB page @ 0x%lx to 2MB page stack @ 0x%x\n", current_address, kmem_2MB_pages);
+                    }
+                }
+                else if ((current_address % SIZE_4KB) == 0 && (current_address + SIZE_4KB) <= mem_block_end) {
+                    stack_result = kStackPush(&kmem_4KB_pages, current_address);
+                    current_address += SIZE_4KB;
+
+                    if (stack_result == NULL) {
+                        kernel_panic(L"Problem pushing 4KB page @ 0x%lx to 4KB page stack @ 0x%x\n", current_address, kmem_4KB_pages);
+                    }
+                }
+                else {
+                    Print(L"Memory address did not meet either criteria: 0x%lx\n", current_address);
+                    Print(L"mem_block_end == 0x%lx\n", mem_block_end);
+                }
+            }
+
+            if (current_address >= ((EFI_PHYSICAL_ADDRESS)memmap_entry->PhysicalStart + (memmap_entry->NumberOfPages * EFI_PAGE_SIZE))) {
+                Print(L"Current address (0x%lx) exceeds calculated bounds\n", current_address);
+            }
+
             if (k0_VERBOSE_DEBUG) {
                 Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",
                     EFI_MEMORY_TYPES[memmap_entry->Type], memmap_entry->PhysicalStart, memmap_entry->VirtualStart,

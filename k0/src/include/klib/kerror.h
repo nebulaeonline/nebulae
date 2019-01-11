@@ -42,5 +42,6 @@ typedef INT64 nebStatus;
 
 #define NEBERROR_BAD_STACK_DIRECTION    -1000LL
 #define NEBERROR_BAD_STACK_SIZE         -1001LL
+#define NEBERROR_STACK_MEM_ALLOC_ERR    -1002LL
 
 #endif // __K0_KERROR_H

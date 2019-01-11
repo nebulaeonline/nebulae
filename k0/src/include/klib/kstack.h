@@ -34,7 +34,7 @@
 #define KSTACK_DIRECTION_GROW_UP    1
 #define KSTACK_DIRECTION_GROW_DOWN  -1
 
-#define KSTACK_UNIT_SIZE            8
+#define KSTACK_UNIT_SIZE            8ULL
 
 typedef struct s_kstack {
     UINT64 *base;
@@ -47,5 +47,6 @@ nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UI
 EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value);
 UINT64 kStackPop(kstack *stack);
 UINT64 kStackPeek(kstack *stack);
+UINT64 kGetStackCount(kstack *stack);
 
 #endif // __K0_KSTACK_H
