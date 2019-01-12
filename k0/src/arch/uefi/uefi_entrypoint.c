@@ -311,13 +311,18 @@ kernel_entry:
     Print(L"System struct allocated at %lx\n", nebulae_system_table);
     
     // Inform the user about our memory situation
-    UINT64 count_pages_2MB = GetMemStackCount(SIZE_2MB);
-    UINT64 count_pages_4KB = GetMemStackCount(SIZE_4KB);
+    UINT64 count_free_pages_2MB = GetFreeMemStackCount(SIZE_2MB);
+    UINT64 count_free_pages_4KB = GetFreeMemStackCount(SIZE_4KB);
+    UINT64 count_alloc_pages_2MB = GetAllocatedMemStackCount(SIZE_2MB);
+    UINT64 count_alloc_pages_4KB = GetAllocatedMemStackCount(SIZE_4KB);
 
-    Print(L"Located %lu 2MB pages of available physical memory\n", count_pages_2MB);
-    Print(L"Located %lu 4KB pages of available physical memory\n", count_pages_4KB);
+    Print(L"Located %lu 2MB pages of available conventional physical memory\n", count_free_pages_2MB);
+    Print(L"Located %lu 4KB pages of available conventional physical memory\n", count_free_pages_4KB);
+    Print(L"Located %lu 2MB pages of allocated conventional physical memory\n", count_alloc_pages_2MB);
+    Print(L"Located %lu 4KB pages of allocated conventional physical memory\n", count_alloc_pages_4KB);
+
     Print(L"Total available physical memory == %lu KB\n", 
-        ((count_pages_2MB * SIZE_2MB) + (count_pages_4KB * SIZE_4KB)) / 1024);
+        ((count_free_pages_2MB * SIZE_2MB) + (count_free_pages_4KB * SIZE_4KB)) / 1024);
 
     k0_main();
 

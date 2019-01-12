@@ -34,9 +34,15 @@
 #ifdef __NEBULAE_ARCH_X64
 #include "../x64/x64.h"
 
-#define ALIGN_MASK_4KB                  X64_4KB_ALIGN_MASK
-#define ALIGN_MASK_2MB                  X64_2MB_ALIGN_MASK
-#define ALIGN_MASK_1GB                  X64_1GB_ALIGN_MASK
+#define ALIGN_MASK_4KB              X64_4KB_ALIGN_MASK
+#define ALIGN_MASK_2MB              X64_2MB_ALIGN_MASK
+#define ALIGN_MASK_1GB              X64_1GB_ALIGN_MASK
+
+#define PAGE_4KB_SUPERVISOR         0x0000000000000FFFULL
+#define PAGE_4KB_USER               0x0000000000000EEEULL
+#define PAGE_2MB_SUPERVISOR         0x00000000000FFFFFULL
+#define PAGE_2MB_USER               0x00000000000EEEEEULL
+
 #endif
 
 // Structure to hold info about
@@ -53,7 +59,8 @@ typedef struct s_uefi_memory_map_info {
 // Our memory map
 uefi_memory_map_info memmap;
 
-UINT64    GetMemStackCount(UINT32 which_size);
+UINT64    GetFreeMemStackCount(UINT32 which_size);
+UINT64    GetAllocatedMemStackCount(UINT32 which_size);
 nebStatus InitMem(VOID);
 UINTN     ReadUefiMemoryMap(VOID);
 VOID      AllocateSystemStruct(VOID);

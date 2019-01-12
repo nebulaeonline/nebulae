@@ -99,16 +99,31 @@ EFI_PHYSICAL_ADDRESS* nebulae_system_table = NULL;
 // a 4KB page stack
 BOOLEAN physical_mem_stacks_allocated = FALSE;
 
-kstack kmem_2MB_pages;
-kstack kmem_4KB_pages;
+kstack kmem_free_pages_2MB;
+kstack kmem_free_pages_4KB;
 
-// Get the count of a stack
-UINT64 GetMemStackCount(UINT32 which_size) {
+kstack kmem_allocated_pages_2MB;
+kstack kmem_allocated_pages_4KB;
+
+// Get the count of a free memory stack
+UINT64 GetFreeMemStackCount(UINT32 which_size) {
     switch (which_size) {
     case SIZE_4KB:
-        return kGetStackCount(&kmem_4KB_pages);
+        return kGetStackCount(&kmem_free_pages_4KB);
     case SIZE_2MB:
-        return kGetStackCount(&kmem_2MB_pages);
+        return kGetStackCount(&kmem_free_pages_2MB);
+    default:
+        return 0;
+    }
+}
+
+// Get the count of an allocated memory stack
+UINT64 GetAllocatedMemStackCount(UINT32 which_size) {
+    switch (which_size) {
+    case SIZE_4KB:
+        return kGetStackCount(&kmem_allocated_pages_4KB);
+    case SIZE_2MB:
+        return kGetStackCount(&kmem_allocated_pages_2MB);
     default:
         return 0;
     }
@@ -120,20 +135,35 @@ nebStatus InitMem() {
     
     UINT64 ret = NEB_OK;
 
-    EFI_PHYSICAL_ADDRESS *base_2MB = AllocatePages(512);
-    EFI_PHYSICAL_ADDRESS *base_4KB = AllocatePages(512);
+    EFI_PHYSICAL_ADDRESS *base_free_2MB = AllocatePages(512);
+    EFI_PHYSICAL_ADDRESS *base_free_4KB = AllocatePages(512);
+    EFI_PHYSICAL_ADDRESS *base_alloc_2MB = AllocatePages(512);
+    EFI_PHYSICAL_ADDRESS *base_alloc_4KB = AllocatePages(512);
 
-    if (ISNULL(base_2MB) || ISNULL(base_4KB)) {
+    if (ISNULL(base_free_2MB) || ISNULL(base_free_4KB) ||
+        ISNULL(base_alloc_2MB) || ISNULL(base_alloc_4KB)) {
         return NEBERROR_STACK_MEM_ALLOC_ERR;
     }
 
-    ret = kInitStackStructure(&kmem_2MB_pages, base_2MB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+    ret = kInitStackStructure(&kmem_free_pages_2MB, base_free_2MB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
 
     if (NEB_ERROR(ret)) {
         return ret;
     }
 
-    ret = kInitStackStructure(&kmem_4KB_pages, base_4KB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+    ret = kInitStackStructure(&kmem_free_pages_4KB, base_free_4KB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+
+    if (NEB_ERROR(ret)) {
+        return ret;
+    }
+
+    ret = kInitStackStructure(&kmem_allocated_pages_4KB, base_alloc_4KB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
+
+    if (NEB_ERROR(ret)) {
+        return ret;
+    }
+
+    ret = kInitStackStructure(&kmem_allocated_pages_2MB, base_alloc_2MB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
 
     if (NEB_ERROR(ret)) {
         return ret;
@@ -234,23 +264,23 @@ UINTN ReadUefiMemoryMap() {
                 UINT64 *stack_result = NULL;
 
                 if ((current_address % SIZE_2MB) == 0 && (current_address + SIZE_2MB) <= mem_block_end) {
-                    stack_result = kStackPush(&kmem_2MB_pages, current_address);
+                    stack_result = kStackPush(&kmem_free_pages_2MB, current_address);
                     current_address += SIZE_2MB;
 
                     if (stack_result == NULL) {
                         kernel_panic(L"Problem pushing 2MB page @ 0x%lx to 2MB page stack @ 0x%x\n", 
                             current_address, 
-                            kmem_2MB_pages);
+                            kmem_free_pages_2MB);
                     }
                 }
                 else if ((current_address % SIZE_4KB) == 0 && (current_address + SIZE_4KB) <= mem_block_end) {
-                    stack_result = kStackPush(&kmem_4KB_pages, current_address);
+                    stack_result = kStackPush(&kmem_free_pages_4KB, current_address);
                     current_address += SIZE_4KB;
 
                     if (stack_result == NULL) {
                         kernel_panic(L"Problem pushing 4KB page @ 0x%lx to 4KB page stack @ 0x%x\n", 
                             current_address, 
-                            kmem_4KB_pages);
+                            kmem_free_pages_4KB);
                     }
                 }
                 else {
@@ -306,6 +336,10 @@ VOID AllocateSystemStruct() {
     // If we removed a 4KB page, then we need to remove another, 
     // since we allocated a contiguous 8KB for the system table
     if (remove_sys_struct_pages == NEBSTATUS_REMOVED_4KB_PAGE) {
+        
+        // the page was removed, now add it to the appropriate allocated page stack
+        kStackPush(&kmem_allocated_pages_4KB, (UINT64)nebulae_system_table & PAGE_4KB_SUPERVISOR);
+        
         remove_sys_struct_pages = RemovePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
 
         if (NEB_ERROR(remove_sys_struct_pages)) {
@@ -313,10 +347,17 @@ VOID AllocateSystemStruct() {
                 remove_sys_struct_pages);
         } 
         else {
+            // the second page was removed, now add it to the appropriate allocated page stack
+            kStackPush(&kmem_allocated_pages_4KB, ((UINT64)nebulae_system_table + SIZE_4KB) & PAGE_4KB_SUPERVISOR);
+
             if (k0_VERBOSE_DEBUG) {
                 Print(L"Removed second system struct page from physical memory stacks\n");
             }
         }
+    }
+    else {
+        // the struct was removed, now add it to the appropriate allocated page stack
+        kStackPush(&kmem_allocated_pages_2MB, (UINT64)nebulae_system_table & PAGE_2MB_SUPERVISOR);
     }
 }
 
@@ -324,10 +365,10 @@ VOID AllocateSystemStruct() {
 // containing the specified address
 nebStatus RemovePageContainingAddr(UINT64 addr) {
     
-    nebStatus found_in_2MB = kStackSwapValue(&kmem_2MB_pages, (UINT64)addr, SIZE_2MB);
+    nebStatus found_in_2MB = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(found_in_2MB)) {
 
-        nebStatus found_in_4KB = kStackSwapValue(&kmem_4KB_pages, (UINT64)addr, SIZE_4KB);
+        nebStatus found_in_4KB = kStackSwapValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
 
         if (NEB_ERROR(found_in_4KB)) {
             // We didn't find shit
@@ -335,13 +376,13 @@ nebStatus RemovePageContainingAddr(UINT64 addr) {
         }
         else {
             // We can just discard the value, cause it ain't coming back!
-            kStackPop(&kmem_4KB_pages);
+            kStackPop(&kmem_free_pages_4KB);
             return NEBSTATUS_REMOVED_4KB_PAGE;
         }
     }
     else {
         // Ditto
-        kStackPop(&kmem_2MB_pages);
+        kStackPop(&kmem_free_pages_2MB);
         return NEBSTATUS_REMOVED_2MB_PAGE;
     }
 }
@@ -365,10 +406,10 @@ UINT64 GetPage(UINTN page_size) {
     }
 
     if (page_size == SIZE_4KB) {
-        return kStackPop(&kmem_4KB_pages);
+        return kStackPop(&kmem_free_pages_4KB);
     }
     else if (page_size == SIZE_2MB) {
-        return kStackPop(&kmem_2MB_pages);
+        return kStackPop(&kmem_free_pages_2MB);
     }
 
     return 0;
