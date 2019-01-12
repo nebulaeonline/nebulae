@@ -41,6 +41,7 @@
 #include "../../include/klib/kstring.h"
 
 #include "../../include/arch/uefi/memory.h"
+#include "../../include/arch/uefi/kacpi.h"
 
 // We run on any UEFI Specification
 extern CONST UINT32 _gUefiDriverRevision;
@@ -293,6 +294,9 @@ kernel_entry:
 #ifdef __NEBULAE_ARCH_X64    
     x64InitCPU();
 #endif
+
+    // Locate the ACPI XSDT tables
+    LocateACPI_XSDT();
 
     // Initialize the memory subsystem
     nebStatus init_mem_status = InitMem();

@@ -112,14 +112,11 @@ x64DisableInterrupts PROC
     ret
 x64DisableInterrupts ENDP
 
-
 ;==================================
 ; UINT64
 ; EFIAPI
-; x64ReadTsc (
-;   VOID
-;   );
-;------------------------------------------------------------------------------
+; x64ReadTsc (VOID)
+;
 x64ReadTsc  PROC
     rdtsc
     shl     rdx, 20h
@@ -134,8 +131,8 @@ x64ReadTsc  ENDP
 ; x64LoadStackSegmentAndJump (
 ;   x64_farptr*,
 ;   VOID* dest
-;   );
-;------------------------------------------------------------------------------
+;   )
+;
 x64LoadStackSegmentAndJump  PROC
     lss     rax, [rcx]
     jmp QWORD PTR[rdx]

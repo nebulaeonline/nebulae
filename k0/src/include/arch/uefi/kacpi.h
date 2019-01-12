@@ -1,4 +1,6 @@
 // Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
+// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -26,35 +28,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __K0_KERROR_H
-#define __K0_KERROR_H
+#ifndef __K0_KACPI_H
+#define __K0_KACPI_H
 
-// System-wide Status Code type
-typedef INT64 nebStatus;
-#define NEB_ERROR(X)                    ((X < 0) ? TRUE : FALSE)
-#define NEB_SUCCESS(X)                  ((X >= 0) ? TRUE : FALSE)
-#define NEB_OK                          0
+#include "../../k0.h"
 
-// Error Codes
-#define NEBERROR_NULL_PTR_UNEXPECTED    -1LL
-#define NEBERROR_MEM_ALLOCATION_ERR     -2LL
-#define NEBERROR_MEM_ZERO_ERR           -3LL
+// XSDT is the main System Description Table.
+// There are many kinds of SDT. An SDT may be split into two parts -
+// A common header and a data section which is different for each table.
+typedef struct {
+    CHAR8   Signature[4];
+    UINT32  Length;
+    UINT8   Revision;
+    UINT8   Checksum;
+    CHAR8   OemId[6];
+    CHAR8   OemTableId[8];
+    UINT32  OemRevision;
+    UINT32  CreatorId;
+    UINT32  CreatorRevision;
+} EFI_ACPI_SDT_HEADER;
 
-#define NEBERROR_BAD_STACK_DIRECTION    -1000LL
-#define NEBERROR_BAD_STACK_SIZE         -1001LL
-#define NEBERROR_STACK_MEM_ALLOC_ERR    -1002LL
-#define NEBERROR_STACK_ELEMENT_NOT_FOUND -1003LL
-#define NEBERROR_UNABLE_TO_PUSH_VALUE   -1004LL
+#define EFI_ACPI_TABLE_GUID \
+    { 0xeb9d2d30, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d }}
+#define EFI_ACPI_20_TABLE_GUID \
+    { 0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 }}
 
-#define NEBERROR_INVALID_PAGE_SIZE      -5000LL
+#define EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION 0x02
 
-#define NEBERROR_ACPI_RSDP_NOT_FOUND    -10000LL
-#define NEBERROR_ACPI_XSDT_NOT_FOUND    -10001LL
-#define NEBERROR_ACPI_INVALID_XSDT      -10002LL
+extern EFI_ACPI_SDT_HEADER *acpi_xsdt;
 
-#define NEBSTATUS_REMOVED_4KB_PAGE      0x1000LL
-#define NEBSTATUS_REMOVED_2MB_PAGE      0x200000LL
+nebStatus LocateACPI_XSDT(VOID);
 
-#define NEBSTATUS_UNDETERMINED          -555555555556LL
-
-#endif // __K0_KERROR_H
+#endif // __K0_KACPI_H
