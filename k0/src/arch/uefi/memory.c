@@ -105,6 +105,113 @@ kstack kmem_free_pages_4KB;
 kstack kmem_allocated_pages_2MB;
 kstack kmem_allocated_pages_4KB;
 
+// Allocates a page of the requested page size
+// *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
+EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size) {
+    EFI_PHYSICAL_ADDRESS *new_page_base = NULL;
+
+    switch (page_size) {
+    case SIZE_4KB:
+        new_page_base = kStackPop(&kmem_free_pages_4KB);
+        if (ISNULL(new_page_base)) {
+            return NULL;
+        }
+        if (!kStackPush(&kmem_allocated_pages_4KB, (UINT64)new_page_base & PAGE_4KB_SUPERVISOR)) {
+            // we couldn't push the page onto the allocated page stack,
+            // reverse the process and return NULL.
+            if (!kStackPush(&kmem_free_pages_4KB, (UINT64)new_page_base & ALIGN_MASK_4KB)) {
+                kernel_panic(L"Unable to return allocated memory to free store after allocated stack push failed\n");
+            }
+            else {
+                return NULL;
+            }
+        }
+        break;
+    case SIZE_2MB:
+        new_page_base = kStackPop(&kmem_free_pages_2MB);
+        if (ISNULL(new_page_base)) {
+            return NULL;
+        }
+        if (!kStackPush(&kmem_allocated_pages_2MB, (UINT64)new_page_base & PAGE_2MB_SUPERVISOR)) {
+            // we couldn't push the page onto the allocated page stack,
+            // reverse the process and return NULL.
+            if (!kStackPush(&kmem_free_pages_2MB, (UINT64)new_page_base & ALIGN_MASK_2MB)) {
+                kernel_panic(L"Unable to return allocated memory to free store after allocated stack push failed\n");
+            }
+            else {
+                return NULL;
+            }
+        }
+        break;
+    default:
+        return NULL;
+    }
+
+    return (EFI_PHYSICAL_ADDRESS*)new_page_base;
+}
+
+// Frees a physical page of memory allocated with AllocPage
+// *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
+nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
+    
+    if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
+        Print(L"Invalid page size\n");
+        return NEBERROR_INVALID_PAGE_SIZE;
+    }
+
+    nebStatus swap_result = NEBSTATUS_UNDETERMINED;
+    UINT64 allocated_result = 0;
+
+    switch (page_size) {
+    case SIZE_4KB:
+        swap_result = kStackSwapValue(&kmem_allocated_pages_4KB, (UINT64)base_addr & PAGE_4KB_SUPERVISOR, page_size);
+
+        if (NEB_ERROR(swap_result)) {
+            return swap_result;
+        }
+
+        allocated_result = kStackPop(&kmem_allocated_pages_4KB);
+
+        // Push the page back on the free stack
+        if (!kStackPush(&kmem_free_pages_4KB, allocated_result & ALIGN_MASK_4KB)) {
+            // we couldn't push the page onto the allocated page stack,
+            // reverse the process and return NULL.
+            if (!kStackPush(&kmem_allocated_pages_4KB, allocated_result)) {
+                kernel_panic(L"Unable to return allocated memory to allocated store after free stack push failed\n");
+            }
+            else {
+                return NEBERROR_UNABLE_TO_PUSH_VALUE;
+            }
+        }
+        break;
+    case SIZE_2MB:
+        swap_result = kStackSwapValue(&kmem_allocated_pages_2MB, (UINT64)base_addr & PAGE_2MB_SUPERVISOR, page_size);
+
+        if (NEB_ERROR(swap_result)) {
+            return swap_result;
+        }
+
+        allocated_result = kStackPop(&kmem_allocated_pages_2MB);
+
+        // Push the page back on the free stack
+        if (!kStackPush(&kmem_free_pages_2MB, allocated_result & ALIGN_MASK_2MB)) {
+            // we couldn't push the page onto the allocated page stack,
+            // reverse the process and return NULL.
+            if (!kStackPush(&kmem_allocated_pages_2MB, allocated_result)) {
+                kernel_panic(L"Unable to return allocated memory to allocated store after free stack push failed\n");
+            }
+            else {
+                return NEBERROR_UNABLE_TO_PUSH_VALUE;
+            }
+        }
+        break;
+    default:
+        return NEBERROR_INVALID_PAGE_SIZE;
+    }
+
+    return NEB_OK;
+}
+
 // Get the count of a free memory stack
 UINT64 GetFreeMemStackCount(UINT32 which_size) {
     switch (which_size) {

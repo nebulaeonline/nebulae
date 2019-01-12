@@ -310,6 +310,31 @@ kernel_entry:
     AllocateSystemStruct();
     Print(L"System struct allocated at %lx\n", nebulae_system_table);
     
+    // Allocate and free pages -- BEGIN MEMORY TEST
+    EFI_PHYSICAL_ADDRESS *page_2MB = AllocPage(SIZE_2MB);
+    if (page_2MB == NULL) {
+        kernel_panic(L"Unable to allocate 2MB page\n");
+    }
+    EFI_PHYSICAL_ADDRESS *page_4KB = AllocPage(SIZE_4KB);
+    if (page_4KB == NULL) {
+        kernel_panic(L"Unable to allocate 4KB page\n");
+    }
+
+    nebStatus free_result = FreePage(page_2MB, SIZE_2MB);
+
+    if (NEB_ERROR(free_result)) {
+        kernel_panic(L"Unable to free 2MB page; result == %ld\n", free_result);
+    }
+
+    free_result = FreePage(page_4KB, SIZE_4KB);
+
+    if (NEB_ERROR(free_result)) {
+        kernel_panic(L"Unable to free 4KB page; result == %ld\n", free_result);
+    }
+
+    Print(L"Memory subsystem integrity testing complete\n");
+    // -- END MEMORY TEST
+
     // Inform the user about our memory situation
     UINT64 count_free_pages_2MB = GetFreeMemStackCount(SIZE_2MB);
     UINT64 count_free_pages_4KB = GetFreeMemStackCount(SIZE_4KB);
