@@ -266,7 +266,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
         Print(L"Freed %lu page(s) for k0.config.json file data\n", 1);
     }
 
-    // Do the last bit of set and then call 
+    // Do the last bit of setup and then call 
     // the k0_main() function
 kernel_entry:
     
@@ -293,10 +293,7 @@ kernel_entry:
 
     // Read the UEFI memory map
     UINTN uefi_mem_key = ReadUefiMemoryMap();
-    //Print(L"UEFI Mem Key == 0x%lx\n", uefi_mem_key);
     
-    
-
     Print(L"Changing graphics mode and exiting UEFI Boot Services!\n");
 
     // Disable scrolling
