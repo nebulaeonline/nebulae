@@ -135,7 +135,9 @@ x64ReadTsc  ENDP
 ;   );
 ;------------------------------------------------------------------------------
 x64LoadStackSegment  PROC
+    pop     rbx
     lss     rax, [rcx]
+    push    rbx
     ret
 x64LoadStackSegment  ENDP
 
