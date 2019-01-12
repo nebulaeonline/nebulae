@@ -61,6 +61,7 @@ typedef PACKED_MS struct s_x64_u128 {
 // Debug mode(s)
 extern BOOLEAN k0_VERBOSE_DEBUG;
 extern BOOLEAN k0_PRECONFIG_DEBUG;
+extern BOOLEAN k0_PAGETABLE_DEBUG;
 
 // Handle to the kernel image 
 extern EFI_HANDLE nebulae_uefi_image_handle;

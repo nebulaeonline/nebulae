@@ -192,7 +192,7 @@ VOID x64AllocateSystemStruct() {
         kernel_panic(L"There was a problem initializing the kernel's private memory area!\n");
     }
     
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 
             nebulae_system_table, 
             *x64GetPageInfo(nebulae_system_table));
@@ -223,18 +223,18 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     
     x64_pml4e *l4_table = NULL;
 
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"cr3 == 0x%lx\n", AsmReadCr3());
     }
 
     // Attempt to locate the pml4 table
     if (!(l4_table = (x64_pml4e*)x64GetCurrentPML4TableAddr())) {
         kernel_panic("Unable to locate address to PML4 data structures!\n");
-    } else if (k0_VERBOSE_DEBUG) {    
+    } else if (k0_PAGETABLE_DEBUG) {
         Print(L"PML4 Table found at 0x%lx == 0x%lx\n", l4_table, *l4_table);
     }
     
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"PML4Entry at PML4Table[0x%lx] found at 0x%lx == 0x%lx\n", 
             PML4_INDEX(addr), 
             &l4_table[PML4_INDEX(addr)], 
@@ -251,7 +251,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
         return NULL;
     }
 
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"PDPT @ 0x%lx\n", l3_table);
         Print(L"PDPT[0x%lx] @ 0x%lx == 0x%lx\n", 
             PAGE_DIR_PTR_INDEX(addr), 
@@ -260,7 +260,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (CHECK_BIT(l3_table[PAGE_DIR_PTR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
-        if (k0_VERBOSE_DEBUG) {
+        if (k0_PAGETABLE_DEBUG) {
             Print(L"1GB pages found\n");
         }
         if (addr == 0) {
@@ -277,7 +277,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
         return 0;
     }
 
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"PD @ 0x%lx\n", l2_table);
         Print(L"PD[0x%lx] @ 0x%lx == 0x%lx\n", 
             PAGE_DIR_INDEX(addr), 
@@ -286,7 +286,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (CHECK_BIT(l2_table[PAGE_DIR_INDEX(addr)], X64_PAGING_IS_PAGES)) {
-        if (k0_VERBOSE_DEBUG) {
+        if (k0_PAGETABLE_DEBUG) {
             Print(L"2MB pages found\n");
         }
 
@@ -304,7 +304,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
         return 0;
     }
 
-    if (k0_VERBOSE_DEBUG) {
+    if (k0_PAGETABLE_DEBUG) {
         Print(L"PT @ 0x%lx\n", l1_table);
         Print(L"PT[0x%lx] @ 0x%lx == 0x%lx\n", 
             PAGE_TABLE_INDEX(addr), 

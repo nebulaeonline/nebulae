@@ -52,6 +52,7 @@ CHAR8 *gEfiCallerBaseName = "k0";
 // Debugging flags
 BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
 BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
+BOOLEAN k0_PAGETABLE_DEBUG = FALSE;     // Only set when debugging pagetables
 
 // Placeholder
 EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
@@ -250,6 +251,18 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
             else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "false") == 0) {
                 ShellSetPageBreakMode(FALSE);
                 Print(L"Shell page-break mode disabled for boot\n");
+            }
+        } else if (jsoneq(config_file_buffer, &json_tokens[current_json_element], "pagetable-debug") == 0) {
+            if (k0_PRECONFIG_DEBUG) {
+                Print(L"pagetable-debug token located in k0.config.json\n");
+            }
+            if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "true") == 0) {
+                k0_PAGETABLE_DEBUG = TRUE;
+                Print(L"Pagetable debug mode enabled\n");
+            }
+            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "false") == 0) {
+                k0_PAGETABLE_DEBUG = FALSE;
+                Print(L"Pagetable debug mode disabled\n");
             }
         }
     }
