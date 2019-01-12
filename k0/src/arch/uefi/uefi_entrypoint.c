@@ -119,7 +119,8 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     
     if (configFileInfo->FileSize > SIZE_1MB) {
         ShellCloseFile(configFileHandle);
-        kernel_panic(L"k0.config.json may not exceed 1MB in size! Actual size of k0.config.json == %lu\n", configFileInfo->FileSize);
+        kernel_panic(L"k0.config.json may not exceed 1MB in size! Actual size of k0.config.json == %lu\n", 
+            configFileInfo->FileSize);
     }
     else if (k0_PRECONFIG_DEBUG) {
         Print(L"k0.config.json FileSize == %lu\n", configFileInfo->FileSize);
@@ -178,7 +179,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     jsmntok_t *json_tokens = (jsmntok_t*)AllocatePages(json_pages_to_allocate);
     
     if (json_tokens == NULL) {
-        kernel_panic(L"Unable to allocate %lu page(s) to tokenize k0.config.json: %r\n", json_pages_to_allocate, config_file_read_result);
+        kernel_panic(L"Unable to allocate %lu page(s) to tokenize k0.config.json: %r\n", 
+            json_pages_to_allocate, 
+            config_file_read_result);
     }
     else if (k0_PRECONFIG_DEBUG) {
         Print(L"Allocated %lu page(s) for k0.config.json token data\n", json_pages_to_allocate);
@@ -316,7 +319,8 @@ kernel_entry:
 
     Print(L"Located %lu 2MB pages of available physical memory\n", count_pages_2MB);
     Print(L"Located %lu 4KB pages of available physical memory\n", count_pages_4KB);
-    Print(L"Total available physical memory == %lu KB\n", ((count_pages_2MB * SIZE_2MB) + (count_pages_4KB * SIZE_4KB)) / 1024);
+    Print(L"Total available physical memory == %lu KB\n", 
+        ((count_pages_2MB * SIZE_2MB) + (count_pages_4KB * SIZE_4KB)) / 1024);
 
     k0_main();
 

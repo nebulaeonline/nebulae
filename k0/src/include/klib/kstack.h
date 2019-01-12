@@ -50,7 +50,9 @@ typedef struct s_kstack {
 
 // Initializes a stack structure with appropriate values given the parameters
 // size_in_bytes must be a multiple of KSTACK_UNIT_SIZE
-nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UINTN size_in_bytes, INT32 dir);
+nebStatus kInitStackStructure(kstack *stack, 
+                              EFI_PHYSICAL_ADDRESS* base_addr, 
+                              UINTN size_in_bytes, INT32 dir);
 
 // Push a value onto the specified stack
 EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value);

@@ -160,7 +160,10 @@ UINTN ReadUefiMemoryMap() {
     // If we've already left boot services, this call is worthless
     // Ditto if we haven't allocated any page stacks yet
     if (k0_main_called || !physical_mem_stacks_allocated) {
-        Print(L"Bailed on ReadUefiMemoryMap, k0_main_called == %u, physical_mem_stacks_allocated == %u\n", k0_main_called, physical_mem_stacks_allocated);
+        Print(L"Bailed on ReadUefiMemoryMap, k0_main_called == %u, physical_mem_stacks_allocated == %u\n", 
+            k0_main_called, 
+            physical_mem_stacks_allocated);
+
         return 0;
     }
 
@@ -235,7 +238,9 @@ UINTN ReadUefiMemoryMap() {
                     current_address += SIZE_2MB;
 
                     if (stack_result == NULL) {
-                        kernel_panic(L"Problem pushing 2MB page @ 0x%lx to 2MB page stack @ 0x%x\n", current_address, kmem_2MB_pages);
+                        kernel_panic(L"Problem pushing 2MB page @ 0x%lx to 2MB page stack @ 0x%x\n", 
+                            current_address, 
+                            kmem_2MB_pages);
                     }
                 }
                 else if ((current_address % SIZE_4KB) == 0 && (current_address + SIZE_4KB) <= mem_block_end) {
@@ -243,7 +248,9 @@ UINTN ReadUefiMemoryMap() {
                     current_address += SIZE_4KB;
 
                     if (stack_result == NULL) {
-                        kernel_panic(L"Problem pushing 4KB page @ 0x%lx to 4KB page stack @ 0x%x\n", current_address, kmem_4KB_pages);
+                        kernel_panic(L"Problem pushing 4KB page @ 0x%lx to 4KB page stack @ 0x%x\n", 
+                            current_address, 
+                            kmem_4KB_pages);
                     }
                 }
                 else {
@@ -286,7 +293,8 @@ VOID AllocateSystemStruct() {
 
     if (NEB_ERROR(remove_sys_struct_pages)) {
         // well, this just shouldn't happen
-        kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n", remove_sys_struct_pages);
+        kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n", 
+            remove_sys_struct_pages);
     }
     else {
         if (k0_VERBOSE_DEBUG) {
@@ -300,7 +308,8 @@ VOID AllocateSystemStruct() {
         remove_sys_struct_pages = RemovePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
 
         if (NEB_ERROR(remove_sys_struct_pages)) {
-            kernel_panic(L"Unable to remove second system struct page from physical memory stacks: %ld\n", remove_sys_struct_pages);
+            kernel_panic(L"Unable to remove second system struct page from physical memory stacks: %ld\n", 
+                remove_sys_struct_pages);
         } 
         else {
             if (k0_VERBOSE_DEBUG) {

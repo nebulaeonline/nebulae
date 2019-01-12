@@ -78,12 +78,24 @@ EFI_PHYSICAL_ADDRESS* kStackPush(kstack *stack, UINT64 value) {
 
     // see if the stack is already full
     // remember top is always 1 step ahead
-    if (stack->dir == KSTACK_DIRECTION_GROW_UP && (UINT64)stack->top >= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
-        Print(L"Grow up stack top (@ 0x%lx) too big. base == 0x%lx / size == %lu\n", stack->top, stack->base, stack->size);
+    if (stack->dir == KSTACK_DIRECTION_GROW_UP && 
+       (UINT64)stack->top >= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
+        
+        Print(L"Grow up stack top (@ 0x%lx) too big. base == 0x%lx / size == %lu\n", 
+            stack->top, 
+            stack->base, 
+            stack->size);
+
         return NULL;
     }
-    else if (stack->dir == KSTACK_DIRECTION_GROW_DOWN && (UINT64)stack->top <= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
-        Print(L"Grow down stack bottom (@ 0x%lx) too small. base == 0x%lx / eqn == %ld\n", stack->top, stack->base, (EFI_PHYSICAL_ADDRESS*)((UINT64)stack->base + (stack->dir * stack->size)));
+    else if (stack->dir == KSTACK_DIRECTION_GROW_DOWN && 
+            (UINT64)stack->top <= ((UINT64)stack->base + ((UINT64)stack->dir * stack->size))) {
+        
+        Print(L"Grow down stack bottom (@ 0x%lx) too small. base == 0x%lx / eqn == %ld\n", 
+            stack->top, 
+            stack->base, 
+            (EFI_PHYSICAL_ADDRESS*)((UINT64)stack->base + (stack->dir * stack->size)));
+
         return NULL;
     }
 
