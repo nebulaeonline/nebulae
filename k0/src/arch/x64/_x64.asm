@@ -1,4 +1,5 @@
-;Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+; Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+; Copyright (c) 2006, Intel Corporation. All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without 
 ; modification, are permitted provided that the following conditions are met:
@@ -110,6 +111,21 @@ x64DisableInterrupts PROC
     xor eax,eax
     ret
 x64DisableInterrupts ENDP
+
+
+;==================================
+; UINT64
+; EFIAPI
+; x64ReadTsc (
+;   VOID
+;   );
+;------------------------------------------------------------------------------
+x64ReadTsc  PROC
+    rdtsc
+    shl     rdx, 20h
+    or      rax, rdx
+    ret
+x64ReadTsc  ENDP
 
 ;==================================
     END

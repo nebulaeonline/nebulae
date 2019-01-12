@@ -308,5 +308,6 @@ extern VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
 extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
+extern UINT64 EFIAPI x64ReadTsc(VOID);
 
 #endif /* __K0_X64_H */
