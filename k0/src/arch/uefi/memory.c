@@ -503,21 +503,3 @@ UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 #endif
 
 }
-
-// Pops a free physical page base address of the
-// requested size off the respective stack
-UINT64 GetPage(UINTN page_size) {
-    
-    if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
-        return 0;
-    }
-
-    if (page_size == SIZE_4KB) {
-        return kStackPop(&kmem_free_pages_4KB);
-    }
-    else if (page_size == SIZE_2MB) {
-        return kStackPop(&kmem_free_pages_2MB);
-    }
-
-    return 0;
-}

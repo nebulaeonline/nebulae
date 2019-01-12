@@ -69,6 +69,5 @@ UINTN     ReadUefiMemoryMap(VOID);
 VOID      AllocateSystemStruct(VOID);
 nebStatus RemovePageContainingAddr(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
-UINT64    GetPage(UINTN page_size);
 
 #endif /* __K0_KMEM_H */
