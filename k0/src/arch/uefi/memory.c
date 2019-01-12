@@ -286,6 +286,7 @@ VOID AllocateSystemStruct() {
 
 #ifdef __NEBULAE_ARCH_X64
     x64AllocateSystemStruct();
+#endif
 
     // We need to remove the pages we just "allocated" for the system
     // struct
@@ -317,7 +318,6 @@ VOID AllocateSystemStruct() {
             }
         }
     }
-#endif
 }
 
 // Removes a page from the system physical memory stacks

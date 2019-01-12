@@ -171,7 +171,6 @@ UINT64 kGetStackCount(kstack *stack) {
 nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
 
     UINT64 *current_item = stack->top;
-    UINT64 stack_count = kGetStackCount(stack);
 
     while (current_item != stack->base) {   // when they are equal, the stack is empty
         if (value >= *current_item && value <= (*current_item + size_factor)) {
@@ -190,7 +189,6 @@ nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
         }
         
         current_item += (-1) * (stack->dir * KSTACK_UNIT_SIZE);
-        stack_count--;
     }
     
     return NEBERROR_STACK_ELEMENT_NOT_FOUND;
