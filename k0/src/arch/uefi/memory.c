@@ -37,6 +37,7 @@
 // Kernel Headers
 #include "../../include/k0.h"
 #include "../../include/klib/kstack.h"
+#include "../../include/klib/kerror.h"
 
 // Uefi Memory Header
 #include "../../include/arch/uefi/memory.h"
@@ -221,7 +222,6 @@ UINTN ReadUefiMemoryMap() {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
         if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
-            Print(L"Found conventional memory block\n");
 
             // Begin pushing pages onto the free page stack
             UINT64 current_address = (UINT64)memmap_entry->PhysicalStart;
@@ -248,19 +248,10 @@ UINTN ReadUefiMemoryMap() {
                 }
                 else {
                     Print(L"Memory address did not meet either criteria: 0x%lx\n", current_address);
-                    Print(L"mem_block_end == 0x%lx\n", mem_block_end);
+                    kernel_panic(L"mem_block_end == 0x%lx\n", mem_block_end);
                 }
             }
 
-            if (current_address >= ((EFI_PHYSICAL_ADDRESS)memmap_entry->PhysicalStart + (memmap_entry->NumberOfPages * EFI_PAGE_SIZE))) {
-                Print(L"Current address (0x%lx) exceeds calculated bounds\n", current_address);
-            }
-
-            if (k0_VERBOSE_DEBUG) {
-                Print(L"T: %s, P: %lu, V: %lu, #: %lu, A: %lx\n",
-                    EFI_MEMORY_TYPES[memmap_entry->Type], memmap_entry->PhysicalStart, memmap_entry->VirtualStart,
-                    memmap_entry->NumberOfPages, memmap_entry->Attribute);
-            }
             if (memmap_entry->NumberOfPages > kmem_largest_block_page_count) {
                 kmem_largest_block_page_count = memmap_entry->NumberOfPages;
                 kmem_largest_block_size = kmem_largest_block_page_count * EFI_PAGE_SIZE;
@@ -288,7 +279,62 @@ VOID AllocateSystemStruct() {
 
 #ifdef __NEBULAE_ARCH_X64
     x64AllocateSystemStruct();
+
+    // We need to remove the pages we just "allocated" for the system
+    // struct
+    nebStatus remove_sys_struct_pages = RemovePageContainingAddr(nebulae_system_table);
+
+    if (NEB_ERROR(remove_sys_struct_pages)) {
+        // well, this just shouldn't happen
+        kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n", remove_sys_struct_pages);
+    }
+    else {
+        if (k0_VERBOSE_DEBUG) {
+            Print(L"Removed system struct page from physical memory stacks\n");
+        }
+    }
+
+    // If we removed a 4KB page, then we need to remove another, 
+    // since we allocated a contiguous 8KB for the system table
+    if (remove_sys_struct_pages == NEBSTATUS_REMOVED_4KB_PAGE) {
+        remove_sys_struct_pages = RemovePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
+
+        if (NEB_ERROR(remove_sys_struct_pages)) {
+            kernel_panic(L"Unable to remove second system struct page from physical memory stacks: %ld\n", remove_sys_struct_pages);
+        } 
+        else {
+            if (k0_VERBOSE_DEBUG) {
+                Print(L"Removed second system struct page from physical memory stacks\n");
+            }
+        }
+    }
 #endif
+}
+
+// Removes a page from the system physical memory stacks
+// containing the specified address
+nebStatus RemovePageContainingAddr(UINT64 addr) {
+    
+    nebStatus found_in_2MB = kStackSwapValue(&kmem_2MB_pages, (UINT64)addr, SIZE_2MB);
+    if (NEB_ERROR(found_in_2MB)) {
+
+        nebStatus found_in_4KB = kStackSwapValue(&kmem_4KB_pages, (UINT64)addr, SIZE_4KB);
+
+        if (NEB_ERROR(found_in_4KB)) {
+            // We didn't find shit
+            return NEBERROR_STACK_ELEMENT_NOT_FOUND;
+        }
+        else {
+            // We can just discard the value, cause it ain't coming back!
+            kStackPop(&kmem_4KB_pages);
+            return NEBSTATUS_REMOVED_4KB_PAGE;
+        }
+    }
+    else {
+        // Ditto
+        kStackPop(&kmem_2MB_pages);
+        return NEBSTATUS_REMOVED_2MB_PAGE;
+    }
 }
 
 // Returns the raw paging structure for a given
@@ -299,4 +345,22 @@ UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     x64GetPageInfo(addr);
 #endif
 
+}
+
+// Pops a free physical page base address of the
+// requested size off the respective stack
+UINT64 GetPage(UINTN page_size) {
+    
+    if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
+        return 0;
+    }
+
+    if (page_size == SIZE_4KB) {
+        return kStackPop(&kmem_4KB_pages);
+    }
+    else if (page_size == SIZE_2MB) {
+        return kStackPop(&kmem_2MB_pages);
+    }
+
+    return 0;
 }

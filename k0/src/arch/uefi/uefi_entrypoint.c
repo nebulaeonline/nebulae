@@ -307,8 +307,8 @@ kernel_entry:
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
     // Set aside our system data structure
-    //AllocateSystemStruct();
-    //Print(L"System struct allocated at %lx\n", nebulae_system_table);
+    AllocateSystemStruct();
+    Print(L"System struct allocated at %lx\n", nebulae_system_table);
     
     // Inform the user about our memory situation
     UINT64 count_pages_2MB = GetMemStackCount(SIZE_2MB);
