@@ -315,6 +315,6 @@ extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
 extern UINT64 EFIAPI x64ReadTsc(VOID);
-extern x64_farptr* EFIAPI x64LoadStackSegment(x64_farptr* ssptr);
+extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(x64_farptr* ssptr, UINT64* dest);
 
 #endif /* __K0_X64_H */

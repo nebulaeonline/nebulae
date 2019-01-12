@@ -128,18 +128,19 @@ x64ReadTsc  PROC
 x64ReadTsc  ENDP
 
 ;==================================
+; NORETURN
 ; x64_farptr*
 ; EFIAPI
-; x64LoadStackSegment (
-;   x64_farptr*
+; x64LoadStackSegmentAndJump (
+;   x64_farptr*,
+;   VOID* dest
 ;   );
 ;------------------------------------------------------------------------------
-x64LoadStackSegment  PROC
-    pop     rbx
+x64LoadStackSegmentAndJump  PROC
     lss     rax, [rcx]
-    push    rbx
-    ret
-x64LoadStackSegment  ENDP
+    jmp     [dest]
+
+x64LoadStackSegmentAndJump  ENDP
 
 ;==================================
     END
