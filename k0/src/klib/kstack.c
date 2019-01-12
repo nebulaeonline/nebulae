@@ -172,7 +172,7 @@ nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
 
     UINT64 *current_item = stack->top;
 
-    while (current_item != stack->base) {   // when they are equal, the stack is empty
+    while (current_item != stack->base) {   // when equal, we've hit the end
         if (value >= *current_item && value <= (*current_item + size_factor)) {
             
             // Catch the edge case where size_factor != 0, but value == *current_item +
