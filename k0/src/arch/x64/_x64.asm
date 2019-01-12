@@ -138,7 +138,7 @@ x64ReadTsc  ENDP
 ;------------------------------------------------------------------------------
 x64LoadStackSegmentAndJump  PROC
     lss     rax, [rcx]
-    jmp     [dest]
+    jmp QWORD PTR[rdx]
 
 x64LoadStackSegmentAndJump  ENDP
 
