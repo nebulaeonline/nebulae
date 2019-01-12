@@ -67,7 +67,7 @@ UINT64    GetAllocatedMemStackCount(UINT32 which_size);
 nebStatus InitMem(VOID);
 UINTN     ReadUefiMemoryMap(VOID);
 VOID      AllocateSystemStruct(VOID);
-nebStatus RemovePageContainingAddr(UINT64 addr);
+nebStatus RemoveFreePageContainingAddr(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 #endif /* __K0_KMEM_H */

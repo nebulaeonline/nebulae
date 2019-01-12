@@ -427,7 +427,7 @@ VOID AllocateSystemStruct() {
 
     // We need to remove the pages we just "allocated" for the system
     // struct
-    nebStatus remove_sys_struct_pages = RemovePageContainingAddr(nebulae_system_table);
+    nebStatus remove_sys_struct_pages = RemoveFreePageContainingAddr(nebulae_system_table);
 
     if (NEB_ERROR(remove_sys_struct_pages)) {
         // well, this just shouldn't happen
@@ -447,7 +447,7 @@ VOID AllocateSystemStruct() {
         // the page was removed, now add it to the appropriate allocated page stack
         kStackPush(&kmem_allocated_pages_4KB, (UINT64)nebulae_system_table & PAGE_4KB_SUPERVISOR);
         
-        remove_sys_struct_pages = RemovePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
+        remove_sys_struct_pages = RemoveFreePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
 
         if (NEB_ERROR(remove_sys_struct_pages)) {
             kernel_panic(L"Unable to remove second system struct page from physical memory stacks: %ld\n", 
@@ -468,9 +468,9 @@ VOID AllocateSystemStruct() {
     }
 }
 
-// Removes a page from the system physical memory stacks
+// Removes a page from the free system physical memory stacks
 // containing the specified address
-nebStatus RemovePageContainingAddr(UINT64 addr) {
+nebStatus RemoveFreePageContainingAddr(UINT64 addr) {
     
     nebStatus found_in_2MB = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(found_in_2MB)) {
