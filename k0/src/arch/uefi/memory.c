@@ -150,6 +150,34 @@ EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size) {
     return (EFI_PHYSICAL_ADDRESS*)new_page_base;
 }
 
+// Allocates a physical page of memory that contains the
+// specified address; If NULL is returned, page_size must 
+// be ignored on return
+EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size) {
+    
+    // Address and page_size pointer cannot be NULL
+    if (ISNULL(addr) || ISNULL(page_size)) {
+        return NULL;
+    }
+    
+    // Look in 2MB pages first
+    nebStatus swap_result = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
+    if (NEB_ERROR(swap_result)) { // not found, look in 4KB pages
+        swap_result = kStackSwapValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
+        if (NEB_ERROR(swap_result)) { // really not found
+            return NULL;
+        }
+        else {
+            *page_size = SIZE_4KB;
+            return kStackPop(&kmem_free_pages_4KB);
+        }
+    }
+    else {
+        *page_size = SIZE_2MB;
+        return kStackPop(&kmem_free_pages_2MB);
+    }
+}
+
 // Frees a physical page of memory allocated with AllocPage
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
 nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {

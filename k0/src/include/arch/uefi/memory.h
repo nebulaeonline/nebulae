@@ -60,6 +60,7 @@ typedef struct s_uefi_memory_map_info {
 uefi_memory_map_info memmap;
 
 EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size);
+EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size);
 
 nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
 UINT64    GetFreeMemStackCount(UINT32 which_size);
