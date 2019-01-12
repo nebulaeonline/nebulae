@@ -64,8 +64,6 @@ NORETURN VOID k0_main(VOID) {
     // Draw a blue triangle to the screen
     drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
 
-    
-
     // Woo-hoo!
     while (TRUE) {}
 }

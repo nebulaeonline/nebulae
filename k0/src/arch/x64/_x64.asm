@@ -128,4 +128,16 @@ x64ReadTsc  PROC
 x64ReadTsc  ENDP
 
 ;==================================
+; x64_farptr*
+; EFIAPI
+; x64LoadStackSegment (
+;   x64_farptr*
+;   );
+;------------------------------------------------------------------------------
+x64LoadStackSegment  PROC
+    lss     rax, [rcx]
+    ret
+x64LoadStackSegment  ENDP
+
+;==================================
     END

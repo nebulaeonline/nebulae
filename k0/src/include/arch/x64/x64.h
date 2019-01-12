@@ -289,6 +289,12 @@ typedef struct s_x64_cpu {
     x64_cpuinfo_results cpuinfo[11];
 } x64_cpu;
 
+// x64 80-bit far pointer
+typedef PACKED_MS struct s_x64_farptr {
+    UINT16 segment_selector;
+    UINT64 base_address;
+} PACKED_GNU x64_farptr;
+
 // cpu struct
 extern x64_cpu cpu;
 
@@ -309,5 +315,6 @@ extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
 extern UINT64 EFIAPI x64ReadTsc(VOID);
+extern x64_farptr* EFIAPI x64LoadStackSegment(x64_farptr* ssptr);
 
 #endif /* __K0_X64_H */
