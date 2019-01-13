@@ -31,31 +31,16 @@
 #ifndef __K0_KACPI_H
 #define __K0_KACPI_H
 
+#include <IndustryStandard/Acpi62.h>
+
 #include "../../k0.h"
 
-// XSDT is the main System Description Table.
-// There are many kinds of SDT. An SDT may be split into two parts -
-// A common header and a data section which is different for each table.
-typedef struct {
-    CHAR8   Signature[4];
-    UINT32  Length;
-    UINT8   Revision;
-    UINT8   Checksum;
-    CHAR8   OemId[6];
-    CHAR8   OemTableId[8];
-    UINT32  OemRevision;
-    UINT32  CreatorId;
-    UINT32  CreatorRevision;
-} EFI_ACPI_SDT_HEADER;
-
-#define EFI_ACPI_TABLE_GUID \
+#define EFI_ACPI_10_TABLE_GUID \
     { 0xeb9d2d30, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d }}
-#define EFI_ACPI_20_TABLE_GUID \
+#define EFI_ACPI_TABLE_GUID \
     { 0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 }}
 
-#define EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION 0x02
-
-extern EFI_ACPI_SDT_HEADER *acpi_xsdt;
+extern EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt;
 
 nebStatus LocateACPI_XSDT(VOID);
 

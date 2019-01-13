@@ -36,10 +36,10 @@
 
 #include "../../include/klib/kstring.h"
 
-EFI_ACPI_SDT_HEADER *acpi_xsdt = NULL;
+EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt = NULL;
 
-nebStatus ParseRSDP(EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* guid) {
-    EFI_ACPI_SDT_HEADER *xsdt, *entry;
+nebStatus ParseRSDP(EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* guid) {
+    EFI_ACPI_DESCRIPTION_HEADER *xsdt, *entry;
     CHAR16 sig[20], oemstr[20];
     UINT32 entry_count;
     UINT64 *entry_ptr;
@@ -51,8 +51,8 @@ nebStatus ParseRSDP(EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* 
         Print(L"\nFound RSDP. Version: %d  OEM ID: %s\n", (int)(rsdp->Revision), oemstr);
     }
 
-    if (rsdp->Revision >= EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION) {
-        xsdt = (EFI_ACPI_SDT_HEADER *)(rsdp->XsdtAddress);
+    if (rsdp->Revision >= EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION) {
+        xsdt = (EFI_ACPI_DESCRIPTION_HEADER *)(rsdp->XsdtAddress);
     }
     else {
         if (k0_VERBOSE_DEBUG)
@@ -60,21 +60,21 @@ nebStatus ParseRSDP(EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* 
         return NEBERROR_ACPI_XSDT_NOT_FOUND;
     }
 
-    if (kStrnCmpA("XSDT", (CHAR8 *)(VOID *)(xsdt->Signature), 4)) {
+    if (xsdt->Signature & 0xFFFFFFFF00 != 0x5444535800) {
         if (k0_VERBOSE_DEBUG)
-            Print(L"ERROR: Invalid XSDT table found.\n");
+            Print(L"ERROR: Invalid XSDT table found: %0x%x\n", xsdt->Signature);
         return NEBERROR_ACPI_INVALID_XSDT;
     }
 
     kAscii2UnicodeStr((CHAR8 *)(xsdt->OemId), oemstr, 6);
-    entry_count = (xsdt->Length - sizeof(EFI_ACPI_SDT_HEADER)) / sizeof(UINT64);
+    entry_count = (xsdt->Length - sizeof(EFI_ACPI_DESCRIPTION_HEADER)) / sizeof(UINT64);
     if (k0_VERBOSE_DEBUG)
         Print(L"Found XSDT @ 0x%lx. OEM ID: %s  Entry Count: %d\n\n", (UINT64)xsdt, oemstr, entry_count);
 
     entry_ptr = (UINT64 *)(xsdt + 1);
     acpi_xsdt = xsdt;
     for (index = 0; index < entry_count; index++, entry_ptr++) {
-        entry = (EFI_ACPI_SDT_HEADER *)((UINTN)(*entry_ptr));
+        entry = (EFI_ACPI_DESCRIPTION_HEADER *)((UINTN)(*entry_ptr));
         kAscii2UnicodeStr((CHAR8 *)(entry->Signature), sig, 4);
         kAscii2UnicodeStr((CHAR8 *)(entry->OemId), oemstr, 6);
         if (k0_VERBOSE_DEBUG)
@@ -87,9 +87,9 @@ nebStatus ParseRSDP(EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* 
 nebStatus LocateACPI_XSDT() {
 
     EFI_CONFIGURATION_TABLE *ect = gST->ConfigurationTable;
-    EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp = NULL;
-    EFI_GUID acpi_table_guid = EFI_ACPI_TABLE_GUID;
-    EFI_GUID acpi2_table_guid = EFI_ACPI_20_TABLE_GUID;
+    EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp = NULL;
+    EFI_GUID acpi_table_guid = EFI_ACPI_10_TABLE_GUID;
+    EFI_GUID acpi2_table_guid = EFI_ACPI_TABLE_GUID;
     CHAR16 guidstr[100];
     int index;
 
@@ -99,7 +99,7 @@ nebStatus LocateACPI_XSDT() {
             (CompareGuid(&(gST->ConfigurationTable[index].VendorGuid), &acpi2_table_guid))) {
             if (!kStrnCmpA("RSD PTR ", (CHAR8 *)(ect->VendorTable), 8)) {
                 kGuid2String(guidstr, 100, &(gST->ConfigurationTable[index].VendorGuid));
-                rsdp = (EFI_ACPI_2_0_ROOT_SYSTEM_DESCRIPTION_POINTER *)ect->VendorTable;
+                rsdp = (EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *)ect->VendorTable;
                 ParseRSDP(rsdp, guidstr);
             }
         }
