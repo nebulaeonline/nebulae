@@ -250,6 +250,7 @@
     <ClInclude Include="src\include\klib\kerror.h" />
     <ClInclude Include="src\include\klib\kstack.h" />
     <ClInclude Include="src\include\klib\kstring.h" />
+    <ClInclude Include="src\include\klib\pe.h" />
     <ClInclude Include="src\include\lib\stddef.h" />
   </ItemGroup>
   <ItemGroup>

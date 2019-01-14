@@ -35,6 +35,7 @@ const baselib = @cImport({
 });
 
 // CPU struct
+pub const 
 pub const x86cpu = struct {
     PhysicalAddressBits: u8,
     LinearAddressBits: u8,
@@ -113,7 +114,7 @@ pub const x86cpu = struct {
 };
 
 // Fill out a cpu information struct
-pub fn IdentifyCPU(cpu_struct: *x86cpu) VOID {
+pub fn IdentifyCPU(cpu_struct: *x86cpu) void {
     var EAX: u32 = 0;
     var EBX: u32 = 0;
     var ECX: u32 = 0;
@@ -474,7 +475,7 @@ pub var cpu0: x86cpu = undefined;
 
 // Function to query the processor to determine the physical and linear
 // address bits supported
-pub fn InitCPU() VOID {
+pub fn InitCPU() void {
     IdentifyCPU(&cpu0);
 }
 

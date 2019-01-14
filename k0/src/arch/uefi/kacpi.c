@@ -108,7 +108,7 @@ nebStatus LocateACPI_XSDT() {
 
     if (rsdp == NULL) { 
         if (k0_VERBOSE_DEBUG) {
-            Print(L"ERROR: Could not find a RSDP.\n");
+            Print(L"ERROR: Could not find an RSDP.\n");
         }
         return NEBERROR_ACPI_RSDP_NOT_FOUND;
     }
