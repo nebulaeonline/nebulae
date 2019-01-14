@@ -7,3 +7,6 @@
 [submodule "acpica"]
 	path = acpica
 	url = https://github.com/acpica/acpica.git
+[submodule "nedmalloc"]
+	path = nedmalloc
+	url = https://github.com/ned14/nedmalloc.git
