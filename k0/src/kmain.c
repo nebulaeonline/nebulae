@@ -34,13 +34,14 @@
 
 // Kernel includes
 #include "include/k0.h"
-#include "include/klib/kstring.h"
-#include "include/klib/interrupt.h"
 
 // nebulae-Uefi Headers
 #include "include/arch/uefi/memory.h"
 #include "include/arch/uefi/graphics.h"
 #include "include/arch/uefi/panic.h"
+
+#include "include/klib/kstring.h"
+#include "include/klib/interrupt.h"
 
 // Main system table
 EFI_PHYSICAL_ADDRESS* nebulae_system_table;

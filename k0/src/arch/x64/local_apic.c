@@ -29,6 +29,8 @@
 #include "../../include/arch/x64/local_apic.h"
 
 UINT64 bsp_apic_address = NULL;
+UINT8  bsp_apic_id = 0;
+UINT32 *bsp_apic_version = NULL;
 
 // Initialize the local APIC
 VOID InitLocalAPIC() {
@@ -41,6 +43,21 @@ VOID InitLocalAPIC() {
 
     if (!CHECK_BIT(apic_msr, X64_APIC_BSP)) {
         kernel_panic(L"nebulae is not running on the boot service processor\n");
+    }
+
+    bsp_apic_id = (UINT8)((cpu.cpuinfo[0x01].reg[X64_REG_EBX] & 0xFF000000) >> 24);
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Boot service processor APIC id: 0x%x\n", bsp_apic_id);
+    }
+
+    if (k0_VERBOSE_DEBUG && CHECK_BIT(apic_msr, X64_APIC_GLOBAL_ENABLE)) {
+        Print(L"Global enable flag of APIC on boot service processor set\n");
+    }
+
+    bsp_apic_version = (UINT32*)(bsp_apic_address + X64_APIC_VERSION_REG_OFFSET);
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Boot service processor APIC version: 0x%x\n", *bsp_apic_version);
     }
 }
 
