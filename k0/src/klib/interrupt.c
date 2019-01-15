@@ -26,44 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-// UEFI Debug Library (ASSERT) & Boot Services
-#include <Library/UefiLib.h>
-#include <Library/DebugLib.h>
-#include <Library/ShellLib.h>
-#include <Library/UefiBootServicesTableLib.h>
+#include "../include/klib/interrupt.h"
 
-// Kernel includes
-#include "include/k0.h"
-#include "include/klib/kstring.h"
-#include "include/klib/interrupt.h"
-
-// nebulae-Uefi Headers
-#include "include/arch/uefi/memory.h"
-#include "include/arch/uefi/graphics.h"
-#include "include/arch/uefi/panic.h"
-
-// Main system table
-EFI_PHYSICAL_ADDRESS* nebulae_system_table;
-
-// Have we been called?
-BOOLEAN k0_main_called = FALSE;
-
-// Kernel Entrypoint
-// Graphics are initialized, we're flying solo!
-NORETURN VOID k0_main(VOID) {
-    
-    // We're here!
-    k0_main_called = TRUE;
-
-    // Do something
-    Print(L"entered main nebulae kernel...\n");
-
-    // Initialize interrupts
-    InitInterrupts();
-
-    // Draw a blue triangle to the screen
-    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
-
-    // Woo-hoo!
-    while (TRUE) {}
+VOID InitInterrupts() {
+    InitLocalAPIC();
 }

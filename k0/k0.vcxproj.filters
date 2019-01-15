@@ -37,6 +37,12 @@
     <ClCompile Include="src\arch\uefi\kacpi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\arch\x64\local_apic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\klib\interrupt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">
@@ -82,6 +88,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\klib\pe.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\x64\local_apic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\klib\interrupt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

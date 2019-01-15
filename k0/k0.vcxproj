@@ -228,9 +228,11 @@
     <ClCompile Include="src\arch\uefi\memory.c" />
     <ClCompile Include="src\arch\uefi\panic.c" />
     <ClCompile Include="src\arch\uefi\uefi_entrypoint.c" />
+    <ClCompile Include="src\arch\x64\local_apic.c" />
     <ClCompile Include="src\arch\x64\x64.c" />
     <ClCompile Include="src\deps\isaac64.c" />
     <ClCompile Include="src\deps\jsmn.c" />
+    <ClCompile Include="src\klib\interrupt.c" />
     <ClCompile Include="src\klib\kelf64.c" />
     <ClCompile Include="src\klib\kstack.c" />
     <ClCompile Include="src\klib\kstring.c" />
@@ -241,11 +243,13 @@
     <ClInclude Include="src\include\arch\uefi\kacpi.h" />
     <ClInclude Include="src\include\arch\uefi\memory.h" />
     <ClInclude Include="src\include\arch\uefi\panic.h" />
+    <ClInclude Include="src\include\arch\x64\local_apic.h" />
     <ClInclude Include="src\include\arch\x64\x64.h" />
     <ClInclude Include="src\include\deps\isaac64.h" />
     <ClInclude Include="src\include\deps\jsmn.h" />
     <ClInclude Include="src\include\deps\standard.h" />
     <ClInclude Include="src\include\k0.h" />
+    <ClInclude Include="src\include\klib\interrupt.h" />
     <ClInclude Include="src\include\klib\kelf64.h" />
     <ClInclude Include="src\include\klib\kerror.h" />
     <ClInclude Include="src\include\klib\kstack.h" />
