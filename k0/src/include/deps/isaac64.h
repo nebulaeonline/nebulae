@@ -23,10 +23,7 @@ ub8 randrsl[RANDSIZ], randcnt;
 */
 VOID InitIsaac64CSPRNG(word flag);
 
-VOID isaac64(VOID);
-
-
-/*
+VOID isaac64(VOID);/*
 ------------------------------------------------------------------------------
  Call rand() to retrieve a single 64-bit random value
 ------------------------------------------------------------------------------

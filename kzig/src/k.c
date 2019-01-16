@@ -10,10 +10,6 @@
 // this list of conditions and the following disclaimer in the documentation 
 // and/or other materials provided with the distribution.
 // 
-// 3. Neither the name of the copyright holder nor the names of its contributors 
-// may be used to endorse or promote products derived from this software without 
-// specific prior written permission.
-// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
@@ -65,10 +61,7 @@ CHAR8 *gEfiCallerBaseName = "k";
 //
 // Debugging Toggle
 //
-CONST BOOLEAN kDBG = KDBG;
-
-
-EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
+CONST BOOLEAN kDBG = KDBG;EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
     
     // 
     // This code should be compiled out and never called 
@@ -99,10 +92,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     ShellSetPageBreakMode(TRUE);
 
     // Init memory subsystem
-    InitMemSubsystem();
-
-
-exit:
+    InitMemSubsystem();exit:
     return exit_status;
 }
 */

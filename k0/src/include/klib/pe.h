@@ -10,10 +10,6 @@
 // this list of conditions and the following disclaimer in the documentation 
 // and/or other materials provided with the distribution.
 // 
-// 3. Neither the name of the copyright holder nor the names of its contributors 
-// may be used to endorse or promote products derived from this software without 
-// specific prior written permission.
-// 
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
 // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
@@ -332,10 +328,7 @@ typedef PACKED_MS struct s_pe_coff_image_data_dir {
 // The section can be read.
 #define IMAGE_SCN_MEM_READ                      0x40000000
 // The section can be written to.
-#define IMAGE_SCN_MEM_WRITE                     0x80000000
-
-
-// Section header
+#define IMAGE_SCN_MEM_WRITE                     0x80000000// Section header
 typedef PACKED_MS struct s_pe_coff_section_header {
     CHAR8   name[8];
     UINT32  virtual_size;
@@ -389,10 +382,7 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 // A pair that must immediately follow every span - dependent value.
 #define IMAGE_REL_AMD64_PAIR                            0x000F
 // A 32-bit signed span - dependent value that is applied at link time.
-#define IMAGE_REL_AMD64_SSPAN32                         0x0010
-
-
-// ARM64
+#define IMAGE_REL_AMD64_SSPAN32                         0x0010// ARM64
 // The relocation is ignored.
 #define IMAGE_REL_ARM64_ABSOLUTE                        0x0000
 // The 32-bit VA of the target.
@@ -429,10 +419,7 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 // The 14-bit offset to the relocation target, for instructions TBZ and TBNZ.
 #define IMAGE_REL_ARM64_BRANCH14                        0x0010
 // The 32-bit relative address from the byte following the relocation.
-#define IMAGE_REL_ARM64_REL32                           0x0011
-
-
-// i386
+#define IMAGE_REL_ARM64_REL32                           0x0011// i386
 // The relocation is ignored.
 #define IMAGE_REL_I386_ABSOLUTE                         0x0000
 // Not supported.
@@ -473,10 +460,7 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 
 // Masks
 #define PE_BASE_TYPE_MASK                               0x0F
-#define PE_COMPLEX_TYPE_MASK                            0xF0
-
-
-// Base symbol types
+#define PE_COMPLEX_TYPE_MASK                            0xF0// Base symbol types
 // No type information or unknown base type.
 // Microsoft tools use this setting
 #define IMAGE_SYM_TYPE_NULL                             0
@@ -971,10 +955,7 @@ typedef PACKED_MS struct s_pe64_coff_load_configuration_structure {
     UINT64  guard_address_taken_iat_entry_count;
     UINT64  guard_long_jump_target_table;
     UINT64  guard_long_jump_target_count;
-} PACKED_GNU pe64_coff_load_configuration_structure;
-
-
-// Module performs control flow integrity checks using system - supplied support.
+} PACKED_GNU pe64_coff_load_configuration_structure;// Module performs control flow integrity checks using system - supplied support.
 #define IMAGE_GUARD_CF_INSTRUMENTED                     0x00000100
 // Module performs control flow and write integrity checks.
 #define IMAGE_GUARD_CFW_INSTRUMENTED                    0x00000200
