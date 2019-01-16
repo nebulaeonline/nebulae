@@ -25,4 +25,4 @@ Additionally, I have to give major kudos to Alex Ionescu for his excellent Visua
 License
 ----
 
-3-Clause BSD
+2-Clause BSD
