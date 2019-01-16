@@ -58,28 +58,28 @@
 
 // Characteristics
 
-// Image only, Windows CE, and Microsoft Windows NT and later.This indicates that the file does not contain 
-// base relocations and must therefore be loaded at its preferred base address.If the base address is not 
-// available, the loader reports an error.The default behavior of the linker is to strip base relocations 
+// Image only, Windows CE, and Microsoft Windows NT and later. This indicates that the file does not contain 
+// base relocations and must therefore be loaded at its preferred base address. If the base address is not 
+// available, the loader reports an error. The default behavior of the linker is to strip base relocations 
 // from executable(EXE) files.
 #define IMAGE_FILE_RELOCS_STRIPPED                      0x0001
-// Image only.This indicates that the image file is valid and can be run.If this flag is not set, it 
+// Image only. This indicates that the image file is valid and can be run. If this flag is not set, it 
 // indicates a linker error.
 #define IMAGE_FILE_EXECUTABLE_IMAGE                     0x0002
-// COFF line numbers have been removed.This flag is deprecated and should be zero.
+// COFF line numbers have been removed. This flag is deprecated and should be zero.
 #define IMAGE_FILE_LINE_NUMS_STRIPPED                   0x0004
-// COFF symbol table entries for local symbols have been removed.This flag is deprecated and should be zero.
+// COFF symbol table entries for local symbols have been removed. This flag is deprecated and should be zero.
 #define IMAGE_FILE_LOCAL_SYMS_STRIPPED                  0x0008
-// Obsolete. Aggressively trim working set.This flag is deprecated for Windows 2000 and later and must be zero.
+// Obsolete. Aggressively trim working set. This flag is deprecated for Windows 2000 and later and must be zero.
 #define IMAGE_FILE_AGGRESSIVE_WS_TRIM                   0x0010
-// Application can handle > 2 - GB addresses.
+// Application can handle > 2-GB addresses.
 #define IMAGE_FILE_LARGE_ADDRESS_AWARE                  0x0020
 // This flag is reserved for future use.
 #define IMaGE_FILE_RESERVED_FUTURE                      0x0040
-// Little endian : the least significant bit(LSB) precedes the most significant bit(MSB) in memory.This flag 
-// is deprecated and should be zero.
+// Little endian : the least significant bit(LSB) precedes the most significant bit (MSB) in memory. 
+// This flag is deprecated and should be zero.
 #define IMAGE_FILE_BYTES_REVERSED_LO                    0x0080
-// Machine is based on a 32-bit - word architecture.
+// Machine is based on a 32-bit-word architecture.
 #define IMAGE_FILE_32BIT_MACHINE                        0x0100
 // Debugging information is removed from the image file.
 #define IMAGE_FILE_DEBUG_STRIPPED                       0x0200
@@ -89,12 +89,12 @@
 #define IMAGE_FILE_NET_RUN_FROM_SWAP                    0x0800
 // The image file is a system file, not a user program.
 #define IMAGE_FILE_SYSTEM                               0x1000
-// The image file is a dynamic - link library(DLL).Such files are considered executable files for almost 
+// The image file is a dynamic-link library (DLL). Such files are considered executable files for almost 
 // all purposes, although they cannot be directly run.
 #define IMAGE_FILE_DLL                                  0x2000
 // The file should be run only on a uniprocessor machine.
 #define IMAGE_FILE_UP_SYSTEM_ONLY                       0x4000
-// Big endian : the MSB precedes the LSB in memory.This flag is deprecated and should be zero.
+// Big endian: the MSB precedes the LSB in memory. This flag is deprecated and should be zero.
 #define IMAGE_FILE_BYTES_REVERSED_HI                    0x8000
 
 // PE magic
@@ -129,7 +129,7 @@
 #define IMAGE_DLLCHARACTERISTICS_NX_COMPAT              0x0100
 // Isolation aware, but do not isolate the image.
 #define IMAGE_DLLCHARACTERISTICS_NO_ISOLATION           0x0200
-// Does not use structured exception(SE) handling.No SE handler may be called in this image.
+// Does not use structured exception(SE) handling. No SE handler may be called in this image.
 #define IMAGE_DLLCHARACTERISTICS_NO_SEH                 0x0400
 // Do not bind the image.
 #define IMAGE_DLLCHARACTERISTICS_NO_BIND                0x0800
@@ -257,7 +257,7 @@ typedef PACKED_MS struct s_pe_coff_image_data_dir {
 
 // Section flags
 // The section should not be padded to the next boundary. This flag is obsolete 
-// and is replaced by IMAGE_SCN_ALIGN_1BYTES.This is valid only for object files.
+// and is replaced by IMAGE_SCN_ALIGN_1BYTES. This is valid only for object files.
 #define IMAGE_SCN_TYPE_NO_PAD                   0x00000008
 // The section contains executable code.
 #define IMAGE_SCN_CNT_CODE                      0x00000020
@@ -301,7 +301,7 @@ typedef PACKED_MS struct s_pe_coff_image_data_dir {
 #define IMAGE_SCN_ALIGN_64BYTES                 0x00700000
 // Align data on a 128-byte boundary. Valid only for object files.
 #define IMAGE_SCN_ALIGN_128BYTES                0x00800000
-// Align data on a 256 - byte boundary.Valid only for object files.
+// Align data on a 256 - byte boundary. Valid only for object files.
 #define IMAGE_SCN_ALIGN_256BYTES                0x00900000
 // Align data on a 512-byte boundary. Valid only for object files.
 #define IMAGE_SCN_ALIGN_512BYTES                0x00A00000
@@ -311,7 +311,7 @@ typedef PACKED_MS struct s_pe_coff_image_data_dir {
 #define IMAGE_SCN_ALIGN_2048BYTES               0x00C00000
 // Align data on a 4096 - byte boundary.Valid only for object files.
 #define IMAGE_SCN_ALIGN_4096BYTES               0x00D00000
-// Align data on an 8192 - byte boundary.Valid only for object files.
+// Align data on an 8192 - byte boundary. Valid only for object files.
 #define IMAGE_SCN_ALIGN_8192BYTES               0x00E00000
 // The section contains extended relocations.
 #define IMAGE_SCN_LNK_NRELOC_OVFL               0x01000000
@@ -328,7 +328,9 @@ typedef PACKED_MS struct s_pe_coff_image_data_dir {
 // The section can be read.
 #define IMAGE_SCN_MEM_READ                      0x40000000
 // The section can be written to.
-#define IMAGE_SCN_MEM_WRITE                     0x80000000// Section header
+#define IMAGE_SCN_MEM_WRITE                     0x80000000 
+
+// Section header
 typedef PACKED_MS struct s_pe_coff_section_header {
     CHAR8   name[8];
     UINT32  virtual_size;
@@ -379,10 +381,12 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 #define IMAGE_REL_AMD64_TOKEN                           0x000D
 // A 32-bit signed span - dependent value emitted into the object.
 #define IMAGE_REL_AMD64_SREL32                          0x000E
-// A pair that must immediately follow every span - dependent value.
+// A pair that must immediately follow every span-dependent value.
 #define IMAGE_REL_AMD64_PAIR                            0x000F
 // A 32-bit signed span - dependent value that is applied at link time.
-#define IMAGE_REL_AMD64_SSPAN32                         0x0010// ARM64
+#define IMAGE_REL_AMD64_SSPAN32                         0x0010
+
+// ARM64
 // The relocation is ignored.
 #define IMAGE_REL_ARM64_ABSOLUTE                        0x0000
 // The 32-bit VA of the target.
@@ -395,18 +399,18 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 #define IMAGE_REL_ARM64_PAGEBASE_REL21                  0x0004
 // The 12-bit relative displacement to the target, for instruction ADR
 #define IMAGE_REL_ARM64_REL21                           0x0005
-// The 12-bit page offset of the target, for instructions ADD / ADDS(immediate) with zero shift.
+// The 12-bit page offset of the target, for instructions ADD / ADDS (immediate) with zero shift.
 #define IMAGE_REL_ARM64_PAGEOFFSET_12A                  0x0006
-// The 12-bit page offset of the target, for instruction LDR(indexed, unsigned immediate).
+// The 12-bit page offset of the target, for instruction LDR (indexed, unsigned immediate).
 #define IMAGE_REL_ARM64_PAGEOFFSET_12L                  0x0007
 // The 32-bit offset of the target from the beginning of its section. This is used to support 
 // debugging information and static thread local storage.
 #define IMAGE_REL_ARM64_SECREL                          0x0008
-// Bit 0:11 of section offset of the target, for instructions ADD / ADDS(immediate) with zero shift.
+// Bit 0:11 of section offset of the target, for instructions ADD / ADDS (immediate) with zero shift.
 #define IMAGE_REL_ARM64_SECREL_LOW12A                   0x0009
-// Bit 12 : 23 of section offset of the target, for instructions ADD / ADDS(immediate) with zero shift.
+// Bit 12 : 23 of section offset of the target, for instructions ADD / ADDS (immediate) with zero shift.
 #define IMAGE_REL_ARM64_SECREL_HIGH12A                  0x000A
-// Bit 0 : 11 of section offset of the target, for instruction LDR(indexed, unsigned immediate).
+// Bit 0 : 11 of section offset of the target, for instruction LDR (indexed, unsigned immediate).
 #define IMAGE_REL_ARM64_SECREL_LOW12L                   0x000B
 // CLR token.
 #define IMAGE_REL_ARM64_TOKEN                           0x000C
@@ -419,7 +423,9 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 // The 14-bit offset to the relocation target, for instructions TBZ and TBNZ.
 #define IMAGE_REL_ARM64_BRANCH14                        0x0010
 // The 32-bit relative address from the byte following the relocation.
-#define IMAGE_REL_ARM64_REL32                           0x0011// i386
+#define IMAGE_REL_ARM64_REL32                           0x0011
+
+// i386
 // The relocation is ignored.
 #define IMAGE_REL_I386_ABSOLUTE                         0x0000
 // Not supported.
@@ -460,7 +466,9 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 
 // Masks
 #define PE_BASE_TYPE_MASK                               0x0F
-#define PE_COMPLEX_TYPE_MASK                            0xF0// Base symbol types
+#define PE_COMPLEX_TYPE_MASK                            0xF0
+
+// Base symbol types
 // No type information or unknown base type.
 // Microsoft tools use this setting
 #define IMAGE_SYM_TYPE_NULL                             0
@@ -513,7 +521,7 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 // The automatic(stack) variable.The Value field specifies the stack frame offset.
 #define IMAGE_SYM_CLASS_AUTOMATIC                       1
 // A value that Microsoft tools use for external symbols. The Value field indicates 
-// the size if the section number is IMAGE_SYM_UNDEFINED(0). If the section number 
+// the size if the section number is IMAGE_SYM_UNDEFINED (0). If the section number 
 // is not zero, then the Value field specifies the offset within the section.
 #define IMAGE_SYM_CLASS_EXTERNAL                        2
 // The offset of the symbol within the section.If the Value field is zero, then 
@@ -528,15 +536,15 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 #define IMAGE_SYM_CLASS_LABEL                           6
 // A reference to a code label that is not defined.
 #define IMAGE_SYM_CLASS_UNDEFINED_LABEL                 7
-// The structure member.The Value field specifies the n th member.
+// The structure member. The Value field specifies the n th member.
 #define IMAGE_SYM_CLASS_MEMBER_OF_STRUCT                8
-// A formal argument(parameter) of a function. The Value field specifies the n-th argument.
+// A formal argument (parameter) of a function. The Value field specifies the n-th argument.
 #define IMAGE_SYM_CLASS_ARGUMENT                        9
-// The structure tag - name entry.
+// The structure tag- name entry.
 #define IMAGE_SYM_CLASS_STRUCT_TAG                      10
 // A union member. The Value field specifies the n-th member.
 #define IMAGE_SYM_CLASS_MEMBER_OF_UNION                 11
-// The Union tag - name entry.
+// The Union tag- name entry.
 #define IMAGE_SYM_CLASS_UNION_TAG                       12
 // A Typedef entry.
 #define IMAGE_SYM_CLASS_TYPE_DEFINITION                 13
