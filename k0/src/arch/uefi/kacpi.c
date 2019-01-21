@@ -102,7 +102,7 @@ nebStatus LocateACPI_XSDT() {
         ect++;
     }
 
-    if (rsdp == NULL) { 
+    if (ISNULL(rsdp)) { 
         if (k0_VERBOSE_DEBUG) {
             Print(L"ERROR: Could not find an RSDP.\n");
         }

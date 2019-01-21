@@ -156,11 +156,11 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     
     // Allocate and free pages -- BEGIN MEMORY TEST
     EFI_PHYSICAL_ADDRESS *page_2MB = AllocPage(SIZE_2MB);
-    if (page_2MB == NULL) {
+    if (ISNULL(page_2MB)) {
         kernel_panic(L"Unable to allocate 2MB page\n");
     }
     EFI_PHYSICAL_ADDRESS *page_4KB = AllocPage(SIZE_4KB);
-    if (page_4KB == NULL) {
+    if (ISNULL(page_4KB)) {
         kernel_panic(L"Unable to allocate 4KB page\n");
     }
 

@@ -62,7 +62,7 @@ BOOLEAN ProcessBootConfig() {
     // Allocate enough memory to hold the config file, max 1MB
     CHAR8* config_file_buffer = AllocatePages(config_file_pages);
 
-    if (config_file_buffer == NULL) {
+    if (ISNULL(config_file_buffer)) {
         kernel_panic(L"Failed to allocate pages to process k0 configuration file. Allocation operation returned NULL.\n");
     }
     else if (k0_PRECONFIG_DEBUG) {
@@ -111,7 +111,7 @@ BOOLEAN ProcessBootConfig() {
     UINTN json_pages_to_allocate = ((sizeof(jsmntok_t) * token_count) / EFI_PAGE_SIZE) + 1;
     jsmntok_t *json_tokens = (jsmntok_t*)AllocatePages(json_pages_to_allocate);
 
-    if (json_tokens == NULL) {
+    if (ISNULL(json_tokens)) {
         kernel_panic(L"Unable to allocate %lu page(s) to tokenize k0.config.json: %r\n",
             json_pages_to_allocate,
             config_file_read_result);

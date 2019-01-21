@@ -169,7 +169,7 @@ VOID x64InitGDT() {
     gdt = kPrebootMalloc(&k0_boot_scratch_area, X64_GDT_MAX * sizeof(x64_seg_descr), ALIGN_16);
     x64_seg_sel gdt_sel = { .base = gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
 
-    if (gdt == NULL) {
+    if (ISNULL(gdt)) {
         kernel_panic(L"Problem allocating memory for global descriptor table\n");
     }
 
@@ -180,7 +180,7 @@ VOID x64InitGDT() {
     // Allocate for TSS
     tss = (x64_tss*)kPrebootMalloc(&k0_boot_scratch_area, sizeof(x64_tss), ALIGN_16);
 
-    if (tss == NULL) {
+    if (ISNULL(tss)) {
         kernel_panic(L"Problem allocating memory for task state segment\n");
     }
 
@@ -306,8 +306,7 @@ VOID x64InitGDT() {
     // Set our gdt limit
     gdt_sel.limit = ((current_entry + 1) * sizeof(x64_seg_descr));
 
-    UINTN x;
-    
+    // Install the new gdt    
     x64DisableInterrupts();
     x64WriteGdtr(&gdt_sel);
     x64EnableInterrupts();
@@ -319,7 +318,7 @@ VOID x64InitIDT() {
 
     x64_inttrap_gate *idt = kPrebootMalloc(&k0_boot_scratch_area, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), ALIGN_4KB);
     
-    if (idt == NULL) {
+    if (ISNULL(idt)) {
         kernel_panic(L"Problem allocating memory for interrupt descriptor table\n");
     }
 
@@ -359,10 +358,10 @@ VOID x64AllocateBootScratchArea() {
     EFI_PHYSICAL_ADDRESS addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
         (UINT64)(kmem_largest_block + (kmem_largest_block_size - bytes_to_alloc))) & X64_2MB_ALIGN_MASK);
     
-    if (addr != NULL && ZeroMem(addr, bytes_to_alloc) != addr) {
+    if (!ISNULL(addr) && ZeroMem(addr, bytes_to_alloc) != addr) {
         kernel_panic(L"There was a problem initializing the kernel's boot scratch area!\n");
     }
-    else if (addr == NULL) {
+    else if (ISNULL(addr)) {
         kernel_panic(L"There was a problem initializing the kernel's boot scratch area - isaac64 failed!\n");
     }
     else if (k0_VERBOSE_DEBUG) {
@@ -408,7 +407,7 @@ VOID x64BuildInitialKernelPageTable() {
 
     // allocate memory space for our kernel page table and zero the memory
     k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), ALIGN_4KB);
-    if (k0_addr_space.pml4 == NULL) {
+    if (ISNULL(k0_addr_space.pml4)) {
         kernel_panic(L"Problem building initial kernel page tables - pml4 allocation\n");
     }
 
@@ -417,7 +416,7 @@ VOID x64BuildInitialKernelPageTable() {
     }
     
     k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), ALIGN_4KB);
-    if (k0_addr_space.pdpt == NULL) {
+    if (ISNULL(k0_addr_space.pdpt)) {
         kernel_panic(L"Problem building initial kernel page tables - pdpt allocation\n");
     }
 
@@ -426,7 +425,7 @@ VOID x64BuildInitialKernelPageTable() {
     }
 
     k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
-    if (k0_addr_space.pde == NULL) {
+    if (ISNULL(k0_addr_space.pde)) {
         kernel_panic(L"Problem building initial kernel page tables - pde allocation\n");
     }
 
@@ -511,7 +510,7 @@ VOID x64BuildInitialKernelPageTable() {
                     // allocate space for a page table (X64_PAGING_TABLE_MAX ptes) 
                     // and set the page mapping
                     cur_pt = kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pte), SIZE_4KB);
-                    if (cur_pt == NULL) {
+                    if (ISNULL(cur_pt)) {
                         kernel_panic(L"Problem building initial kernel page tables - 4KB pt allocation\n");
                     }
                     if (ZeroMem(cur_pt, X64_PAGING_TABLE_MAX * sizeof(x64_pte)) != cur_pt) {

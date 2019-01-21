@@ -328,7 +328,7 @@ UINTN ReadUefiMemoryMap() {
     // Allocate enough memory to hold a temporary copy of the memory map
     memmap.page_count = (memmap.size / EFI_PAGE_SIZE) + 1;
     memmap.memory_map = (EFI_MEMORY_DESCRIPTOR*)AllocatePages(memmap.page_count);
-    if (memmap.memory_map == NULL) {
+    if (ISNULL(memmap.memory_map)) {
         kernel_panic(L"Unable to allocate pages for memory map\n");
     }
 
@@ -372,7 +372,7 @@ UINTN ReadUefiMemoryMap() {
                     stack_result = kStackPush(&kmem_free_pages_2MB, current_address);
                     current_address += SIZE_2MB;
 
-                    if (stack_result == NULL) {
+                    if (ISNULL(stack_result)) {
                         kernel_panic(L"Problem pushing 2MB page @ 0x%lx to 2MB page stack @ 0x%x\n", 
                             current_address, 
                             kmem_free_pages_2MB);
@@ -382,7 +382,7 @@ UINTN ReadUefiMemoryMap() {
                     stack_result = kStackPush(&kmem_free_pages_4KB, current_address);
                     current_address += SIZE_4KB;
 
-                    if (stack_result == NULL) {
+                    if (ISNULL(stack_result)) {
                         kernel_panic(L"Problem pushing 4KB page @ 0x%lx to 4KB page stack @ 0x%x\n", 
                             current_address, 
                             kmem_free_pages_4KB);

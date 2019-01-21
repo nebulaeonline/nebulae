@@ -126,7 +126,7 @@ VOID InitMemSubsystem() {
     memmap_pages_to_alloc = (memmap_size / UEFI_PAGE_SIZE) + 1;
     memmap_size = memmap_pages_to_alloc * UEFI_PAGE_SIZE;
     memmap_ptr = AllocatePages(memmap_pages_to_alloc);
-    if (memmap_ptr == NULL) {
+    if (ISNULL(memmap_ptr)) {
         Print(L"Unable to allocate pages for Memory Map\n");
         exit_status = EFI_BAD_BUFFER_SIZE;
         goto exit;
