@@ -517,8 +517,7 @@ VOID x64BuildInitialKernelPageTable() {
                         kernel_panic(L"Problem building initial kernel page tables - 4KB pt storage initialization\n");
                     }
 
-                    // Clear the is_pages flag of the pde, because it now points to
-                    // a pte
+                    // Rewrite this pde, because it now points to a pte
                     cur_pd[pde_index] = (UINT64)cur_pt |
                         X64_PAGING_PRESENT |
                         X64_PAGING_DATA_WRITEABLE |
