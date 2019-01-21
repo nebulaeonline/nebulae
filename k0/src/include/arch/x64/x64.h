@@ -177,6 +177,7 @@
 #define X64_SEG_64BIT                   BIT53
 #define X64_SEG_DEFAULT32               BIT54
 #define X64_SEG_NON_SYSTEM_SEGMENT      BIT44
+#define X64_SEG_SYSTEM_SEGMENT          0x00ULL
 #define X64_SEG_DPL0                    0x00ULL
 #define X64_SEG_DPL1                    BIT45
 #define X64_SEG_DPL2                    BIT46

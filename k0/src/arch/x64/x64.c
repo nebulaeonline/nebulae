@@ -310,6 +310,7 @@ VOID x64InitGDT() {
     gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(&tss) |
         SEG_DESCR_FORMAT_LIMIT(sizeof(x64_tss)) |
         SEG_DESCR_FORMAT_SYSTEM_TYPE(X64_TYPE_TSS_AVAILABLE) |
+        X64_SEG_SYSTEM_SEGMENT |
         X64_SEG_DPL0 |
         X64_SEG_PRESENT;
     gdt[++current_entry] = HI32((UINT64)&tss);
