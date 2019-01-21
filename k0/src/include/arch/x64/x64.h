@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -171,12 +171,11 @@
 #define X64_SEG_DATA                    0x00ULL
 #define X64_SEG_DATA_WRITEABLE          BIT41
 #define X64_SEG_DATA_EXPAND_DOWN        BIT42
-#define X64_SEG_DATA_BIG                BIT54
 #define X64_SEG_CODE                    BIT43
 #define X64_SEG_CODE_READABLE           BIT41
 #define X64_SEG_CODE_CONFORMING         BIT42
-#define X64_SEG_CODE_64BIT              BIT53
-#define X64_SEG_CODE_DEFAULT32          BIT54
+#define X64_SEG_64BIT                   BIT53
+#define X64_SEG_DEFAULT32               BIT54
 #define X64_SEG_NON_SYSTEM_SEGMENT      BIT44
 #define X64_SEG_DPL0                    0x00ULL
 #define X64_SEG_DPL1                    BIT45
@@ -232,6 +231,12 @@ typedef UINT64      x64_pte;
 typedef UINT64      x64_seg_descr;
 #define SEG_DESCR_FORMAT_LIMIT(X)       ((((UINT64)X & 0x000F0000ULL) << 32) | ((UINT64)X & 0x0000FFFFULL))
 #define SEG_DESCR_FORMAT_BASE_ADDR(X)   ((((UINT64)X & 0xFF000000ULL) << 32) | ((UINT64)X & 0x00FF0000ULL << 16) | (((UINT64)X & 0x0000FFFFULL) << 16))
+#define SEG_DESCR_FORMAT_SYSTEM_TYPE(X) (((UINT64)X & 0x000000000000000FULL) << 40)
+
+#define X64_GDT_MAX                     0x100
+
+// Interrupts
+#define X64_INTERRUPT_MAX               256
 
 // Call Gate
 typedef PACKED_MS struct s_x64_call_gate {
@@ -291,6 +296,20 @@ typedef PACKED_MS struct s_x64_farptr {
     UINT64 base_address;
 } PACKED_GNU x64_farptr;
 
+// x64 segment selector
+typedef PACKED_MS struct s_x64_seg_sel {
+    UINT16 limit;
+    UINT64 base;
+} PACKED_GNU x64_seg_sel;
+
+// This 4KB structure represents a virtual address space mapping
+typedef PACKED_MS struct s_x64_virtual_address_space {
+    x64_pml4e *pml4;
+    x64_pdpte *pdpt;
+    x64_pde   *pde;
+    x64_pte   *pte;
+} PACKED_GNU x64_virtual_address_space;
+
 // cpu struct
 extern x64_cpu cpu;
 
@@ -300,17 +319,30 @@ extern x64_cpu cpu;
 // Function prototypes
 VOID x64InitCPU(VOID);
 BOOLEAN x64ReadCpuinfoFlags(UINT64 flag);
+VOID x64BuildInitialKernelPageTable(VOID);
+VOID  x64DumpGdt(VOID);
+VOID x64AllocateSystemStruct(VOID);
 EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr(VOID);
+VOID x64AllocateBootScratchArea(VOID);
 UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
 extern VOID EFIAPI x64EnableInterrupts(VOID);
 extern VOID EFIAPI x64DisableInterrupts(VOID);
-extern VOID EFIAPI x64AsmOutportB(UINT16 Port, UINT8 Value);
-extern VOID EFIAPI x64AsmOutportW(UINT16 Port, UINT16 Value);
-extern UINT8 EFIAPI x64AsmInportB(UINT16 Port);
-extern UINT16 EFIAPI x64AsmInportW(UINT16 Port);
+extern VOID EFIAPI x64AsmOutportB(IN UINT16 Port, OUT UINT8 Value);
+extern VOID EFIAPI x64AsmOutportW(IN UINT16 Port, OUT UINT16 Value);
+extern UINT8 EFIAPI x64AsmInportB(IN UINT16 Port);
+extern UINT16 EFIAPI x64AsmInportW(IN UINT16 Port);
 extern UINT64 EFIAPI x64ReadTsc(VOID);
-extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(x64_farptr* ssptr, UINT64* dest);
+extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(IN x64_farptr* ssptr, IN UINT64* dest);
+extern UINTN EFIAPI x64WriteCR3(IN UINTN new_cr3);
+extern VOID EFIAPI x64ReadGdtr(OUT x64_seg_sel  *gdtr);
+extern VOID EFIAPI x64WriteGdtr(IN CONST x64_seg_sel *gdtr);
+extern UINT16 EFIAPI x64ReadCS(VOID);
+extern UINT16 EFIAPI x64ReadDS(VOID);
+extern UINT16 EFIAPI x64ReadSS(VOID);
+extern UINT16 EFIAPI x64ReadES(VOID);
+extern UINT16 EFIAPI x64ReadFS(VOID);
+extern UINT16 EFIAPI x64ReadGS(VOID);
 
 #endif /* __K0_X64_H */

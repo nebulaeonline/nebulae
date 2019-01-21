@@ -1,4 +1,4 @@
-; Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+; Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 ; Copyright (c) 2006, Intel Corporation. All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without 
@@ -24,14 +24,23 @@
 ; POSSIBILITY OF SUCH DAMAGE.
 ;==================================
 
-    .code
+global x64AsmOutportB, x64AsmOutportW
+global x64AsmInportB, x64AsmInportW
+global x64EnableInterrupts, x64DisableInterrupts
+global x64ReadTsc, x64LoadStackSegmentAndJump
+global x64WriteCR3, x64ReadGdtr, x64WriteGdtr
+global x64ReadCS, x64ReadDS, x64ReadSS
+global x64ReadES, x64ReadFS, x64ReadGS
+
+bits 64
+segment .text
 
 ;==================================
 ; VOID x64AsmOutportB(
 ;   UINT16 Port, 
 ;   UINT8  Value)
 ;
-x64AsmOutportB PROC
+x64AsmOutportB:
     mov rax,rcx
     mov rbx,rdx
 
@@ -43,14 +52,13 @@ x64AsmOutportB PROC
     xor eax,eax
 
     ret
-x64AsmOutportB ENDP
 
 ;==================================
 ; VOID x64AsmOutportW(
 ;   UINT16 Port, 
 ;   UINT16 Value)
 ;
-x64AsmOutportW PROC
+x64AsmOutportW:
     mov rax,rcx
     mov rbx,rdx
 
@@ -62,63 +70,57 @@ x64AsmOutportW PROC
     xor eax,eax
 
     ret
-x64AsmOutportW ENDP
 
 ;==================================
 ; UINT8 x64AsmInportB(
 ;   UINT16 Port)
 ;
-x64AsmInportB PROC
+x64AsmInportB:
     mov rax,rcx
     mov dx,ax
 
     in al,dx
 
     ret
-x64AsmInportB ENDP
 
 ;==================================
 ; UINT16 x64AsmInportW(
 ;   UINT16 Port)
 ;
-x64AsmInportW PROC
+x64AsmInportW:
     mov rax,rcx
     mov dx,ax
 
     in eax,dx
 
     ret
-x64AsmInportW ENDP
 
 ;==================================
 ; VOID x64EnableInterrupts()
 ;
-x64EnableInterrupts PROC
+x64EnableInterrupts:
     cli
     xor eax,eax
     ret
-x64EnableInterrupts ENDP
 
 ;==================================
 ; VOID x64DisableInterrupts()
 ;
-x64DisableInterrupts PROC
+x64DisableInterrupts:
     sti
     xor eax,eax
     ret
-x64DisableInterrupts ENDP
 
 ;==================================
 ; UINT64
 ; EFIAPI
 ; x64ReadTsc (VOID)
 ;
-x64ReadTsc  PROC
+x64ReadTsc:
     rdtsc
     shl     rdx, 20h
     or      rax, rdx
     ret
-x64ReadTsc  ENDP
 
 ;==================================
 ; NORETURN
@@ -129,11 +131,99 @@ x64ReadTsc  ENDP
 ;   VOID* dest
 ;   )
 ;
-x64LoadStackSegmentAndJump  PROC
+x64LoadStackSegmentAndJump:
     lss     rax, [rcx]
-    jmp QWORD PTR[rdx]
+    jmp QWORD [rdx]
 
-x64LoadStackSegmentAndJump  ENDP
 
 ;==================================
-    END
+; UINTN
+; EFIAPI
+; x64WriteCR3 (UINTN  new_cr3);
+;
+x64WriteCR3:
+    mov     cr3, rcx
+    mov     rax, rcx
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64ReadGdtr (
+;   OUT x64_seg_sel  *Gdtr
+;   );
+;
+x64ReadGdtr:
+    sgdt    [rcx]
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64WriteGdtr (IN CONST x64_seg_sel *gdtr);
+;
+x64WriteGdtr:
+    lgdt    [rcx]
+
+    xor eax, eax
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadCS (VOID);
+;
+x64ReadCS:
+    xor eax, eax
+    mov ax, cs
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadDS (VOID);
+;
+x64ReadDS:
+    xor eax, eax
+    mov ax, ds
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadSS (VOID);
+;
+x64ReadSS:
+    xor eax, eax
+    mov ax, ss
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadES (VOID);
+;
+x64ReadES:
+    xor eax, eax
+    mov ax, es
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadFS (VOID);
+;
+x64ReadFS:
+    xor eax, eax
+    mov ax, fs
+    ret
+
+;==================================
+; UINT16
+; EFIAPI
+; x64ReadGS (VOID);
+;
+x64ReadGS:
+    xor eax, eax
+    mov ax, es
+    ret

@@ -1,4 +1,6 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
+// Portions Copyright (c) 2006 - 2017, Intel Corporation. All rights reserved.
+// Portions Copyright(c) 2008-2009, Apple Inc. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -25,18 +27,23 @@
 #ifndef __K0_K0_H
 #define __K0_K0_H
 
+#define NEBULAE_SIG                     0x0065616C7562656EULL
+#define NEBULAE_VERSION_MAJOR           0x01
+#define NEBULAE_VERSION_MINOR           0x01
+#define NEBULAE_VERSION_BUILD           0x35
+
 // Structure packing
 #ifdef _MSC_VER
-#define PACKED_MS     _declspec(align(1))
+#define PACKED_MS                       _declspec(align(1))
 #define PACKED_GNU
 #elif defined(__clang__) || defined(__GNUC__)
 #define PACKED_MS
-#define PACKED_GNU    __attribute__((packed))
+#define PACKED_GNU                      __attribute__((packed))
 #endif
 
 // Helpful constants
-#define HI32_MASK                       0xFFFFFFFF00000000
-#define LO32_MASK                       0x00000000FFFFFFFF
+#define HI32_MASK                       0xFFFFFFFF00000000ULL
+#define LO32_MASK                       0x00000000FFFFFFFFULL
 
 #define PAGE_SIZE_4KB                   SIZE_4KB
 #define PAGE_SIZE_2MB                   SIZE_2MB
@@ -47,6 +54,18 @@
 #define HI32(X)                         (UINT32)((((UINT64)(X)) & HI32_MASK) >> 32)
 #define LO32(X)                         (UINT32)(((UINT64)(X)) & LO32_MASK)
 #define ISNULL(X)                       (X == NULL)
+#define UDIV_UP(A, B)                   ((((UINT64)A) + ((UINT64)B) - 1ULL) / ((UINT64)B))
+#define ALIGN_UP(A, B)                  (UDIV_UP((UINT64)A, (UINT64)B) * ((UINT64)B))
+
+#ifdef __GNUC__
+#if __GNUC__ >= 4
+#define OFFSET_OF(TYPE, Field) ((UINTN) __builtin_offsetof(TYPE, Field))
+#endif
+#endif
+
+#ifndef OFFSET_OF
+#define OFFSET_OF(TYPE, Field) ((UINTN) &(((TYPE *)0)->Field))
+#endif
 
 // 128-bit wide unsigned integer data type
 typedef PACKED_MS struct s_x64_u128 {
@@ -59,14 +78,23 @@ extern BOOLEAN k0_VERBOSE_DEBUG;
 extern BOOLEAN k0_PRECONFIG_DEBUG;
 extern BOOLEAN k0_PAGETABLE_DEBUG;
 
-// Handle to the kernel image 
-extern EFI_HANDLE nebulae_uefi_image_handle;
-
-// Pointer to the UEFI system table
-extern EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
+// How much memory to allocate for the system table
+#define NEBULAE_SYSTEM_TABLE_RESERVED_BYTES             SIZE_8KB
 
 // Have we called our actual kernel entry function yet?
 extern BOOLEAN k0_main_called;
+
+typedef PACKED_MS struct s_nebulae_system_table {
+    UINT64  magic;
+    UINT8   version_major;
+    UINT8   version_minor;
+    UINT32  version_build;
+    UINT16  data_offset;
+    UINT64  free_space;
+    UINT64  *next_free_byte;
+    EFI_HANDLE  uefi_image_handle;
+    EFI_SYSTEM_TABLE *uefi_system_table;
+} PACKED_GNU nebulae_system_table;
 
 // Function signatures
 NORETURN VOID k0_main(VOID);

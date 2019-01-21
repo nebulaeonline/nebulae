@@ -1,7 +1,4 @@
 // Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
-
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -25,11 +22,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KSTRING_H
-#define KSTRING_H
+#ifndef __K0_KAVL_H
+#define __K0_KAVL_H
 
-UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
+#include "../k0.h"
 
-#endif /* KSTRING_H */
+typedef struct s_kavl_node;
+
+typedef PACKED_MS struct s_kavl_ptrset {
+    s_kavl_node *left;
+    INT64        left_balance;
+    s_kavl_node *right;
+    INT64        right_balance;
+    INT64        depth;
+    INT64        height;
+} PACKED_GNU kavl_ptrset;
+
+typedef PACKED_MS struct s_kavl_node {
+    VOID   *data_ptr;
+    UINT64  node_type_id;
+    UINT64  avl_count;
+    kavl_ptrset *avl0;
+} PACKED_GNU kavl_node;
+
+#endif

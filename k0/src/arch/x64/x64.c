@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -28,13 +28,16 @@
 
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
+#include "../../include/arch/uefi/memory.h"
 
-// This 4KB structure represents a virtual address space mapping
-typedef PACKED_MS struct s_x64_virtual_address_space {
-    x64_pml4e pml4e[512];
-} PACKED_GNU x64_virtual_address_space;
+// The number of bytes we reserve for the system
+extern UINTN nebulae_system_table_reserved_bytes;
 
-x64_cpu cpu;// This function zeros a 512-entry pml4 table
+x64_cpu cpu;
+x64_tss *tss;
+x64_seg_descr *gdt;
+
+// This function zeros a 512-entry pml4 table
 // representing a virtual address space
 nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
     
@@ -159,53 +162,575 @@ BOOLEAN x64ReadCpuinfoFlags(UINT64 flag) {
     return CHECK_BIT(cpu.cpuinfo[cpuid].reg[reg], bit);
 }
 
+// Initialize the global descriptor table (GDT)
+VOID x64InitGDT() {
+    extern preboot_mem_block k0_boot_scratch_area;
+
+    // Allocate for gdt
+    gdt = kPrebootMalloc(&k0_boot_scratch_area, X64_GDT_MAX * sizeof(x64_seg_descr), 16);
+    x64_seg_sel gdt_sel = { .base = gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
+
+    if (gdt == NULL) {
+        kernel_panic(L"Problem allocating memory for global descriptor table\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu gdt entries allocated @ 0x%lx\n", X64_GDT_MAX, gdt);
+    }
+
+    if (ZeroMem(gdt, X64_GDT_MAX * sizeof(x64_seg_descr)) != gdt) {
+        kernel_panic(L"Problem allocating memory for global descriptor table - storage initialization failure\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu gdt entries zeroed @ 0x%lx\n", X64_GDT_MAX, gdt);
+    }
+
+    // Allocate for TSS
+    tss = (x64_tss*)kPrebootMalloc(&k0_boot_scratch_area, sizeof(x64_tss), 16);
+
+    if (tss == NULL) {
+        kernel_panic(L"Problem allocating memory for task state segment\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for tss allocated @ 0x%lx\n", tss);
+    }
+
+    if (ZeroMem(tss, sizeof(x64_tss)) != tss) {
+        kernel_panic(L"Problem allocating memory for task state segment - storage initialization failure\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for tss zeroed @ 0x%lx\n", tss);
+    }
+
+    // Set up the 64-bit tss
+    //tss->
+
+    // Copy the existing gdt.
+    // In order to keep uefi around, it is 
+    // imperative not to mess with its 
+    // execution environment too much, too early
+    x64_seg_sel pgdt = { .base = 0,.limit = 0 };
+    x64ReadGdtr(&pgdt);
+
+    if (pgdt.base == 0) {
+        kernel_panic(L"Unable to read gdt reg\n");
+    }
+
+    x64_seg_descr *gdt_entry = (x64_seg_descr*)pgdt.base;
+    UINT16 current_entry = 0;
+
+    while (gdt_entry < (pgdt.base + pgdt.limit)) {
+        gdt[++current_entry] = (x64_seg_descr)*gdt_entry;
+        gdt_entry++;
+    }
+    
+    // Now fill in our entries
+
+    // gdt[n + 1] DPL0, DATA, WRITEABLE
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_DATA |
+        X64_SEG_DATA_WRITEABLE |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL0 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 2] DPL0, CODE, READABLE
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_CODE |
+        X64_SEG_CODE_READABLE |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL0 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 3] DPL0, CODE, READABLE, 64-bit
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_CODE |
+        X64_SEG_CODE_READABLE |
+        X64_SEG_64BIT |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL0 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 4] DPL0, DATA, WRITEABLE, EXPAND-DOWN
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_DATA |
+        X64_SEG_DATA_WRITEABLE |
+        X64_SEG_DATA_EXPAND_DOWN |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL0 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 5] DPL3, DATA, WRITEABLE
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_DATA |
+        X64_SEG_DATA_WRITEABLE |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL3 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 6] DPL3, CODE, READABLE
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_CODE |
+        X64_SEG_CODE_READABLE |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL3 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 7] DPL3, CODE, READABLE, 64-bit
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_CODE |
+        X64_SEG_CODE_READABLE |
+        X64_SEG_64BIT |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL3 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // gdt[n + 8] DPL3, DATA, WRITEABLE, EXPAND-DOWN
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
+        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+        X64_SEG_DATA |
+        X64_SEG_DATA_WRITEABLE |
+        X64_SEG_DATA_EXPAND_DOWN |
+        X64_SEG_DEFAULT32 |
+        X64_SEG_NON_SYSTEM_SEGMENT |
+        X64_SEG_DPL3 |
+        X64_SEG_PRESENT |
+        X64_SEG_LIMIT_IN_PAGES;
+    // 64-bit TSS descriptor - takes up two spots
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(&tss) |
+        SEG_DESCR_FORMAT_LIMIT(sizeof(x64_tss)) |
+        SEG_DESCR_FORMAT_SYSTEM_TYPE(X64_TYPE_TSS_AVAILABLE) |
+        X64_SEG_DPL0 |
+        X64_SEG_PRESENT;
+    gdt[++current_entry] = ((UINT64)&tss & HI32_MASK) >> 32;
+
+    // Set our gdt limit
+    gdt_sel.limit = ((current_entry + 1) * sizeof(x64_seg_descr));
+
+    UINTN x;
+    for (x = 0; x <= current_entry; ++x) {
+        Print(L"gdt[%lu] == 0x%lx\n", x, gdt[x]);
+    }
+    
+    x64DisableInterrupts();
+    x64WriteGdtr(&gdt_sel);
+    x64EnableInterrupts();
+}
+
+// Initializes the interrupt descriptor table (IDT)
+VOID x64InitIDT() {
+    extern preboot_mem_block k0_boot_scratch_area;
+
+    x64_inttrap_gate *idt = kPrebootMalloc(&k0_boot_scratch_area, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), SIZE_4KB);
+    
+    if (idt == NULL) {
+        kernel_panic(L"Problem allocating memory for interrupt descriptor table\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu idt entries allocated @ 0x%lx\n", X64_INTERRUPT_MAX, idt);
+    }
+
+    if (ZeroMem(idt, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate)) != idt) {
+        kernel_panic(L"Problem allocating memory for interrupt descriptor table - storage initialization failure\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu idt entries zeroed @ 0x%lx\n", X64_INTERRUPT_MAX, idt);
+    }
+
+
+}
+
 // Read CR3 to obtain the address of the PML4 Table
 EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
     UINT64 cr3 = AsmReadCr3();
     return (cr3 & X64_4KB_ALIGN_MASK);
 }
 
-// Finds a random 8KB block of memory that begins on a 4KB boundary
-// and zeroes it.
+// Finds a random block of memory that begins on a 2MB boundary and zeroes it.
+// This will be the location of our initial boot scratch area
+VOID x64AllocateBootScratchArea() {
+
+    // Memory Subsystem Vars
+    extern VOID* kmem_largest_block;
+    extern UINTN kmem_largest_block_size;
+    extern UINTN kmem_total_page_count;
+
+    extern preboot_mem_block k0_boot_scratch_area;
+
+    // Allocate 2MB unless we need to map more than 256GB to start with
+    UINTN bytes_to_alloc;
+    if ((kmem_total_page_count * EFI_PAGE_SIZE) > SIZE_256GB) {
+        bytes_to_alloc = SIZE_2MB;
+    }
+    else {
+        bytes_to_alloc = SIZE_4MB;
+    }
+
+    // We are randomly choosing an area in the largest block of free conventional memory
+    // this buffer is 2MB aligned
+    EFI_PHYSICAL_ADDRESS addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
+        (UINT64)(kmem_largest_block + (kmem_largest_block_size - bytes_to_alloc))) & X64_2MB_ALIGN_MASK);
+    
+    if (addr != NULL && ZeroMem(addr, bytes_to_alloc) != addr) {
+        kernel_panic(L"There was a problem initializing the kernel's boot scratch area!\n");
+    }
+    else if (addr == NULL) {
+        kernel_panic(L"There was a problem initializing the kernel's boot scratch area - isaac64 failed!\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Boot scratch area allocated @ 0x%lx\n", addr);
+    }
+
+    // Initialize our boot scratch area struct
+    if (InitPrebootMemBlock(&k0_boot_scratch_area, addr, bytes_to_alloc) != &k0_boot_scratch_area) {
+        kernel_panic(L"There was a problem initializing the kernel's boot scratch area - preboot mem block allocation failed!\n");
+    }
+
+    // Remove the(se) page(s) from the physical free page stack
+    INTN bytes_to_remove = bytes_to_alloc;
+    nebStatus remove_boot_scratch_page_result = NEB_OK;
+    UINT64 current_addr = addr;
+
+    while ((bytes_to_remove -= (remove_boot_scratch_page_result = RemoveFreePageContainingAddr(current_addr))) > 0) {
+
+        if (NEB_ERROR(remove_boot_scratch_page_result)) {
+            kernel_panic(L"Unable to remove boot scratch pages from physical memory stacks: %ld\n",
+                remove_boot_scratch_page_result);
+        }
+        else {
+            if (k0_VERBOSE_DEBUG) {
+                Print(L"Removed boot scratch page from physical memory stacks\n");
+            }
+        }
+
+        current_addr += remove_boot_scratch_page_result;
+    }
+}
+
+// Builds our initial kernel page table
+VOID x64BuildInitialKernelPageTable() {
+    extern preboot_mem_block k0_boot_scratch_area;
+    extern x64_virtual_address_space k0_addr_space;
+    extern UINTN kmem_total_page_count;
+
+    UINTN page_dir_count = UDIV_UP((kmem_total_page_count * EFI_PAGE_SIZE), SIZE_1GB);
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Need to map %lu page directories\n", page_dir_count);
+    }
+
+    // allocate memory space for our kernel page table and zero the memory
+    k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), SIZE_4KB);
+    if (k0_addr_space.pml4 == NULL) {
+        kernel_panic(L"Problem building initial kernel page tables - pml4 allocation\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pml4 entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pml4);
+    }
+    if (ZeroMem(k0_addr_space.pml4, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e)) != k0_addr_space.pml4) {
+        kernel_panic(L"Problem building initial kernel page tables - pml4 storage initialization\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pml4 entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pml4);
+    }
+    
+    k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), SIZE_4KB);
+    if (k0_addr_space.pdpt == NULL) {
+        kernel_panic(L"Problem building initial kernel page tables - pdpt allocation\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pdpt entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pdpt);
+    }
+
+    if (ZeroMem(k0_addr_space.pdpt, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte)) != k0_addr_space.pdpt) {
+        kernel_panic(L"Problem building initial kernel page tables - pdpt storage initialization\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pdpt entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pdpt);
+    }
+
+    k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, SIZE_4KB);
+    if (k0_addr_space.pde == NULL) {
+        kernel_panic(L"Problem building initial kernel page tables - pde allocation\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pde entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX * page_dir_count, k0_addr_space.pde);
+    }
+
+    if (ZeroMem(k0_addr_space.pde, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count) != k0_addr_space.pde) {
+        kernel_panic(L"Problem building initial kernel page tables - pde storage initialization\n");
+    }
+    else if (k0_VERBOSE_DEBUG) {
+        Print(L"Space for %lu pde entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX * page_dir_count, k0_addr_space.pde);
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Memory acquired for 2MB kernel page table mapping\n", page_dir_count);
+    }
+
+    UINT64 current_addr = 0x0;
+
+    // Point the first pml4 entry at pdpt[0]
+    k0_addr_space.pml4[0] = ((UINT64)k0_addr_space.pdpt & X64_4KB_ALIGN_MASK) |
+        X64_PAGING_PRESENT |
+        X64_PAGING_DATA_WRITEABLE |
+        X64_PAGING_SUPERVISOR_MODE;
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Assigning PML4[0] == 0x%lx\n", (UINT64)k0_addr_space.pdpt |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE);
+    }
+
+    UINTN i, j;
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Starting to build page tables for 2MB pages\n");
+    }
+
+    // Set up 1 pdpte and 512 pdes per GB of physical memory (rounded up to the next 1GB)
+    for (i = 0; i < page_dir_count; ++i) {
+        k0_addr_space.pdpt[i] = ((UINT64)&k0_addr_space.pde[i * X64_PAGING_TABLE_MAX] & X64_4KB_ALIGN_MASK) |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE;
+
+        if (k0_VERBOSE_DEBUG) {
+            Print(L"Assigning PDPT[%lu] @ 0x%lx == 0x%lx\n", i, (UINT64)&k0_addr_space.pdpt[i], (UINT64)k0_addr_space.pdpt[i] |
+                X64_PAGING_PRESENT |
+                X64_PAGING_DATA_WRITEABLE |
+                X64_PAGING_SUPERVISOR_MODE);
+        }
+
+        for (j = 0; j < X64_PAGING_TABLE_MAX; ++j) {
+            if (current_addr < (kmem_total_page_count * EFI_PAGE_SIZE)) {
+                k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j] = current_addr |
+                    X64_PAGING_PRESENT |
+                    X64_PAGING_DATA_WRITEABLE |
+                    X64_PAGING_SUPERVISOR_MODE |
+                    X64_PAGING_IS_PAGES;
+            }
+            else {
+                k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j] = current_addr |
+                    X64_PAGING_SUPERVISOR_MODE |
+                    X64_PAGING_IS_PAGES;
+            }
+
+            if (k0_VERBOSE_DEBUG && ((i * X64_PAGING_TABLE_MAX) + j) % 256 == 0) {
+                Print(L"Assigning PDE[%lu] @ 0x%lx == 0x%lx\n", j, (UINT64)&k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j], (UINT64)k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j]);
+            }
+
+            current_addr += SIZE_2MB;
+        }
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Finished building page tables for 2MB pages\n");
+    }
+
+    // At this point, we have identity mapped all physical memory using 2MB pages.
+    // There are potentially areas of memory that are still split up into 4KB pages due
+    // to hardware/device mappings or other reserved memory areas.  For these 4KB areas,
+    // we are going to add an extra level to the paging structures by pointing their
+    // page directory entries to page tables.
+    EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
+    UINT64 memmap_entries = memmap.size / memmap.descr_size;
+    VOID *memmap_iter = memmap.memory_map;
+
+    for (i = 0; i < memmap_entries; i++) {
+        memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
+
+        current_addr = (UINT64)memmap_entry->PhysicalStart;
+        UINT64 mem_block_end = current_addr + ((UINT64)memmap_entry->NumberOfPages * (UINT64)EFI_PAGE_SIZE);
+
+        while (current_addr < mem_block_end) {
+            UINT64 *stack_result = NULL;
+
+            if ((current_addr % SIZE_2MB) == 0 && (current_addr + SIZE_2MB) <= mem_block_end) {
+                // Already mapped 2MB pages for all physical memory!
+                current_addr += SIZE_2MB;
+                continue;
+            }
+            else if ((current_addr % SIZE_4KB) == 0 && (current_addr + SIZE_4KB) <= mem_block_end) {
+                // We need to locate the current pde mapping a 2MB page that this 4KB page
+                // is a part of
+                UINTN pml4_index = PML4_INDEX(current_addr);
+                UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
+                UINTN pde_index = PAGE_DIR_INDEX(current_addr);
+                UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
+
+                x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
+                x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+                x64_pte   *cur_pt = NULL;
+
+                // See if this entry already points to pages, or if we need to create a page
+                // table for it
+                if (CHECK_BIT(cur_pd[pde_index], X64_PAGING_IS_PAGES)) {
+                    // This page directory currently maps a 2MB page, so we need to 
+                    // allocate space for a page table (X64_PAGING_TABLE_MAX ptes) 
+                    // and set the page mapping
+                    cur_pt = kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pte), SIZE_4KB);
+                    if (cur_pt == NULL) {
+                        kernel_panic(L"Problem building initial kernel page tables - 4KB pt allocation\n");
+                    }
+                    if (ZeroMem(cur_pt, X64_PAGING_TABLE_MAX * sizeof(x64_pte)) != cur_pt) {
+                        kernel_panic(L"Problem building initial kernel page tables - 4KB pt storage initialization\n");
+                    }
+
+                    // Clear the is_pages flag of the pde, because it now points to
+                    // a pte
+                    cur_pd[pde_index] = (UINT64)cur_pt |
+                        X64_PAGING_PRESENT |
+                        X64_PAGING_DATA_WRITEABLE |
+                        X64_PAGING_SUPERVISOR_MODE;
+
+                    if (k0_VERBOSE_DEBUG) {
+                        Print(L"Assigning 4KB PDE[%lu] @ 0x%lx == 0x%lx\n", pde_index, &cur_pd[pde_index], (UINT64)cur_pt |
+                            X64_PAGING_PRESENT |
+                            X64_PAGING_DATA_WRITEABLE |
+                            X64_PAGING_SUPERVISOR_MODE);
+                    }
+                }
+                else {
+                    cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+                }
+
+                // Now we know which page table this physical page should be in, and we have
+                // made sure that a valid page table exists, so just add the page!
+                cur_pt[pte_index] = (UINT64)current_addr |
+                    X64_PAGING_PRESENT |
+                    X64_PAGING_DATA_WRITEABLE |
+                    X64_PAGING_SUPERVISOR_MODE;
+
+                if (k0_VERBOSE_DEBUG && pte_index % 256 == 0) {
+                    Print(L"Assigning 4KB PT[%lu] @ 0x%lx == 0x%lx\n", pte_index, &cur_pt[pte_index], cur_pt[pte_index]);
+                }
+
+                if (cur_pt[pte_index] == 0) {
+                    kernel_panic(L"Attempted to assign zero pagetable!");
+                }
+
+                // Increment to the next page
+                current_addr += SIZE_4KB;
+            }
+            else {
+                Print(L"Memory address did not meet either criteria: 0x%lx\n", current_addr);
+                kernel_panic(L"mem_block_end == 0x%lx\n", mem_block_end);
+            }
+        }
+
+        // Iterate to the next memory map entry
+        memmap_iter = (CHAR8*)memmap_iter + memmap.descr_size;        
+    }
+
+    // Fill in the "gap" pages from 640KB-1MB; Hi IBM!
+    current_addr = 0xA0000;
+    while (current_addr < SIZE_1MB) {
+        UINTN pml4_index = PML4_INDEX(current_addr);
+        UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
+        UINTN pde_index = PAGE_DIR_INDEX(current_addr);
+        UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
+
+        x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
+        x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        x64_pte   *cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+
+        cur_pt[pte_index] = (UINT64)current_addr |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE;
+
+        current_addr += SIZE_4KB;
+    }
+
+    // We still have to map the last 64KB of physical memory, which seems
+    // to be missing from the uefi memory map, and thus is likely verboten
+    current_addr = 0x1FFF0000;
+    while (current_addr < SIZE_1MB) {
+        UINTN pml4_index = PML4_INDEX(current_addr);
+        UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
+        UINTN pde_index = PAGE_DIR_INDEX(current_addr);
+        UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
+
+        x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
+        x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        x64_pte   *cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+
+        cur_pt[pte_index] = (UINT64)current_addr |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE;
+
+        current_addr += SIZE_4KB;
+    }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"Finished building page tables for 4KB pages\n");
+        Print(L"Current PML4 == 0x%lx\n", x64GetCurrentPML4TableAddr());
+        Print(L"Current memmap (0x%lx bytes) location == 0x%lx\n", memmap.size, memmap.memory_map);
+        //Print(L"sizeof(EFI_MEMORY_DESCRIPTOR) == 0x%lx\n", sizeof(EFI_MEMORY_DESCRIPTOR));
+        //Print(L"memory descriptor size (per uefi): 0x%lx\n", memmap.descr_size);
+        //Print(L"total pages: 0x%lx\n", kmem_total_page_count);
+        Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
+        //x64DumpGdt();
+    }
+
+    //x64WriteCR3(k0_addr_space.pml4);
+}
+
+// Dumpgs gdt to screen
+VOID  x64DumpGdt() {
+    x64_seg_sel pgdt = { .base = 0, .limit = 0 };
+    x64ReadGdtr(&pgdt);
+
+    if (pgdt.base == 0) {
+        kernel_panic(L"Unable to read gdt reg\n");
+    }
+
+    x64_seg_descr *gdt_entry = (x64_seg_descr*)pgdt.base;
+    while (gdt_entry < (pgdt.base + pgdt.limit)) {
+        Print(L"gdt_entry 0x%lx == 0x%lx\n", ((UINT64)gdt_entry - (UINT64)pgdt.base) / sizeof(x64_seg_descr), (UINT64)*gdt_entry);
+        gdt_entry++;
+    }
+    Print(L"gdt.base == 0x%lx / gdt.limit == 0x%lx\n", pgdt.base, pgdt.limit);
+}
+
+// Finds a random 'nebulae_system_table_reserved_bytes'-sized block of memory 
+// that begins on a 4KB boundary and zeroes it.
 VOID x64AllocateSystemStruct() {
 
     // Memory Subsystem Vars
-    extern EFI_PHYSICAL_ADDRESS* nebulae_system_table;
+    extern nebulae_system_table *system_table;
     extern UINTN kmem_conventional_pages;
     extern VOID* kmem_largest_block;
     extern UINTN kmem_largest_block_size;
     extern UINTN kmem_largest_block_page_count;
 
-    // We are randomly choosing an 8KB area in the largest block of free conventional memory
-    // this buffer is 4KB aligned no matter the page size
-    nebulae_system_table = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block, 
-        (UINT64)(kmem_largest_block + (kmem_largest_block_size - SIZE_8KB))) & X64_4KB_ALIGN_MASK);
+    // We are randomly choosing an area in the largest block of free conventional memory
+    // this buffer is 4KB aligned no matter the page size #TODO #ONFIRE #FIX
+    system_table = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
+        (UINT64)(kmem_largest_block + (kmem_largest_block_size - nebulae_system_table_reserved_bytes))) & X64_4KB_ALIGN_MASK);
 
-    if (nebulae_system_table != NULL && ZeroMem(nebulae_system_table, SIZE_8KB) != nebulae_system_table) {
+    if (system_table != NULL && ZeroMem(system_table, nebulae_system_table_reserved_bytes) != system_table) {
         kernel_panic(L"There was a problem initializing the kernel's private memory area!\n");
     }
     
     if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 
-            nebulae_system_table, 
-            *x64GetPageInfo(nebulae_system_table));
+            system_table,
+            *x64GetPageInfo(system_table));
     }
-
-    // Sanity checks
-    *nebulae_system_table = 0xDEADBEEFULL;
-    *(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)) = L"HELLO";
-
-    if (*nebulae_system_table != 0xDEADBEEFULL) {
-        kernel_panic(L"Problem writing integer to memory location 0x%lx\n", nebulae_system_table);
-    }
-    else if (StrCmp(*(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)), L"HELLO") != 0) {
-        kernel_panic(L"Problem writing wide string to memory location 0x%lx\n", 
-            (nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS)));
-    }
-    
-    // Clear the sanity check values
-    *nebulae_system_table = 0x0ULL;
-    SetMem16(nebulae_system_table + sizeof(EFI_PHYSICAL_ADDRESS), 6, 0);
 }
 
 // This function will return either the curent page table

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@
 #include "../../include/k0.h"
 #include "../../include/deps/jsmn.h"
 #include "../../include/klib/kstring.h"
+#include "../../include/klib/bootconfig.h"
 
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/uefi/kacpi.h"
@@ -46,7 +47,7 @@ CONST UINT32 _gUefiDriverRevision = 0;
 // Module name
 CHAR8 *gEfiCallerBaseName = "k0";
 
-// Debugging flags
+// Boot Time Debugging flags
 BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
 BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
 BOOLEAN k0_PAGETABLE_DEBUG = FALSE;     // Only set when debugging pagetables
@@ -63,18 +64,11 @@ EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
 // Declare Kernel Entrypoint
 NORETURN VOID k0_main(VOID);
 
-// Declare Global Pointers to UEFI tables
-EFI_HANDLE nebulae_uefi_image_handle;
-EFI_SYSTEM_TABLE* nebulae_uefi_system_table;
-
-// System table structure symbol
-extern EFI_PHYSICAL_ADDRESS* nebulae_system_table;
-
 // UEFI Entrypoint
-EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* system_table) {
+EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE* uefi_system_table) {
     
-    ASSERT(image_handle != NULL);
-    ASSERT(system_table != NULL);
+    ASSERT(uefi_image_handle != NULL);
+    ASSERT(uefi_system_table != NULL);
 
     // Disable UEFI watchdog timer
     gBS->SetWatchdogTimer(0, 0, 0, NULL);
@@ -82,10 +76,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
     // Announce 
     Print(L"Booting nebulae!\n");
     
-    // Set our global UEFI handle & pointer
-    nebulae_uefi_image_handle = image_handle;
-    nebulae_uefi_system_table = system_table;
-
     // Initialize the shell for the duration
     // of the boot process
     EFI_STATUS shell_status = ShellInitialize();
@@ -94,192 +84,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE image_handle, IN EFI_SYSTEM_TABLE* syst
         kernel_panic(L"Failed to initialize the UEFI shell: %r\n", shell_status);
     }
 
-    // Process our system configuration file (k0.json.config)
-    
-    // Open the file
-    SHELL_FILE_HANDLE configFileHandle;
-    EFI_STATUS config_file_result = ShellOpenFileByName(L"k0.config.json",
-        &configFileHandle,
-        EFI_FILE_MODE_READ,
-        0);
-    
-    if (EFI_ERROR(config_file_result)) {
-        configFileHandle = NULL;
-        kernel_panic(L"Failed to open k0 configuration file: %r\n", config_file_result);
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Opened k0.config.json\n");
-    }
+    // Read the boot configuration file
+    ProcessBootConfig();
 
-    // Determine the file size
-    EFI_FILE_INFO *configFileInfo = ShellGetFileInfo(configFileHandle);
-    UINTN config_file_pages = (configFileInfo->FileSize / EFI_PAGE_SIZE) + 1;
-    
-    if (configFileInfo->FileSize > SIZE_1MB) {
-        ShellCloseFile(configFileHandle);
-        kernel_panic(L"k0.config.json may not exceed 1MB in size! Actual size of k0.config.json == %lu\n", 
-            configFileInfo->FileSize);
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"k0.config.json FileSize == %lu\n", configFileInfo->FileSize);
-    }
-
-    // Allocate enough memory to hold the config file, max 1MB
-    CHAR8* config_file_buffer = AllocatePages(config_file_pages);
-
-    if (config_file_buffer == NULL) {
-        kernel_panic(L"Failed to allocate pages to process k0 configuration file. Allocation operation returned NULL.\n");
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Allocated %lu pages for k0.config.json file data\n", config_file_pages);
-    }
-
-    UINTN config_file_read_size = configFileInfo->FileSize;
-    EFI_STATUS config_file_read_result = ShellReadFile(configFileHandle, &config_file_read_size, config_file_buffer);
-    
-    if (EFI_ERROR(config_file_read_result)) {
-        kernel_panic(L"Failed to read k0.config.json: %r\n", config_file_read_result);
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Read k0.config.json into memory\n");
-    }
-
-    // Close the file
-    EFI_STATUS efi_close_result = ShellCloseFile(&configFileHandle);
-    if (EFI_ERROR(efi_close_result)) {
-        kernel_panic(L"Unable to close k0.config.json\n");
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Closed k0.config.json\n");
-    }
-  
-    // Call the actual json token parsing library
-    jsmn_parser jsonParser;
-    jsmn_init(&jsonParser);
-
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Config file buffer location: 0x%x\n", config_file_buffer);
-    }
-
-    // 1st time with NULL to get the token count
-    INT32 token_count = jsmn_parse(&jsonParser,
-        config_file_buffer,
-        config_file_read_size,
-        NULL,
-        0);
-
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Located %d json tokens in k0.config.json\n", token_count);
-    }
-
-    // Allocate a page for json parsing tokens
-    UINTN json_pages_to_allocate = ((sizeof(jsmntok_t) * token_count) / EFI_PAGE_SIZE) + 1;
-    jsmntok_t *json_tokens = (jsmntok_t*)AllocatePages(json_pages_to_allocate);
-    
-    if (json_tokens == NULL) {
-        kernel_panic(L"Unable to allocate %lu page(s) to tokenize k0.config.json: %r\n", 
-            json_pages_to_allocate, 
-            config_file_read_result);
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Allocated %lu page(s) for k0.config.json token data\n", json_pages_to_allocate);
-    }
-
-    // Debug
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Calling jsmn_parse()\n");
-    }
-
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Config file buffer location: 0x%x\n", config_file_buffer);
-    }
-
-    // 2nd time with to actually tokenize
-    // Re-init parser
-    jsmn_init(&jsonParser);
-    INT32 actual_token_count = jsmn_parse(&jsonParser,
-        config_file_buffer,
-        config_file_read_size,
-        json_tokens,
-        token_count);
-
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"k0.config.json token count (< 0 indicates error) == %d\n", actual_token_count);
-    }
-
-    // token_count < 0 indicates an error
-    if (actual_token_count < 0) {
-        Print(L"Failed to parse k0.config.json; ignoring\n");
-        goto kernel_entry;
-    }
-    else if (actual_token_count == 0) {
-        Print(L"Top level element is not an object in k0.config.json; ignoring\n");
-        goto kernel_entry;
-    }
-    else if (k0_PRECONFIG_DEBUG) {
-        Print(L"Located %lu json token(s) in k0.config.json\n", actual_token_count);
-    }
-
-    // Now check for important tokens
-    // TODO separate the config file code
-    UINTN current_json_element;
-
-    for (current_json_element = 0; current_json_element < actual_token_count; ++current_json_element) {
-        if (jsoneq(config_file_buffer, &json_tokens[current_json_element], "debug") == 0) {
-            if (k0_PRECONFIG_DEBUG) {
-                Print(L"Debug token located in k0.config.json\n");
-            }
-            if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "true") == 0) {
-                k0_VERBOSE_DEBUG = TRUE;
-                Print(L"Verbose kernel debugging enabled\n");
-            }
-            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "false") == 0) {
-                k0_VERBOSE_DEBUG = FALSE;
-                Print(L"Verbose kernel debugging disabled\n");
-            }
-        } else if (jsoneq(config_file_buffer, &json_tokens[current_json_element], "debug-boot-pause") == 0) {
-            if (k0_PRECONFIG_DEBUG) {
-                Print(L"Debug-boot-pause token located in k0.config.json\n");
-            }
-            if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "true") == 0) {
-                ShellSetPageBreakMode(TRUE);
-                Print(L"Shell page-break mode enabled for boot\n");
-            }
-            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "false") == 0) {
-                ShellSetPageBreakMode(FALSE);
-                Print(L"Shell page-break mode disabled for boot\n");
-            }
-        } else if (jsoneq(config_file_buffer, &json_tokens[current_json_element], "pagetable-debug") == 0) {
-            if (k0_PRECONFIG_DEBUG) {
-                Print(L"pagetable-debug token located in k0.config.json\n");
-            }
-            if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "true") == 0) {
-                k0_PAGETABLE_DEBUG = TRUE;
-                Print(L"Pagetable debug mode enabled\n");
-            }
-            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "false") == 0) {
-                k0_PAGETABLE_DEBUG = FALSE;
-                Print(L"Pagetable debug mode disabled\n");
-            }
-        }
-    }
-
-    // Free our json token pages
-    FreePages(json_tokens, json_pages_to_allocate);
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Freed %lu page(s) for k0.config.json token data\n", 1);
-    }
-
-    // Free our config file buffer pages
-    FreePages(config_file_buffer, config_file_pages);
-    if (k0_PRECONFIG_DEBUG) {
-        Print(L"Freed %lu page(s) for k0.config.json file data\n", 1);
-    }
-
-    // Do the last bit of setup and then call 
-    // the k0_main() function
-kernel_entry:
-    
     // Initialize the Isaac64 CSPRNG
     // Isaac64 generates a 64-bit cryptographically
     // secure pseudo-random number in 19 cycles 
@@ -294,6 +101,15 @@ kernel_entry:
     // Locate the ACPI XSDT tables
     LocateACPI_XSDT();
 
+    // Change the graphics mode
+    Print(L"Changing graphics mode\n");
+
+    // Disable scrolling
+    ShellSetPageBreakMode(FALSE);
+
+    // Initialize the graphics engine to 1024x768
+    InitGraphics();
+
     // Initialize the memory subsystem
     nebStatus init_mem_status = InitMem();
 
@@ -307,21 +123,36 @@ kernel_entry:
     // Read the UEFI memory map
     UINTN uefi_mem_key = ReadUefiMemoryMap();
     
-    Print(L"Changing graphics mode and exiting UEFI Boot Services!\n");
+    Print(L"Exiting UEFI Boot Services!\n");
+    
+    // Allocate our boot scratch memory area (pre-paging still)
+#ifdef __NEBULAE_ARCH_X64
+    x64AllocateBootScratchArea();    
+#endif
 
-    // Disable scrolling
-    ShellSetPageBreakMode(FALSE);
+    // Set aside our system data structure
+    //extern nebulae_system_table *system_table;
+    //AllocateSystemStruct();
+    //Print(L"System struct allocated at %lx\n", system_table);
 
-    // Initialize the graphics engine to 1024x768
-    InitGraphics();
+    // Setup our system struct
+    //if (system_table->magic != NEBULAE_SIG) {
+        //kernel_panic(L"System table allocation signature mismatch\n");
+    //}
+
+    //system_table->uefi_image_handle = uefi_image_handle;
+    //system_table->uefi_system_table = uefi_system_table;
 
     // Exit Boot Services and start flying solo
-    gBS->ExitBootServices(nebulae_uefi_image_handle, uefi_mem_key);
+    gBS->ExitBootServices(uefi_image_handle, uefi_mem_key);
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
-    // Set aside our system data structure
-    AllocateSystemStruct();
-    Print(L"System struct allocated at %lx\n", nebulae_system_table);
+    // Create our page tables
+#ifdef __NEBULAE_ARCH_X64
+    x64BuildInitialKernelPageTable();
+    x64InitGDT();
+    x64DumpGdt();
+#endif
     
     // Allocate and free pages -- BEGIN MEMORY TEST
     EFI_PHYSICAL_ADDRESS *page_2MB = AllocPage(SIZE_2MB);
@@ -351,13 +182,9 @@ kernel_entry:
     // Inform the user about our memory situation
     UINT64 count_free_pages_2MB = GetFreeMemStackCount(SIZE_2MB);
     UINT64 count_free_pages_4KB = GetFreeMemStackCount(SIZE_4KB);
-    UINT64 count_alloc_pages_2MB = GetAllocatedMemStackCount(SIZE_2MB);
-    UINT64 count_alloc_pages_4KB = GetAllocatedMemStackCount(SIZE_4KB);
 
     Print(L"Located %lu 2MB pages of available conventional physical memory\n", count_free_pages_2MB);
     Print(L"Located %lu 4KB pages of available conventional physical memory\n", count_free_pages_4KB);
-    Print(L"Located %lu 2MB pages of allocated conventional physical memory\n", count_alloc_pages_2MB);
-    Print(L"Located %lu 4KB pages of allocated conventional physical memory\n", count_alloc_pages_4KB);
 
     Print(L"Total available physical memory == %lu KB\n", 
         ((count_free_pages_2MB * SIZE_2MB) + (count_free_pages_4KB * SIZE_4KB)) / 1024);

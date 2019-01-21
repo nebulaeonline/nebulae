@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -39,8 +39,12 @@
 #include "include/klib/kstring.h"
 #include "include/klib/interrupt.h"
 
+// Main kernel page tables
+preboot_mem_block k0_boot_scratch_area;
+x64_virtual_address_space k0_addr_space;
+
 // Main system table
-EFI_PHYSICAL_ADDRESS* nebulae_system_table;
+nebulae_system_table *system_table = NULL;
 
 // Have we been called?
 BOOLEAN k0_main_called = FALSE;
@@ -57,6 +61,18 @@ NORETURN VOID k0_main(VOID) {
 
     // Initialize interrupts
     InitInterrupts();
+
+    /*
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"system_table->magic === 0x%lx\n", system_table->magic);
+        Print(L"system_table->version_major == 0x%x\n", system_table->version_major);
+        Print(L"system_table->version_minor == 0x%x\n", system_table->version_minor);
+        Print(L"system_table->version_build == 0x%lx\n", system_table->version_build);
+        Print(L"system_table->data_offset == 0x%x\n", system_table->data_offset);
+        Print(L"system_table->next_free_byte == 0x%lx\n", system_table->next_free_byte);
+        Print(L"system_table->free_space == 0x%lx\n", system_table->free_space);
+    }
+    */
 
     // Draw a blue triangle to the screen
     drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);

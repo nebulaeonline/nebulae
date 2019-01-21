@@ -43,6 +43,12 @@
     <ClCompile Include="src\klib\interrupt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\klib\kavl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\klib\bootconfig.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">
@@ -96,9 +102,16 @@
     <ClInclude Include="src\include\klib\interrupt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\include\klib\kavl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\klib\bootconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
@@ -114,8 +127,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\arch\x64\_x64.asm">
+    <NASM Include="src\arch\x64\_x64.asm">
       <Filter>Source Files</Filter>
-    </MASM>
+    </NASM>
   </ItemGroup>
 </Project>

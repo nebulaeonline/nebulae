@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -83,8 +83,10 @@ UINTN kmem_conventional_pages = 0;
 VOID* kmem_largest_block = NULL;
 UINTN kmem_largest_block_size = 0;
 UINTN kmem_largest_block_page_count = 0;
+UINTN kmem_total_page_count = 0;
 
-EFI_PHYSICAL_ADDRESS* nebulae_system_table = NULL;
+extern nebulae_system_table *system_table;
+UINTN nebulae_system_table_reserved_bytes = NEBULAE_SYSTEM_TABLE_RESERVED_BYTES;
 
 // The ultimate goal here, at the lowest level, is to have
 // a per-NUMA node stack of available 2MB & 4k pages.
@@ -98,9 +100,6 @@ BOOLEAN physical_mem_stacks_allocated = FALSE;
 kstack kmem_free_pages_2MB;
 kstack kmem_free_pages_4KB;
 
-kstack kmem_allocated_pages_2MB;
-kstack kmem_allocated_pages_4KB;
-
 // Allocates a page of the requested page size
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
 EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size) {
@@ -112,31 +111,11 @@ EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size) {
         if (ISNULL(new_page_base)) {
             return NULL;
         }
-        if (!kStackPush(&kmem_allocated_pages_4KB, (UINT64)new_page_base & PAGE_4KB_SUPERVISOR)) {
-            // we couldn't push the page onto the allocated page stack,
-            // reverse the process and return NULL.
-            if (!kStackPush(&kmem_free_pages_4KB, (UINT64)new_page_base & ALIGN_MASK_4KB)) {
-                kernel_panic(L"Unable to return allocated memory to free store after allocated stack push failed\n");
-            }
-            else {
-                return NULL;
-            }
-        }
         break;
     case SIZE_2MB:
         new_page_base = kStackPop(&kmem_free_pages_2MB);
         if (ISNULL(new_page_base)) {
             return NULL;
-        }
-        if (!kStackPush(&kmem_allocated_pages_2MB, (UINT64)new_page_base & PAGE_2MB_SUPERVISOR)) {
-            // we couldn't push the page onto the allocated page stack,
-            // reverse the process and return NULL.
-            if (!kStackPush(&kmem_free_pages_2MB, (UINT64)new_page_base & ALIGN_MASK_2MB)) {
-                kernel_panic(L"Unable to return allocated memory to free store after allocated stack push failed\n");
-            }
-            else {
-                return NULL;
-            }
         }
         break;
     default:
@@ -186,53 +165,6 @@ nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
     nebStatus swap_result = NEBSTATUS_UNDETERMINED;
     UINT64 allocated_result = 0;
 
-    switch (page_size) {
-    case SIZE_4KB:
-        swap_result = kStackSwapValue(&kmem_allocated_pages_4KB, (UINT64)base_addr & PAGE_4KB_SUPERVISOR, page_size);
-
-        if (NEB_ERROR(swap_result)) {
-            return swap_result;
-        }
-
-        allocated_result = kStackPop(&kmem_allocated_pages_4KB);
-
-        // Push the page back on the free stack
-        if (!kStackPush(&kmem_free_pages_4KB, allocated_result & ALIGN_MASK_4KB)) {
-            // we couldn't push the page onto the allocated page stack,
-            // reverse the process and return NULL.
-            if (!kStackPush(&kmem_allocated_pages_4KB, allocated_result)) {
-                kernel_panic(L"Unable to return allocated memory to allocated store after free stack push failed\n");
-            }
-            else {
-                return NEBERROR_UNABLE_TO_PUSH_VALUE;
-            }
-        }
-        break;
-    case SIZE_2MB:
-        swap_result = kStackSwapValue(&kmem_allocated_pages_2MB, (UINT64)base_addr & PAGE_2MB_SUPERVISOR, page_size);
-
-        if (NEB_ERROR(swap_result)) {
-            return swap_result;
-        }
-
-        allocated_result = kStackPop(&kmem_allocated_pages_2MB);
-
-        // Push the page back on the free stack
-        if (!kStackPush(&kmem_free_pages_2MB, allocated_result & ALIGN_MASK_2MB)) {
-            // we couldn't push the page onto the allocated page stack,
-            // reverse the process and return NULL.
-            if (!kStackPush(&kmem_allocated_pages_2MB, allocated_result)) {
-                kernel_panic(L"Unable to return allocated memory to allocated store after free stack push failed\n");
-            }
-            else {
-                return NEBERROR_UNABLE_TO_PUSH_VALUE;
-            }
-        }
-        break;
-    default:
-        return NEBERROR_INVALID_PAGE_SIZE;
-    }
-
     return NEB_OK;
 }
 
@@ -243,18 +175,6 @@ UINT64 GetFreeMemStackCount(UINT32 which_size) {
         return kGetStackCount(&kmem_free_pages_4KB);
     case SIZE_2MB:
         return kGetStackCount(&kmem_free_pages_2MB);
-    default:
-        return 0;
-    }
-}
-
-// Get the count of an allocated memory stack
-UINT64 GetAllocatedMemStackCount(UINT32 which_size) {
-    switch (which_size) {
-    case SIZE_4KB:
-        return kGetStackCount(&kmem_allocated_pages_4KB);
-    case SIZE_2MB:
-        return kGetStackCount(&kmem_allocated_pages_2MB);
     default:
         return 0;
     }
@@ -288,20 +208,72 @@ nebStatus InitMem() {
         return ret;
     }
 
-    ret = kInitStackStructure(&kmem_allocated_pages_4KB, base_alloc_4KB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
-
-    if (NEB_ERROR(ret)) {
-        return ret;
-    }
-
-    ret = kInitStackStructure(&kmem_allocated_pages_2MB, base_alloc_2MB, SIZE_2MB, KSTACK_DIRECTION_GROW_DOWN);
-
-    if (NEB_ERROR(ret)) {
-        return ret;
-    }
-
     physical_mem_stacks_allocated = TRUE;
     return ret;
+}
+
+// Sets up a preboot memory block
+preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, VOID *base_addr, UINTN block_size) {
+    if (ISNULL(pbmb) || ISNULL(base_addr) || block_size == 0) {
+        return NULL;
+    }
+
+    pbmb->base_addr = base_addr;
+    pbmb->current_addr = base_addr;
+    pbmb->size = block_size;
+    pbmb->free_space = block_size;
+    pbmb->wasted_space = 0;
+
+    return pbmb;
+}
+
+// Basically a one-way malloc without free for preboot
+VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment) {
+    
+    // No NULLs
+    if (ISNULL(pbmb) || allocation_size == 0) {
+        return NULL;
+    }
+
+    // Calculate our new address given the requested alignment
+    UINT64 return_addr = ALIGN_UP((UINT64)pbmb->current_addr, desired_alignment);
+
+    // Do we have the space to account for the requested alignment and the size?
+    if ((return_addr + allocation_size) > ((UINT64)pbmb->current_addr + (UINT64)pbmb->free_space)) {
+        return NULL;
+    } 
+    
+    pbmb->wasted_space += (return_addr - (UINT64)pbmb->current_addr);
+
+    pbmb->current_addr = return_addr + allocation_size;
+    pbmb->free_space = (((UINT64)pbmb->base_addr + pbmb->size) - (UINT64)pbmb->current_addr);
+    
+    return (VOID*)return_addr;
+}
+
+// Dumps the memory map to the screen
+VOID DumpUefiMemoryMap() {
+    Print(L"Map Size: %lu, Map Key: %lu, Desc. Size: %lu, Desc. Version: %u\n",
+        memmap.size, memmap.key, memmap.descr_size, memmap.descr_version);
+
+    // Parse the UEFI memory map in order to count the available
+    // conventional memory
+    EFI_MEMORY_DESCRIPTOR *memmap_entry = NULL;
+    UINT64 memmap_entries = memmap.size / memmap.descr_size;
+    VOID *memmap_iter = memmap.memory_map;
+
+    UINTN i;
+    for (i = 0; i < memmap_entries; i++) {
+        memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
+
+        Print(L"memmap_entry type: 0x%lx pstart: 0x%lx pages: 0x%lx attr: 0x%lx\n",
+            memmap_entry->Type,
+            memmap_entry->PhysicalStart,
+            memmap_entry->NumberOfPages,
+            memmap_entry->Attribute);
+
+        memmap_iter = (CHAR8*)memmap_iter + memmap.descr_size;
+    }
 }
 
 //
@@ -384,6 +356,8 @@ UINTN ReadUefiMemoryMap() {
     UINTN i;
     for (i = 0; i < memmap_entries; i++) {
         memmap_entry = (EFI_MEMORY_DESCRIPTOR *)memmap_iter;
+        kmem_total_page_count += memmap_entry->NumberOfPages;
+
         if (memmap_entry->Type == EFI_MEMORY_CONVENTIONAL) {
             kmem_conventional_pages += memmap_entry->NumberOfPages;
 
@@ -435,8 +409,10 @@ UINTN ReadUefiMemoryMap() {
         Print(L"Largest Block: %lu\n", kmem_largest_block);
         Print(L"Largest Block Size: %lu\n", kmem_largest_block_size);
         Print(L"Largest Block Page Count: %lu\n", kmem_largest_block_page_count);
-        Print(L"Memory subsystem initialized\n");
+        //Print(L"Memory subsystem initialized\n");
     }
+
+    DumpUefiMemoryMap();
 
     return memmap.key;
 }
@@ -451,45 +427,33 @@ VOID AllocateSystemStruct() {
 
     // We need to remove the pages we just "allocated" for the system
     // struct
-    nebStatus remove_sys_struct_pages = RemoveFreePageContainingAddr(nebulae_system_table);
+    INTN bytes_to_remove = nebulae_system_table_reserved_bytes;
+    nebStatus remove_sys_struct_page_result = NEB_OK;
+    UINT64 current_addr = system_table;
 
-    if (NEB_ERROR(remove_sys_struct_pages)) {
-        // well, this just shouldn't happen
-        kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n", 
-            remove_sys_struct_pages);
-    }
-    else {
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"Removed system struct page from physical memory stacks\n");
+    while ((bytes_to_remove -= (remove_sys_struct_page_result = RemoveFreePageContainingAddr(current_addr))) > 0) {
+
+        if (NEB_ERROR(remove_sys_struct_page_result)) {
+            // well, this just shouldn't happen
+            kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n",
+                remove_sys_struct_page_result);
         }
-    }
-
-    // If we removed a 4KB page, then we need to remove another, 
-    // since we allocated a contiguous 8KB for the system table
-    if (remove_sys_struct_pages == NEBSTATUS_REMOVED_4KB_PAGE) {
-        
-        // the page was removed, now add it to the appropriate allocated page stack
-        kStackPush(&kmem_allocated_pages_4KB, (UINT64)nebulae_system_table & PAGE_4KB_SUPERVISOR);
-        
-        remove_sys_struct_pages = RemoveFreePageContainingAddr((UINT64)(nebulae_system_table + SIZE_4KB));
-
-        if (NEB_ERROR(remove_sys_struct_pages)) {
-            kernel_panic(L"Unable to remove second system struct page from physical memory stacks: %ld\n", 
-                remove_sys_struct_pages);
-        } 
         else {
-            // the second page was removed, now add it to the appropriate allocated page stack
-            kStackPush(&kmem_allocated_pages_4KB, ((UINT64)nebulae_system_table + SIZE_4KB) & PAGE_4KB_SUPERVISOR);
-
             if (k0_VERBOSE_DEBUG) {
-                Print(L"Removed second system struct page from physical memory stacks\n");
+                Print(L"Removed system struct page from physical memory stacks\n");
             }
         }
+
+        current_addr += remove_sys_struct_page_result;
     }
-    else {
-        // the struct was removed, now add it to the appropriate allocated page stack
-        kStackPush(&kmem_allocated_pages_2MB, (UINT64)nebulae_system_table & PAGE_2MB_SUPERVISOR);
-    }
+
+    system_table->magic = NEBULAE_SIG;
+    system_table->version_major = NEBULAE_VERSION_MAJOR;
+    system_table->version_minor = NEBULAE_VERSION_MINOR;
+    system_table->version_build = NEBULAE_VERSION_BUILD;
+    system_table->data_offset = sizeof(nebulae_system_table);
+    system_table->next_free_byte = (UINT64*)(ALIGN_UP(((UINT64)system_table + system_table->data_offset), 16));
+    system_table->free_space = (((UINT64)system_table + nebulae_system_table_reserved_bytes) - (UINT64)system_table->next_free_byte);
 }
 
 // Removes a page from the free system physical memory stacks

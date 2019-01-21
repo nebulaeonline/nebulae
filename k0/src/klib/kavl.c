@@ -1,7 +1,4 @@
 // Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
-
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -25,11 +22,4 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef KSTRING_H
-#define KSTRING_H
 
-UINTN kStrnCmpA(CHAR8 *s1, CHAR8 *s2, UINTN len);
-VOID kAscii2UnicodeStr(CONST CHAR8 *String, CHAR16 *UniString, UINTN length);
-VOID kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid);
-
-#endif /* KSTRING_H */

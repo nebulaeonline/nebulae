@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2019 Nebulae Foundation. All rights reserved.
 // Copyright(c) 2017, Intel Corporation. All rights reserved.
 // Copyright(c) 2017, AMD Incorporated. All rights reserved.
 //
@@ -52,8 +52,22 @@ typedef struct s_uefi_memory_map_info {
     UINT32 descr_version;
 } uefi_memory_map_info;
 
+// Structure for facilitating
+// one-way kernel allocations in preboot
+typedef struct s_preboot_mem_block {
+    VOID *base_addr;
+    UINTN size;
+    VOID *current_addr;
+    UINTN free_space;
+    UINT8 alignment;
+    UINTN wasted_space;
+} preboot_mem_block;
+
 // Our memory map
 uefi_memory_map_info memmap;
+
+preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, VOID *base_addr, UINTN block_size);
+VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment);
 
 EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size);
 EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size);

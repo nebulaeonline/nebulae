@@ -34,7 +34,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="..\packages\nasm2.2.13.3.1\build\native\nasm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -232,7 +232,9 @@
     <ClCompile Include="src\arch\x64\x64.c" />
     <ClCompile Include="src\deps\isaac64.c" />
     <ClCompile Include="src\deps\jsmn.c" />
+    <ClCompile Include="src\klib\bootconfig.c" />
     <ClCompile Include="src\klib\interrupt.c" />
+    <ClCompile Include="src\klib\kavl.c" />
     <ClCompile Include="src\klib\kelf64.c" />
     <ClCompile Include="src\klib\kstack.c" />
     <ClCompile Include="src\klib\kstring.c" />
@@ -249,7 +251,9 @@
     <ClInclude Include="src\include\deps\jsmn.h" />
     <ClInclude Include="src\include\deps\standard.h" />
     <ClInclude Include="src\include\k0.h" />
+    <ClInclude Include="src\include\klib\bootconfig.h" />
     <ClInclude Include="src\include\klib\interrupt.h" />
+    <ClInclude Include="src\include\klib\kavl.h" />
     <ClInclude Include="src\include\klib\kelf64.h" />
     <ClInclude Include="src\include\klib\kerror.h" />
     <ClInclude Include="src\include\klib\kstack.h" />
@@ -259,15 +263,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
-    <MASM Include="src\arch\x64\_x64.asm" />
+    <NASM Include="src\arch\x64\_x64.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="..\packages\nasm2.2.13.3.1\build\native\nasm.targets" />
   </ImportGroup>
 </Project>
