@@ -172,15 +172,9 @@ VOID x64InitGDT() {
     if (gdt == NULL) {
         kernel_panic(L"Problem allocating memory for global descriptor table\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu gdt entries allocated @ 0x%lx\n", X64_GDT_MAX, gdt);
-    }
 
     if (ZeroMem(gdt, X64_GDT_MAX * sizeof(x64_seg_descr)) != gdt) {
         kernel_panic(L"Problem allocating memory for global descriptor table - storage initialization failure\n");
-    }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu gdt entries zeroed @ 0x%lx\n", X64_GDT_MAX, gdt);
     }
 
     // Allocate for TSS
@@ -189,15 +183,9 @@ VOID x64InitGDT() {
     if (tss == NULL) {
         kernel_panic(L"Problem allocating memory for task state segment\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for tss allocated @ 0x%lx\n", tss);
-    }
 
     if (ZeroMem(tss, sizeof(x64_tss)) != tss) {
         kernel_panic(L"Problem allocating memory for task state segment - storage initialization failure\n");
-    }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for tss zeroed @ 0x%lx\n", tss);
     }
 
     // Set up the 64-bit tss
@@ -319,9 +307,6 @@ VOID x64InitGDT() {
     gdt_sel.limit = ((current_entry + 1) * sizeof(x64_seg_descr));
 
     UINTN x;
-    for (x = 0; x <= current_entry; ++x) {
-        Print(L"gdt[%lu] == 0x%lx\n", x, gdt[x]);
-    }
     
     x64DisableInterrupts();
     x64WriteGdtr(&gdt_sel);
@@ -337,18 +322,10 @@ VOID x64InitIDT() {
     if (idt == NULL) {
         kernel_panic(L"Problem allocating memory for interrupt descriptor table\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu idt entries allocated @ 0x%lx\n", X64_INTERRUPT_MAX, idt);
-    }
 
     if (ZeroMem(idt, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate)) != idt) {
         kernel_panic(L"Problem allocating memory for interrupt descriptor table - storage initialization failure\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu idt entries zeroed @ 0x%lx\n", X64_INTERRUPT_MAX, idt);
-    }
-
-
 }
 
 // Read CR3 to obtain the address of the PML4 Table
@@ -434,48 +411,27 @@ VOID x64BuildInitialKernelPageTable() {
     if (k0_addr_space.pml4 == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pml4 allocation\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pml4 entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pml4);
-    }
+
     if (ZeroMem(k0_addr_space.pml4, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e)) != k0_addr_space.pml4) {
         kernel_panic(L"Problem building initial kernel page tables - pml4 storage initialization\n");
-    }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pml4 entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pml4);
     }
     
     k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), ALIGN_4KB);
     if (k0_addr_space.pdpt == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pdpt allocation\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pdpt entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pdpt);
-    }
 
     if (ZeroMem(k0_addr_space.pdpt, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte)) != k0_addr_space.pdpt) {
         kernel_panic(L"Problem building initial kernel page tables - pdpt storage initialization\n");
-    }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pdpt entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pdpt);
     }
 
     k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
     if (k0_addr_space.pde == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pde allocation\n");
     }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pde entries allocated @ 0x%lx\n", X64_PAGING_TABLE_MAX * page_dir_count, k0_addr_space.pde);
-    }
 
     if (ZeroMem(k0_addr_space.pde, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count) != k0_addr_space.pde) {
         kernel_panic(L"Problem building initial kernel page tables - pde storage initialization\n");
-    }
-    else if (k0_VERBOSE_DEBUG) {
-        Print(L"Space for %lu pde entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX * page_dir_count, k0_addr_space.pde);
-    }
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Memory acquired for 2MB kernel page table mapping\n", page_dir_count);
     }
 
     UINT64 current_addr = 0x0;
@@ -486,18 +442,7 @@ VOID x64BuildInitialKernelPageTable() {
         X64_PAGING_DATA_WRITEABLE |
         X64_PAGING_SUPERVISOR_MODE;
 
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Assigning PML4[0] == 0x%lx\n", (UINT64)k0_addr_space.pdpt |
-            X64_PAGING_PRESENT |
-            X64_PAGING_DATA_WRITEABLE |
-            X64_PAGING_SUPERVISOR_MODE);
-    }
-
     UINTN i, j;
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Starting to build page tables for 2MB pages\n");
-    }
 
     // Set up 1 pdpte and 512 pdes per GB of physical memory (rounded up to the next 1GB)
     for (i = 0; i < page_dir_count; ++i) {
@@ -505,13 +450,6 @@ VOID x64BuildInitialKernelPageTable() {
             X64_PAGING_PRESENT |
             X64_PAGING_DATA_WRITEABLE |
             X64_PAGING_SUPERVISOR_MODE;
-
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"Assigning PDPT[%lu] @ 0x%lx == 0x%lx\n", i, (UINT64)&k0_addr_space.pdpt[i], (UINT64)k0_addr_space.pdpt[i] |
-                X64_PAGING_PRESENT |
-                X64_PAGING_DATA_WRITEABLE |
-                X64_PAGING_SUPERVISOR_MODE);
-        }
 
         for (j = 0; j < X64_PAGING_TABLE_MAX; ++j) {
             if (current_addr < (kmem_total_page_count * EFI_PAGE_SIZE)) {
@@ -527,16 +465,8 @@ VOID x64BuildInitialKernelPageTable() {
                     X64_PAGING_IS_PAGES;
             }
 
-            if (k0_VERBOSE_DEBUG && ((i * X64_PAGING_TABLE_MAX) + j) % 256 == 0) {
-                Print(L"Assigning PDE[%lu] @ 0x%lx == 0x%lx\n", j, (UINT64)&k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j], (UINT64)k0_addr_space.pde[(i * X64_PAGING_TABLE_MAX) + j]);
-            }
-
             current_addr += SIZE_2MB;
         }
-    }
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Finished building page tables for 2MB pages\n");
     }
 
     // At this point, we have identity mapped all physical memory using 2MB pages.
@@ -594,13 +524,6 @@ VOID x64BuildInitialKernelPageTable() {
                         X64_PAGING_PRESENT |
                         X64_PAGING_DATA_WRITEABLE |
                         X64_PAGING_SUPERVISOR_MODE;
-
-                    if (k0_VERBOSE_DEBUG) {
-                        Print(L"Assigning 4KB PDE[%lu] @ 0x%lx == 0x%lx\n", pde_index, &cur_pd[pde_index], (UINT64)cur_pt |
-                            X64_PAGING_PRESENT |
-                            X64_PAGING_DATA_WRITEABLE |
-                            X64_PAGING_SUPERVISOR_MODE);
-                    }
                 }
                 else {
                     cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
@@ -613,10 +536,6 @@ VOID x64BuildInitialKernelPageTable() {
                     X64_PAGING_DATA_WRITEABLE |
                     X64_PAGING_SUPERVISOR_MODE;
 
-                if (k0_VERBOSE_DEBUG && pte_index % 256 == 0) {
-                    Print(L"Assigning 4KB PT[%lu] @ 0x%lx == 0x%lx\n", pte_index, &cur_pt[pte_index], cur_pt[pte_index]);
-                }
-
                 if (cur_pt[pte_index] == 0) {
                     kernel_panic(L"Attempted to assign zero pagetable!");
                 }
@@ -625,7 +544,7 @@ VOID x64BuildInitialKernelPageTable() {
                 current_addr += SIZE_4KB;
             }
             else {
-                Print(L"Memory address did not meet either criteria: 0x%lx\n", current_addr);
+                Print(L"Memory address did not fit into paging scheme: 0x%lx\n", current_addr);
                 kernel_panic(L"mem_block_end == 0x%lx\n", mem_block_end);
             }
         }
@@ -683,7 +602,6 @@ VOID x64BuildInitialKernelPageTable() {
         //Print(L"memory descriptor size (per uefi): 0x%lx\n", memmap.descr_size);
         //Print(L"total pages: 0x%lx\n", kmem_total_page_count);
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
-        //x64DumpGdt();
     }
 
     //x64WriteCR3(k0_addr_space.pml4);
