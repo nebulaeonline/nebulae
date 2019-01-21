@@ -49,6 +49,14 @@
 #define PAGE_SIZE_2MB                   SIZE_2MB
 #define PAGE_SIZE_1GB                   SIZE_1GB
 
+#define ALIGN_8                         0x08
+#define ALIGN_16                        0x10
+#define ALIGN_32                        0x20
+#define ALIGN_64                        0x40
+#define ALIGN_128                       0x80
+#define ALIGN_4KB                       0x1000
+#define ALIGN_2MB                       0x200000
+
 // Helpful macros
 #define CHECK_BIT(INPUT, MASK)          ((INPUT & MASK) == MASK)
 #define HI32(X)                         (UINT32)((((UINT64)(X)) & HI32_MASK) >> 32)

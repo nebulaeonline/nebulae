@@ -37,8 +37,7 @@ x64_cpu cpu;
 x64_tss *tss;
 x64_seg_descr *gdt;
 
-// This function zeros a 512-entry pml4 table
-// representing a virtual address space
+// Zeros a 512-entry pml4 table representing a virtual address space
 nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
     
     if (ISNULL(vas)) {
@@ -167,7 +166,7 @@ VOID x64InitGDT() {
     extern preboot_mem_block k0_boot_scratch_area;
 
     // Allocate for gdt
-    gdt = kPrebootMalloc(&k0_boot_scratch_area, X64_GDT_MAX * sizeof(x64_seg_descr), 16);
+    gdt = kPrebootMalloc(&k0_boot_scratch_area, X64_GDT_MAX * sizeof(x64_seg_descr), ALIGN_16);
     x64_seg_sel gdt_sel = { .base = gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
 
     if (gdt == NULL) {
@@ -185,7 +184,7 @@ VOID x64InitGDT() {
     }
 
     // Allocate for TSS
-    tss = (x64_tss*)kPrebootMalloc(&k0_boot_scratch_area, sizeof(x64_tss), 16);
+    tss = (x64_tss*)kPrebootMalloc(&k0_boot_scratch_area, sizeof(x64_tss), ALIGN_16);
 
     if (tss == NULL) {
         kernel_panic(L"Problem allocating memory for task state segment\n");
@@ -226,8 +225,8 @@ VOID x64InitGDT() {
     // Now fill in our entries
 
     // gdt[n + 1] DPL0, DATA, WRITEABLE
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_DATA |
         X64_SEG_DATA_WRITEABLE |
         X64_SEG_DEFAULT32 |
@@ -236,8 +235,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 2] DPL0, CODE, READABLE
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_CODE |
         X64_SEG_CODE_READABLE |
         X64_SEG_DEFAULT32 |
@@ -246,8 +245,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 3] DPL0, CODE, READABLE, 64-bit
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_CODE |
         X64_SEG_CODE_READABLE |
         X64_SEG_64BIT |
@@ -256,8 +255,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 4] DPL0, DATA, WRITEABLE, EXPAND-DOWN
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_DATA |
         X64_SEG_DATA_WRITEABLE |
         X64_SEG_DATA_EXPAND_DOWN |
@@ -267,8 +266,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 5] DPL3, DATA, WRITEABLE
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_DATA |
         X64_SEG_DATA_WRITEABLE |
         X64_SEG_DEFAULT32 |
@@ -277,8 +276,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 6] DPL3, CODE, READABLE
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_CODE |
         X64_SEG_CODE_READABLE |
         X64_SEG_DEFAULT32 |
@@ -287,8 +286,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 7] DPL3, CODE, READABLE, 64-bit
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_CODE |
         X64_SEG_CODE_READABLE |
         X64_SEG_64BIT |
@@ -297,8 +296,8 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[n + 8] DPL3, DATA, WRITEABLE, EXPAND-DOWN
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(0) |
-        SEG_DESCR_FORMAT_LIMIT(0xFFFFF) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(X64_SEGMENT_BASE) |
+        SEG_DESCR_FORMAT_LIMIT(X64_SEGMENT_LIMIT) |
         X64_SEG_DATA |
         X64_SEG_DATA_WRITEABLE |
         X64_SEG_DATA_EXPAND_DOWN |
@@ -307,13 +306,13 @@ VOID x64InitGDT() {
         X64_SEG_DPL3 |
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
-    // 64-bit TSS descriptor - takes up two spots
+    // 64-bit TSS descriptor (CPU0) - takes up two gdt spots
     gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(&tss) |
         SEG_DESCR_FORMAT_LIMIT(sizeof(x64_tss)) |
         SEG_DESCR_FORMAT_SYSTEM_TYPE(X64_TYPE_TSS_AVAILABLE) |
         X64_SEG_DPL0 |
         X64_SEG_PRESENT;
-    gdt[++current_entry] = ((UINT64)&tss & HI32_MASK) >> 32;
+    gdt[++current_entry] = HI32((UINT64)&tss);
 
     // Set our gdt limit
     gdt_sel.limit = ((current_entry + 1) * sizeof(x64_seg_descr));
@@ -332,7 +331,7 @@ VOID x64InitGDT() {
 VOID x64InitIDT() {
     extern preboot_mem_block k0_boot_scratch_area;
 
-    x64_inttrap_gate *idt = kPrebootMalloc(&k0_boot_scratch_area, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), SIZE_4KB);
+    x64_inttrap_gate *idt = kPrebootMalloc(&k0_boot_scratch_area, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), ALIGN_4KB);
     
     if (idt == NULL) {
         kernel_panic(L"Problem allocating memory for interrupt descriptor table\n");
@@ -430,7 +429,7 @@ VOID x64BuildInitialKernelPageTable() {
     }
 
     // allocate memory space for our kernel page table and zero the memory
-    k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), SIZE_4KB);
+    k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), ALIGN_4KB);
     if (k0_addr_space.pml4 == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pml4 allocation\n");
     }
@@ -444,7 +443,7 @@ VOID x64BuildInitialKernelPageTable() {
         Print(L"Space for %lu pml4 entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pml4);
     }
     
-    k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), SIZE_4KB);
+    k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), ALIGN_4KB);
     if (k0_addr_space.pdpt == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pdpt allocation\n");
     }
@@ -459,7 +458,7 @@ VOID x64BuildInitialKernelPageTable() {
         Print(L"Space for %lu pdpt entries zeroed @ 0x%lx\n", X64_PAGING_TABLE_MAX, k0_addr_space.pdpt);
     }
 
-    k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, SIZE_4KB);
+    k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
     if (k0_addr_space.pde == NULL) {
         kernel_panic(L"Problem building initial kernel page tables - pde allocation\n");
     }

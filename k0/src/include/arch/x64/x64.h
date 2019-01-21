@@ -234,6 +234,8 @@ typedef UINT64      x64_seg_descr;
 #define SEG_DESCR_FORMAT_SYSTEM_TYPE(X) (((UINT64)X & 0x000000000000000FULL) << 40)
 
 #define X64_GDT_MAX                     0x100
+#define X64_SEGMENT_BASE                0x00ULL
+#define X64_SEGMENT_LIMIT               0xFFFFF
 
 // Interrupts
 #define X64_INTERRUPT_MAX               256
