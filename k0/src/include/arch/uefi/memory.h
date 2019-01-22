@@ -39,6 +39,8 @@
 #define PAGE_2MB_SUPERVISOR         0x00000000000FFFFFULL
 #define PAGE_2MB_USER               0x00000000000EEEEEULL
 
+#define preboot_mem_block           x64_preboot_mem_block
+
 #endif
 
 // Structure to hold info about
@@ -52,17 +54,6 @@ typedef struct s_uefi_memory_map_info {
     UINT32 descr_version;
 } uefi_memory_map_info;
 
-// Structure for facilitating
-// one-way kernel allocations in preboot
-typedef struct s_preboot_mem_block {
-    VOID *base_addr;
-    UINTN size;
-    VOID *current_addr;
-    UINTN free_space;
-    UINT8 alignment;
-    UINTN wasted_space;
-} preboot_mem_block;
-
 // Our memory map
 uefi_memory_map_info memmap;
 
@@ -75,10 +66,11 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UI
 nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
 UINT64    GetFreeMemStackCount(UINT32 which_size);
 UINT64    GetAllocatedMemStackCount(UINT32 which_size);
-nebStatus InitMem(VOID);
-UINTN     ReadUefiMemoryMap(VOID);
-VOID      AllocateSystemStruct(VOID);
+nebStatus InitMem();
+UINTN     ReadUefiMemoryMap();
+VOID      AllocateSystemStruct();
 nebStatus RemoveFreePageContainingAddr(UINT64 addr);
+BOOLEAN   IsPageFree_Preboot(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 #endif /* __K0_KMEM_H */

@@ -223,6 +223,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\arch\interrupt.c" />
     <ClCompile Include="src\arch\uefi\graphics.c" />
     <ClCompile Include="src\arch\uefi\kacpi.c" />
     <ClCompile Include="src\arch\uefi\memory.c" />
@@ -233,7 +234,6 @@
     <ClCompile Include="src\deps\isaac64.c" />
     <ClCompile Include="src\deps\jsmn.c" />
     <ClCompile Include="src\klib\bootconfig.c" />
-    <ClCompile Include="src\klib\interrupt.c" />
     <ClCompile Include="src\klib\kavl.c" />
     <ClCompile Include="src\klib\kelf64.c" />
     <ClCompile Include="src\klib\kstack.c" />
@@ -269,6 +269,7 @@
     <Text Include="..\LICENSE.txt" />
   </ItemGroup>
   <ItemGroup>
+    <NASM Include="src\arch\x64\x64_interrupts.asm" />
     <NASM Include="src\arch\x64\_x64.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

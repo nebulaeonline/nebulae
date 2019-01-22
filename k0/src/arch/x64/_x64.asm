@@ -29,10 +29,14 @@ global x64AsmInportB, x64AsmInportW
 global x64EnableInterrupts, x64DisableInterrupts
 global x64ReadTsc, x64LoadStackSegmentAndJump
 global x64WriteCR3, x64ReadGdtr, x64WriteGdtr
+global x64ReadIdtr, x64WriteIdtr, x64ReadCR2
 global x64ReadCS, x64ReadDS, x64ReadSS
 global x64ReadES, x64ReadFS, x64ReadGS
+global x64LoadTR
 
 bits 64
+%define retfq o64 retf
+
 segment .text
 
 ;==================================
@@ -114,7 +118,7 @@ x64DisableInterrupts:
 ;==================================
 ; UINT64
 ; EFIAPI
-; x64ReadTsc (VOID)
+; x64ReadTsc ()
 ;
 x64ReadTsc:
     rdtsc
@@ -150,7 +154,7 @@ x64WriteCR3:
 ; VOID
 ; EFIAPI
 ; x64ReadGdtr (
-;   OUT x64_seg_sel  *Gdtr
+;   OUT x64_seg_sel  *gdtr
 ;   );
 ;
 x64ReadGdtr:
@@ -169,9 +173,40 @@ x64WriteGdtr:
     ret
 
 ;==================================
+; VOID
+; EFIAPI
+; x64ReadIdtr (
+;   OUT x64_seg_sel  *idtr
+;   );
+;
+x64ReadIdtr:
+    sidt    [rcx]
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64WriteIdtr (IN CONST x64_seg_sel *idtr);
+;
+x64WriteIdtr:
+    lidt    [rcx]
+
+    xor eax, eax
+    ret
+
+;------------------------------------------------------------------------------
+; UINTN
+; EFIAPI
+; x64ReadCR2 (VOID);
+;------------------------------------------------------------------------------
+x64ReadCR2:
+    mov     rax, cr2
+    ret
+
+;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadCS (VOID);
+; x64ReadCS ();
 ;
 x64ReadCS:
     xor eax, eax
@@ -181,7 +216,7 @@ x64ReadCS:
 ;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadDS (VOID);
+; x64ReadDS ();
 ;
 x64ReadDS:
     xor eax, eax
@@ -191,7 +226,7 @@ x64ReadDS:
 ;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadSS (VOID);
+; x64ReadSS ();
 ;
 x64ReadSS:
     xor eax, eax
@@ -201,7 +236,7 @@ x64ReadSS:
 ;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadES (VOID);
+; x64ReadES ();
 ;
 x64ReadES:
     xor eax, eax
@@ -211,7 +246,7 @@ x64ReadES:
 ;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadFS (VOID);
+; x64ReadFS ();
 ;
 x64ReadFS:
     xor eax, eax
@@ -221,9 +256,20 @@ x64ReadFS:
 ;==================================
 ; UINT16
 ; EFIAPI
-; x64ReadGS (VOID);
+; x64ReadGS ();
 ;
 x64ReadGS:
     xor eax, eax
     mov ax, es
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64LoadTR (
+;   UINT16 tr_gdt_descr_index
+;   );
+;
+x64LoadTR:
+    ltr cx
     ret

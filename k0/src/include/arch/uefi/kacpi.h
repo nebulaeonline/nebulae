@@ -38,6 +38,6 @@
 
 extern EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt;
 
-nebStatus LocateACPI_XSDT(VOID);
+nebStatus LocateACPI_XSDT();
 
 #endif // __K0_KACPI_H

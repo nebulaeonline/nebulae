@@ -39,9 +39,15 @@
 #include "include/klib/kstring.h"
 #include "include/klib/interrupt.h"
 
-// Main kernel page tables
+// kernel page tables
 preboot_mem_block k0_boot_scratch_area;
 x64_virtual_address_space k0_addr_space;
+
+// kernel stacks
+preboot_mem_block k0_kernel_stack_area;
+
+// kernel system area
+preboot_mem_block k0_kernel_system_area;
 
 // Main system table
 nebulae_system_table *system_table = NULL;
@@ -51,16 +57,15 @@ BOOLEAN k0_main_called = FALSE;
 
 // Kernel Entrypoint
 // Graphics are initialized, we're flying solo!
-NORETURN VOID k0_main(VOID) {
+NORETURN VOID k0_main() {
     
+    extern volatile UINT64 isr_fired;
+
     // We're here!
     k0_main_called = TRUE;
 
     // Do something
     Print(L"entered main nebulae kernel...\n");
-
-    // Initialize interrupts
-    InitInterrupts();
 
     /*
     if (k0_VERBOSE_DEBUG) {
@@ -76,6 +81,8 @@ NORETURN VOID k0_main(VOID) {
 
     // Draw a blue triangle to the screen
     drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
+
+    Print(L"isr_fired == 0x%lx\n", isr_fired);
 
     // Woo-hoo!
     while (TRUE) {}

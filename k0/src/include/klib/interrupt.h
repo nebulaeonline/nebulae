@@ -31,17 +31,8 @@
 
 #define INTERRUPT_VECTOR_COUNT      0xFF
 
-typedef PACKED_MS struct s_interrupt_vector {
-    VOID (*isr_fn) (VOID);
-    UINT32 data;
-    UINT32 flags;
-    UINT32 status;
-    BOOLEAN allocated;
-} PACKED_GNU interrupt_vector;
-
-// This table will hold our interrupt vectors
-volatile interrupt_vector interrupt_vector_table[INTERRUPT_VECTOR_COUNT];
-
-VOID InitInterrupts(VOID);
+VOID InitInterrupts();
+VOID c_isr_handler(unsigned int vector);
+VOID c_nmi_handler();
 
 #endif // __K0_INTERRUPT_H

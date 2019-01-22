@@ -199,6 +199,9 @@
 #define X64_2MB_ALIGN_MASK              0x000FFFFFFFE00000ULL
 #define X64_1GB_ALIGN_MASK              0x000FFFFFC0000000ULL
 
+#define X64_PL0                         0x00
+#define X64_PL3                         0x03
+
 // PML4 Entry (Top level of 4-level paging
 // structure on x64)
 // Maps 512GB
@@ -238,8 +241,22 @@ typedef UINT64      x64_seg_descr;
 #define X64_SEGMENT_BASE                0x00ULL
 #define X64_SEGMENT_LIMIT               0xFFFFF
 
+#define DPL0_DATA_WRITEABLE             0x100
+#define DPL0_CODE_READABLE              0x108
+#define DPL0_CODE64_READABLE            0x110
+
+#define DPL3_DATA_WRITEABLE             0x118
+#define DPL3_CODE_READABLE              0x120
+#define DPL3_CODE64_READABLE            0x128
+
+#define CPU0_TSS_INDEX_GDT              0x130
+
 // Interrupts
-#define X64_INTERRUPT_MAX               256
+#define X64_INTERRUPT_MAX               0x100
+
+#define X64_ADDR_00_15(X)               (X & 0x000000000000FFFFULL)
+#define X64_ADDR_16_31(X)               ((X & 0x00000000FFFF0000ULL) >> 16)
+#define X64_ADDR_32_63(X)               (HI32(X))
 
 // Call Gate
 typedef PACKED_MS struct s_x64_call_gate {
@@ -313,6 +330,27 @@ typedef PACKED_MS struct s_x64_virtual_address_space {
     x64_pte   *pte;
 } PACKED_GNU x64_virtual_address_space;
 
+// Interrupt service routine pointer signature
+typedef VOID(*ISR_FN)(VOID);
+
+// Structure for facilitating
+// one-time kernel allocations in preboot
+typedef struct s_x64_preboot_mem_block {
+    VOID *base_addr;
+    UINTN size;
+    VOID *current_addr;
+    UINTN free_space;
+    UINT8 alignment;
+    UINTN wasted_space;
+} x64_preboot_mem_block;
+
+// This structure represents a kernel stack
+typedef struct s_x64_kernel_stack {
+    UINT64 guard_page_low_base;
+    UINT64 stack_base;
+    UINT64 guard_page_high_base;
+} x64_kernel_stack;
+
 // cpu struct
 extern x64_cpu cpu;
 
@@ -320,32 +358,41 @@ extern x64_cpu cpu;
 #define MAXPHYADDR  cpu.physical_address_bits
 
 // Function prototypes
-VOID x64InitCPU(VOID);
+nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas);
+VOID x64InitBootCPU();
 BOOLEAN x64ReadCpuinfoFlags(UINT64 flag);
-VOID x64BuildInitialKernelPageTable(VOID);
-VOID  x64DumpGdt(VOID);
-VOID x64AllocateSystemStruct(VOID);
-EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr(VOID);
-VOID x64AllocateBootScratchArea(VOID);
+VOID x64InitGDT();
+VOID x64InitKernelStacks();
+VOID x64InitIDT();
+EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr();
+VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, UINT64 size, UINT64 alignment_mask);
+VOID x64AllocateBootScratchArea();
+VOID x64BuildInitialKernelPageTable();
+VOID x64DumpGdt();
+VOID x64AllocateSystemStruct();
 UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
-extern VOID EFIAPI x64EnableInterrupts(VOID);
-extern VOID EFIAPI x64DisableInterrupts(VOID);
+extern VOID EFIAPI x64EnableInterrupts();
+extern VOID EFIAPI x64DisableInterrupts();
 extern VOID EFIAPI x64AsmOutportB(IN UINT16 Port, OUT UINT8 Value);
 extern VOID EFIAPI x64AsmOutportW(IN UINT16 Port, OUT UINT16 Value);
 extern UINT8 EFIAPI x64AsmInportB(IN UINT16 Port);
 extern UINT16 EFIAPI x64AsmInportW(IN UINT16 Port);
-extern UINT64 EFIAPI x64ReadTsc(VOID);
+extern UINT64 EFIAPI x64ReadTsc();
 extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(IN x64_farptr* ssptr, IN UINT64* dest);
 extern UINTN EFIAPI x64WriteCR3(IN UINTN new_cr3);
 extern VOID EFIAPI x64ReadGdtr(OUT x64_seg_sel  *gdtr);
 extern VOID EFIAPI x64WriteGdtr(IN CONST x64_seg_sel *gdtr);
-extern UINT16 EFIAPI x64ReadCS(VOID);
-extern UINT16 EFIAPI x64ReadDS(VOID);
-extern UINT16 EFIAPI x64ReadSS(VOID);
-extern UINT16 EFIAPI x64ReadES(VOID);
-extern UINT16 EFIAPI x64ReadFS(VOID);
-extern UINT16 EFIAPI x64ReadGS(VOID);
+extern VOID EFIAPI x64ReadIdtr(OUT x64_seg_sel  *idtr);
+extern VOID EFIAPI x64WriteIdtr(OUT x64_seg_sel  *idtr);
+extern UINT64 EFIAPI x64ReadCR2();
+extern UINT16 EFIAPI x64ReadCS();
+extern UINT16 EFIAPI x64ReadDS();
+extern UINT16 EFIAPI x64ReadSS();
+extern UINT16 EFIAPI x64ReadES();
+extern UINT16 EFIAPI x64ReadFS();
+extern UINT16 EFIAPI x64ReadGS();
+extern VOID EFIAPI x64LoadTR(UINT16 tr_gdt_descr_index);
 
 #endif /* __K0_X64_H */

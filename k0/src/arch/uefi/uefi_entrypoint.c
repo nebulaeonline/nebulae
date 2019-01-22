@@ -62,7 +62,7 @@ EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
 }
 
 // Declare Kernel Entrypoint
-NORETURN VOID k0_main(VOID);
+NORETURN VOID k0_main();
 
 // UEFI Entrypoint
 EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE* uefi_system_table) {
@@ -95,7 +95,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 
     // Initialize the cpu architecture
 #ifdef __NEBULAE_ARCH_X64    
-    x64InitCPU();
+    x64InitBootCPU();
 #endif
 
     // Locate the ACPI XSDT tables
@@ -147,11 +147,15 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     gBS->ExitBootServices(uefi_image_handle, uefi_mem_key);
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
+    // Initialize interrupts (APIC)
+    InitInterrupts();
+
     // Create our page tables
 #ifdef __NEBULAE_ARCH_X64
     x64BuildInitialKernelPageTable();
+    x64InitKernelStacks();
     x64InitGDT();
-    x64DumpGdt();
+    x64InitIDT();
 #endif
     
     // Allocate and free pages -- BEGIN MEMORY TEST

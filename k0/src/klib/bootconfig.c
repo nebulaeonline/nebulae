@@ -207,6 +207,18 @@ BOOLEAN ProcessBootConfig() {
                 nebulae_system_table_reserved_bytes = SIZE_8KB;
                 Print(L"system-reserved-memory set to 8KB\n");
             }
+            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "SIZE_2MB") == 0) {
+                nebulae_system_table_reserved_bytes = SIZE_2MB;
+                Print(L"system-reserved-memory set to 2MB\n");
+            }
+            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "SIZE_4MB") == 0) {
+                nebulae_system_table_reserved_bytes = SIZE_4MB;
+                Print(L"system-reserved-memory set to 4MB\n");
+            }
+            else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "SIZE_8MB") == 0) {
+                nebulae_system_table_reserved_bytes = SIZE_8MB;
+                Print(L"system-reserved-memory set to 8MB\n");
+            }
             else if (jsoneq(config_file_buffer, &json_tokens[current_json_element + 1], "SIZE_16MB") == 0) {
                 nebulae_system_table_reserved_bytes = SIZE_16MB;
                 Print(L"system-reserved-memory set to 16MB\n");

@@ -40,13 +40,13 @@
     <ClCompile Include="src\arch\x64\local_apic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\klib\interrupt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\klib\kavl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\klib\bootconfig.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\interrupt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -128,6 +128,9 @@
   </ItemGroup>
   <ItemGroup>
     <NASM Include="src\arch\x64\_x64.asm">
+      <Filter>Source Files</Filter>
+    </NASM>
+    <NASM Include="src\arch\x64\x64_interrupts.asm">
       <Filter>Source Files</Filter>
     </NASM>
   </ItemGroup>

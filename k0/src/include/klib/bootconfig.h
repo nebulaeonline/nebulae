@@ -25,6 +25,6 @@
 #ifndef __K0_BOOTCONFIG_H
 #define __K0_BOOTCONFIG_H
 
-BOOLEAN ProcessBootConfig(VOID);
+BOOLEAN ProcessBootConfig();
 
 #endif // __K0_BOOTCONFIG_H

@@ -482,6 +482,30 @@ nebStatus RemoveFreePageContainingAddr(UINT64 addr) {
     }
 }
 
+// Is a page in one of the free page stacks?
+// This function is slow, and is not meant to 
+// be used except during preboot;  This WILL
+// cause a race condition if used once 
+// multiprocessing is enabled.
+BOOLEAN IsPageFree_Preboot(UINT64 addr) {
+    nebStatus found_in_2MB = kStackFindValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
+    if (NEB_ERROR(found_in_2MB)) {
+
+        nebStatus found_in_4KB = kStackFindValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
+
+        if (NEB_ERROR(found_in_4KB)) {
+            // We didn't find shit
+            return FALSE;
+        }
+        else {
+            return TRUE;
+        }
+    }
+    else {
+        return TRUE;
+    }
+}
+
 // Returns the raw paging structure for a given
 // virtual address (only in kernel address space)
 UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {

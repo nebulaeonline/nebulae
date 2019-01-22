@@ -78,8 +78,8 @@
 
 // 128-bit wide unsigned integer data type
 typedef PACKED_MS struct s_x64_u128 {
-    UINT64 lo;
-    UINT64 hi;
+    UINT64 lo64;
+    UINT64 hi64;
 } PACKED_GNU x64_u128;
 
 // Debug mode(s)
@@ -106,7 +106,7 @@ typedef PACKED_MS struct s_nebulae_system_table {
 } PACKED_GNU nebulae_system_table;
 
 // Function signatures
-NORETURN VOID k0_main(VOID);
+NORETURN VOID k0_main();
 NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);
 
 // Error type

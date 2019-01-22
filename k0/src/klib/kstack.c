@@ -177,3 +177,28 @@ nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
     
     return NEBERROR_STACK_ELEMENT_NOT_FOUND;
 }
+
+// Locates a value in the stack 
+nebStatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor) {
+
+    UINT64 *current_item = stack->top;
+
+    while (current_item != stack->base) {   // when equal, we've hit the end
+        if (value >= *current_item && value <= (*current_item + size_factor)) {
+
+            // Catch the edge case where size_factor != 0, but value == *current_item +
+            // size_factor, so this would technically fall outside the range
+            if (size_factor != 0 && value == (*current_item + size_factor)) {
+                // do nothing
+            }
+            else {
+                return NEB_OK;
+            }
+        }
+
+        current_item += (-1) * (stack->dir * KSTACK_UNIT_SIZE);
+    }
+
+    return NEBERROR_STACK_ELEMENT_NOT_FOUND;
+}
+

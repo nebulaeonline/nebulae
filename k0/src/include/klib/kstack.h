@@ -70,4 +70,7 @@ UINT64 kGetStackCount(kstack *stack);
 // Exact matches would have a size factor of 0.
 nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor);
 
+// Finds an item in the stack
+nebStatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor);
+
 #endif // __K0_KSTACK_H
