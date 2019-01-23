@@ -22,8 +22,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __K0_LOCAL_APIC_H
-#define __K0_LOCAL_APIC_H
+#ifndef __K0_IOAPIC_H
+#define __K0_IOAPIC_H
 
 #include "x64.h"
 
@@ -31,6 +31,13 @@
 #define X64_APIC_BASE_ADDR_MASK             X64_4KB_ALIGN_MASK
 #define X64_APIC_MAX_LVT_ENTRY_MASK         0x00FF0000
 #define X64_APIC_VERSION_MASK               0x000000FF
+
+#define X64_APIC_IOREGSEL                   0x00
+#define X64_APIC_IOWIN                      0x10
+#define X64_APIC_IOAPICID                   0x00
+#define X64_APIC_IOAPICVER                  0x01
+#define X64_APIC_IOAPICARB                  0x02
+#define X64_APIC_IOREDTBL                   0x10
 
 #define X64_APIC_GLOBAL_ENABLE              BIT11
 #define X64_APIC_BSP                        BIT8

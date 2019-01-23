@@ -37,9 +37,6 @@
     <ClCompile Include="src\arch\uefi\kacpi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\x64\local_apic.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\klib\kavl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -50,6 +47,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\x64\mmio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\x64\ioapic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,9 +99,6 @@
     <ClInclude Include="src\include\klib\pe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\x64\local_apic.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\klib\interrupt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -115,6 +112,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\arch\x64\mmio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\x64\ioapic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
