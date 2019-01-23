@@ -58,23 +58,23 @@ VOID InitLocalAPIC() {
 }
 
 // Read the given ioapic; if NULL, reads the bsp ioapic
-UINT32 ReadIoAPIC(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg) {
+UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg) {
     if (ISNULL(ioapic_addr)) {
         ioapic_addr = bsp_apic_address;
     }
 
-    UINT32 volatile *ioapic = (UINT32 volatile *)ioapic_addr;
+    UINT32 volatile *ioapic = (UINT64 volatile *)ioapic_addr;
     ioapic[0] = (reg & 0xFF);
     return ioapic[4];
 }
 
 // Writes the given ioapic; if NULL, writes the bsp ioapic
-VOID WriteIoAPIC(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg, UINT32 value) {
+VOID WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg, UINT32 value) {
     if (ISNULL(ioapic_addr)) {
         ioapic_addr = bsp_apic_address;
     }
 
-    UINT32 volatile *ioapic = (UINT32 volatile *)ioapic_addr;
+    UINT32 volatile *ioapic = (UINT64 volatile *)ioapic_addr;
     ioapic[0] = (reg & 0xFF);
     ioapic[4] = value;
 }

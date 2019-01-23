@@ -29,6 +29,7 @@
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
 #include "../../include/arch/uefi/memory.h"
+#include "../../include/arch/x64/local_apic.h"
 
 // The number of bytes we reserve for the system
 extern UINTN nebulae_system_table_reserved_bytes;
@@ -202,9 +203,11 @@ VOID x64InitGDT() {
     
     UINT32 i;
     for (i = 1; i < 8; i++) {
-        tss->ist[i] = kernel_stack[i].stack_base;
+        tss->ist[i - 1] = kernel_stack[i].stack_base;
+        Print(L"tss->ist[%u] == 0x%lx\n", i - 1, tss->ist[i - 1]);
     }
     tss->io_map_base_address = sizeof(x64_tss);
+    Print(L"&tss == 0x%lx\n", tss);
 
     // Copy the existing gdt.
     // In order to keep uefi around, it is 
@@ -291,13 +294,13 @@ VOID x64InitGDT() {
         X64_SEG_PRESENT |
         X64_SEG_LIMIT_IN_PAGES;
     // gdt[38] 64-bit TSS descriptor (CPU0) - takes up two gdt spots
-    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(&tss) |
+    gdt[++current_entry] = SEG_DESCR_FORMAT_BASE_ADDR(tss) |
         SEG_DESCR_FORMAT_LIMIT(sizeof(x64_tss)) |
         SEG_DESCR_FORMAT_SYSTEM_TYPE(X64_TYPE_TSS_AVAILABLE) |
         X64_SEG_SYSTEM_SEGMENT |
         X64_SEG_DPL0 |
         X64_SEG_PRESENT;
-    gdt[++current_entry] = HI32((UINT64)&tss);
+    gdt[++current_entry] = HI32((UINT64)tss);
 
     // Set our gdt limit
     gdt_sel.limit = ((current_entry + 1) * sizeof(x64_seg_descr));
@@ -2468,6 +2471,22 @@ VOID x64InitIDT() {
     
     x64DisableInterrupts();
     x64WriteIdtr(&idt_sel);
+    
+    extern UINT64 bsp_apic_address;
+    
+    if (ISNULL(bsp_apic_address)) {
+        kernel_panic(L"Boot service processor I/O apic not found after init\n");
+    }
+
+    
+    // Mask the spurious interrupt register bit bit to begin receiving interrupts
+    UINT32 interrupt_mask = ReadIOApic(bsp_apic_address, 0xF0);
+    Print(L"interrupt_mask == %lu\n", interrupt_mask);
+    //kernel_panic(L"bsp_apic_address == 0x%lx\n", bsp_apic_address);
+
+    WriteIOApic(bsp_apic_address, 0xF0, interrupt_mask | 0x100);
+
+    // Away we go!
     x64EnableInterrupts();
 
     if (k0_VERBOSE_DEBUG) {

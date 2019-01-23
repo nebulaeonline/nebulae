@@ -234,7 +234,7 @@ typedef UINT64      x64_pte;
 // Segment Descriptor
 typedef UINT64      x64_seg_descr;
 #define SEG_DESCR_FORMAT_LIMIT(X)       ((((UINT64)X & 0x000F0000ULL) << 32) | ((UINT64)X & 0x0000FFFFULL))
-#define SEG_DESCR_FORMAT_BASE_ADDR(X)   ((((UINT64)X & 0xFF000000ULL) << 32) | ((UINT64)X & 0x00FF0000ULL << 16) | (((UINT64)X & 0x0000FFFFULL) << 16))
+#define SEG_DESCR_FORMAT_BASE_ADDR(X)   ((((UINT64)X & 0xFF000000ULL) << 32) | (((UINT64)X & 0x00FF0000ULL) << 16) | (((UINT64)X & 0x0000FFFFULL) << 16))
 #define SEG_DESCR_FORMAT_SYSTEM_TYPE(X) (((UINT64)X & 0x000000000000000FULL) << 40)
 
 #define X64_GDT_MAX                     0x100
@@ -254,7 +254,7 @@ typedef UINT64      x64_seg_descr;
 // Interrupts
 #define X64_INTERRUPT_MAX               0x100
 
-#define X64_ADDR_00_15(X)               (X & 0x000000000000FFFFULL)
+#define X64_ADDR_00_15(X)               (X  & 0x000000000000FFFFULL)
 #define X64_ADDR_16_31(X)               ((X & 0x00000000FFFF0000ULL) >> 16)
 #define X64_ADDR_32_63(X)               (HI32(X))
 
