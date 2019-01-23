@@ -36,33 +36,23 @@ UINT64 bsp_apic_addr = NULL;
 UINT8  bsp_apic_id = 0;
 UINT32 *bsp_apic_version = NULL;
 
+// #TODO THIS NEEDS FIXING ASAP.... NOT CORRECT.
 // Initialize the local APIC
 VOID InitLocalAPIC() {
     if (!x64ReadCpuinfoFlags(X64_HAS_APIC)) {
         kernel_panic(L"nebulae requires APIC support on x64\n");
     }
 
-    UINT64 apic_msr = AsmReadMsr64(X64_APIC_BASE_MSR);
-    bsp_apic_addr = apic_msr & X64_APIC_BASE_ADDR_MASK;
+    // For Local APIC
+    // UINT64 apic_msr = AsmReadMsr64(X64_APIC_BASE_MSR);
+    // bsp_apic_addr = apic_msr & X64_APIC_BASE_ADDR_MASK;
+    bsp_apic_addr = 0xFEC00000;
 
+    /*
     if (!CHECK_BIT(apic_msr, X64_APIC_BSP)) {
         kernel_panic(L"nebulae is not running on the boot service processor\n");
     }
-
-    bsp_apic_id = (UINT8)((cpu.cpuinfo[0x01].reg[X64_REG_EBX] & 0xFF000000) >> 24);
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Boot service processor APIC id: 0x%x\n", bsp_apic_id);
-    }
-
-    if (k0_VERBOSE_DEBUG && CHECK_BIT(apic_msr, X64_APIC_GLOBAL_ENABLE)) {
-        Print(L"Global enable flag of APIC on boot service processor set\n");
-    }
-
-    bsp_apic_version = (UINT32*)(bsp_apic_addr + X64_APIC_VERSION_REG_OFFSET);
-
-    if (k0_VERBOSE_DEBUG) {
-        Print(L"Boot service processor APIC version: 0x%x\n", *bsp_apic_version);
-    }
+    */
 }
 
 // Read the given ioapic; if NULL, reads the bsp ioapic
