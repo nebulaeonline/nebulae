@@ -127,7 +127,7 @@
 #define X64_APIC_DIVIDE_CONFIG_BY_1         b1011
 
 VOID   InitLocalAPIC();
-UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg);
-VOID   WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg, UINT32 value);
+UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);
+VOID   WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value);
 
 #endif // __K0_LOCAL_APIC_H

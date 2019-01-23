@@ -230,6 +230,7 @@
     <ClCompile Include="src\arch\uefi\panic.c" />
     <ClCompile Include="src\arch\uefi\uefi_entrypoint.c" />
     <ClCompile Include="src\arch\x64\local_apic.c" />
+    <ClCompile Include="src\arch\x64\mmio.c" />
     <ClCompile Include="src\arch\x64\x64.c" />
     <ClCompile Include="src\deps\isaac64.c" />
     <ClCompile Include="src\deps\jsmn.c" />
@@ -241,11 +242,13 @@
     <ClCompile Include="src\kmain.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\arch\x64\mmio_internal.h" />
     <ClInclude Include="src\include\arch\uefi\graphics.h" />
     <ClInclude Include="src\include\arch\uefi\kacpi.h" />
     <ClInclude Include="src\include\arch\uefi\memory.h" />
     <ClInclude Include="src\include\arch\uefi\panic.h" />
     <ClInclude Include="src\include\arch\x64\local_apic.h" />
+    <ClInclude Include="src\include\arch\x64\mmio.h" />
     <ClInclude Include="src\include\arch\x64\x64.h" />
     <ClInclude Include="src\include\deps\isaac64.h" />
     <ClInclude Include="src\include\deps\jsmn.h" />

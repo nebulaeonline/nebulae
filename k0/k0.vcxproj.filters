@@ -49,6 +49,9 @@
     <ClCompile Include="src\arch\interrupt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\arch\x64\mmio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">
@@ -106,6 +109,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\klib\bootconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\arch\x64\mmio_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\x64\mmio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

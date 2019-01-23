@@ -23,10 +23,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include "../../include/arch/x64/local_apic.h"
+#include "../../include/arch/x64/mmio.h"
 
-#define APIC_READ_OFFSET            0x10
+#define IOREGSEL                    0x00
+#define IOWIN                       0x10
+#define IOAPICID                    0x00
+#define IOAPICVER                   0x01
+#define IOAPICARB                   0x02
+#define IOREDTBL                    0x10
 
-UINT64 bsp_apic_address = NULL;
+UINT64 bsp_apic_addr = NULL;
 UINT8  bsp_apic_id = 0;
 UINT32 *bsp_apic_version = NULL;
 
@@ -37,7 +43,7 @@ VOID InitLocalAPIC() {
     }
 
     UINT64 apic_msr = AsmReadMsr64(X64_APIC_BASE_MSR);
-    bsp_apic_address = apic_msr & X64_APIC_BASE_ADDR_MASK;
+    bsp_apic_addr = apic_msr & X64_APIC_BASE_ADDR_MASK;
 
     if (!CHECK_BIT(apic_msr, X64_APIC_BSP)) {
         kernel_panic(L"nebulae is not running on the boot service processor\n");
@@ -52,7 +58,7 @@ VOID InitLocalAPIC() {
         Print(L"Global enable flag of APIC on boot service processor set\n");
     }
 
-    bsp_apic_version = (UINT32*)(bsp_apic_address + X64_APIC_VERSION_REG_OFFSET);
+    bsp_apic_version = (UINT32*)(bsp_apic_addr + X64_APIC_VERSION_REG_OFFSET);
 
     if (k0_VERBOSE_DEBUG) {
         Print(L"Boot service processor APIC version: 0x%x\n", *bsp_apic_version);
@@ -60,27 +66,21 @@ VOID InitLocalAPIC() {
 }
 
 // Read the given ioapic; if NULL, reads the bsp ioapic
-UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg) {
+UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg) {
     if (ISNULL(ioapic_addr)) {
-        ioapic_addr = bsp_apic_address;
+        ioapic_addr = bsp_apic_addr;
     }
 
-    volatile UINT32 *ioapic = (volatile UINT64*)ioapic_addr;
-    volatile UINT32 *ioapic_read = (volatile UINT64*)(ioapic_addr + APIC_READ_OFFSET);
-
-    *ioapic = reg;
-    return *ioapic_read;
+    MmioWrite32(ioapic_addr + IOREGSEL, reg);
+    return MmioRead32(ioapic_addr + IOWIN);
 }
 
 // Writes the given ioapic; if NULL, writes the bsp ioapic
-VOID WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg, UINT32 value) {
+VOID WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value) {
     if (ISNULL(ioapic_addr)) {
-        ioapic_addr = bsp_apic_address;
+        ioapic_addr = bsp_apic_addr;
     }
 
-    volatile UINT32 *ioapic = (volatile UINT64*)ioapic_addr;
-    volatile UINT32 *ioapic_write = (volatile UINT64*)(ioapic_addr + APIC_READ_OFFSET);
-
-    *ioapic = reg;
-    *ioapic_write = value;
+    MmioWrite32(bsp_apic_addr + IOREGSEL, reg);
+    MmioWrite32(bsp_apic_addr + IOWIN, value);
 }
