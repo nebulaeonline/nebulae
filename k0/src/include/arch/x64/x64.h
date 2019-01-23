@@ -195,6 +195,7 @@
 #define X64_GATE_DPL_MASK               (BIT5 | BIT6)
 #define X64_GATE_SEG_PRESENT_BIT        BIT7
 
+#define X64_INT_GATE_PRESENT            0x80
 #define X64_4KB_ALIGN_MASK              0x000FFFFFFFFFF000ULL
 #define X64_2MB_ALIGN_MASK              0x000FFFFFFFE00000ULL
 #define X64_1GB_ALIGN_MASK              0x000FFFFFC0000000ULL
@@ -329,9 +330,6 @@ typedef PACKED_MS struct s_x64_virtual_address_space {
     x64_pde   *pde;
     x64_pte   *pte;
 } PACKED_GNU x64_virtual_address_space;
-
-// Interrupt service routine pointer signature
-typedef VOID(*ISR_FN)(VOID);
 
 // Structure for facilitating
 // one-time kernel allocations in preboot

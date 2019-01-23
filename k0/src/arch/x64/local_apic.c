@@ -24,6 +24,8 @@
 
 #include "../../include/arch/x64/local_apic.h"
 
+#define APIC_READ_OFFSET            0x10
+
 UINT64 bsp_apic_address = NULL;
 UINT8  bsp_apic_id = 0;
 UINT32 *bsp_apic_version = NULL;
@@ -63,9 +65,11 @@ UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg) {
         ioapic_addr = bsp_apic_address;
     }
 
-    UINT32 volatile *ioapic = (UINT64 volatile *)ioapic_addr;
-    ioapic[0] = (reg & 0xFF);
-    return ioapic[4];
+    volatile UINT32 *ioapic = (volatile UINT64*)ioapic_addr;
+    volatile UINT32 *ioapic_read = (volatile UINT64*)(ioapic_addr + APIC_READ_OFFSET);
+
+    *ioapic = reg;
+    return *ioapic_read;
 }
 
 // Writes the given ioapic; if NULL, writes the bsp ioapic
@@ -74,7 +78,9 @@ VOID WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT32 reg, UINT32 value) {
         ioapic_addr = bsp_apic_address;
     }
 
-    UINT32 volatile *ioapic = (UINT64 volatile *)ioapic_addr;
-    ioapic[0] = (reg & 0xFF);
-    ioapic[4] = value;
+    volatile UINT32 *ioapic = (volatile UINT64*)ioapic_addr;
+    volatile UINT32 *ioapic_write = (volatile UINT64*)(ioapic_addr + APIC_READ_OFFSET);
+
+    *ioapic = reg;
+    *ioapic_write = value;
 }
