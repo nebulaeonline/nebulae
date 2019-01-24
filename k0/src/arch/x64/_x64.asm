@@ -24,8 +24,8 @@
 ; POSSIBILITY OF SUCH DAMAGE.
 ;==================================
 
-global x64AsmOutportB, x64AsmOutportW
-global x64AsmInportB, x64AsmInportW
+global x64OutportB, x64OutportW
+global x64InportB, x64InportW
 global x64EnableInterrupts, x64DisableInterrupts
 global x64ReadTsc, x64LoadStackSegmentAndJump
 global x64WriteCR3, x64ReadGdtr, x64WriteGdtr
@@ -40,11 +40,11 @@ bits 64
 segment .text
 
 ;==================================
-; VOID x64AsmOutportB(
+; VOID x64OutportB(
 ;   UINT16 Port, 
 ;   UINT8  Value)
 ;
-x64AsmOutportB:
+x64OutportB:
     mov rax,rcx
     mov rbx,rdx
 
@@ -58,11 +58,11 @@ x64AsmOutportB:
     ret
 
 ;==================================
-; VOID x64AsmOutportW(
+; VOID x64OutportW(
 ;   UINT16 Port, 
 ;   UINT16 Value)
 ;
-x64AsmOutportW:
+x64OutportW:
     mov rax,rcx
     mov rbx,rdx
 
@@ -76,10 +76,10 @@ x64AsmOutportW:
     ret
 
 ;==================================
-; UINT8 x64AsmInportB(
+; UINT8 x64InportB(
 ;   UINT16 Port)
 ;
-x64AsmInportB:
+x64InportB:
     mov rax,rcx
     mov dx,ax
 
@@ -88,10 +88,10 @@ x64AsmInportB:
     ret
 
 ;==================================
-; UINT16 x64AsmInportW(
+; UINT16 x64InportW(
 ;   UINT16 Port)
 ;
-x64AsmInportW:
+x64InportW:
     mov rax,rcx
     mov dx,ax
 

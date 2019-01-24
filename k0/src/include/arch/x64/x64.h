@@ -373,10 +373,10 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 // Functions defined in assembler
 extern VOID EFIAPI x64EnableInterrupts();
 extern VOID EFIAPI x64DisableInterrupts();
-extern VOID EFIAPI x64AsmOutportB(IN UINT16 Port, OUT UINT8 Value);
-extern VOID EFIAPI x64AsmOutportW(IN UINT16 Port, OUT UINT16 Value);
-extern UINT8 EFIAPI x64AsmInportB(IN UINT16 Port);
-extern UINT16 EFIAPI x64AsmInportW(IN UINT16 Port);
+extern VOID EFIAPI x64OutportB(IN UINT16 Port, OUT UINT8 Value);
+extern VOID EFIAPI x64OutportW(IN UINT16 Port, OUT UINT16 Value);
+extern UINT8 EFIAPI x64InportB(IN UINT16 Port);
+extern UINT16 EFIAPI x64InportW(IN UINT16 Port);
 extern UINT64 EFIAPI x64ReadTsc();
 extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(IN x64_farptr* ssptr, IN UINT64* dest);
 extern UINTN EFIAPI x64WriteCR3(IN UINTN new_cr3);

@@ -29,7 +29,7 @@
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
 #include "../../include/arch/uefi/memory.h"
-#include "../../include/arch/x64/local_apic.h"
+#include "../../include/arch/x64/ioapic.h"
 
 // The number of bytes we reserve for the system
 extern UINTN nebulae_system_table_reserved_bytes;

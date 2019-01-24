@@ -133,6 +133,8 @@
 #define X64_APIC_DIVIDE_CONFIG_BY_128       b1010
 #define X64_APIC_DIVIDE_CONFIG_BY_1         b1011
 
+#define X64_APIC_END_OF_INTERRUPT           0x20
+
 VOID   InitLocalAPIC();
 UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);
 VOID   WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value);

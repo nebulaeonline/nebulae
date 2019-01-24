@@ -31,9 +31,12 @@ VOID InitInterrupts() {
 }
 
 VOID IsrHandler(unsigned int vector) {
-    // Pointer to the routine stored in the platform independent 
-    // interrupt vector table
     isr_fired++;
+
+#ifdef __NEBULAE_ARCH_X64
+    extern UINT64 bsp_apic_addr;
+    x64OutportB(bsp_apic_addr, X64_APIC_END_OF_INTERRUPT);
+#endif
 }
 
 VOID NMIHandler() {

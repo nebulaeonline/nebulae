@@ -26,7 +26,7 @@
 #define __K0_INTERRUPT_H
 
 #ifdef __NEBULAE_ARCH_X64
-#include "../arch/x64/local_apic.h"
+#include "../arch/x64/ioapic.h"
 #endif
 
 #define INTERRUPT_VECTOR_COUNT      0xFF
