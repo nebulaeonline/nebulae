@@ -27,7 +27,6 @@
 #include <Library/BaseMemoryLib.h>
 
 #include "../../include/k0.h"
-#include "../../include/arch/uefi/graphics.h"
 #include "../../include/arch/x64/x64.h"
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/x64/ioapic.h"
@@ -2892,68 +2891,38 @@ VOID x64BuildInitialKernelPageTable() {
         current_addr += SIZE_4KB;
     }
 
-    // Map 2 2MB pages for UEFI GOP video buffer
-    current_addr = gfx_info.gop->Mode->FrameBufferBase;
-    UINTN pml4_index = PML4_INDEX(current_addr);
-    UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
-    UINTN pde_index = PAGE_DIR_INDEX(current_addr);
+    // We still have to map the last 64KB of physical memory, which seems
+    // to be missing from the uefi memory map, and thus is likely verboten
+    current_addr = 0x1FFF0000;
+    while (current_addr < SIZE_1MB) {
+        UINTN pml4_index = PML4_INDEX(current_addr);
+        UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
+        UINTN pde_index = PAGE_DIR_INDEX(current_addr);
+        UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
 
-    x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
-    x64_pde   *cur_pd = NULL;
+        x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
+        x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        x64_pte   *cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
 
-    // If there's no PD for this entry, we must build one
-    if (cur_pdpt[pdpt_index] == 0) {
-        cur_pd = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
-        if (ISNULL(cur_pd)) {
-            kernel_panic(L"Problem allocating kernel page tables for UEFI GOP - pde allocation\n");
-        }
-
-        if (ZeroMem(cur_pd, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count) != cur_pd) {
-            kernel_panic(L"Problem allocating kernel page tables for UEFI GOP - pde storage initialization\n");
-        }
-        cur_pdpt[pdpt_index] = (UINT64)cur_pd |
+        cur_pt[pte_index] = (UINT64)current_addr |
             X64_PAGING_PRESENT |
             X64_PAGING_DATA_WRITEABLE |
             X64_PAGING_SUPERVISOR_MODE;
 
-        Print(L"Added new pdpt entry cur_pdpt[0x%lx] == 0x%lx\n", pdpt_index, cur_pdpt[pdpt_index]);
-    }
-    else {
-        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        current_addr += SIZE_4KB;
     }
 
-    cur_pd[pde_index] = (UINT64)current_addr |
-        X64_PAGING_PRESENT |
-        X64_PAGING_DATA_WRITEABLE |
-        X64_PAGING_SUPERVISOR_MODE |
-        X64_PAGING_IS_PAGES;
-
-    Print(L"Writing 2MB pde idx: 0x%lx @ 0x%lx == 0x%lx\n", pde_index, &cur_pd[pde_index], cur_pd[pde_index]);
-    
-    current_addr += SIZE_2MB;
-
-    cur_pd[pde_index + 1] = (UINT64)current_addr |
-        X64_PAGING_PRESENT |
-        X64_PAGING_DATA_WRITEABLE |
-        X64_PAGING_SUPERVISOR_MODE |
-        X64_PAGING_IS_PAGES;
-
-    Print(L"Writing 2MB pde idx: 0x%lx @ 0x%lx == 0x%lx\n", pde_index + 1, &cur_pd[pde_index + 1], cur_pd[pde_index + 1]);
-    
     if (k0_VERBOSE_DEBUG) {
-        //Print(L"Finished building page tables for 4KB pages\n");
+        Print(L"Finished building page tables for 4KB pages\n");
         Print(L"Current PML4 == 0x%lx\n", x64GetCurrentPML4TableAddr());
         Print(L"Current memmap (0x%lx bytes) location == 0x%lx\n", memmap.size, memmap.memory_map);
         //Print(L"sizeof(EFI_MEMORY_DESCRIPTOR) == 0x%lx\n", sizeof(EFI_MEMORY_DESCRIPTOR));
         //Print(L"memory descriptor size (per uefi): 0x%lx\n", memmap.descr_size);
         //Print(L"total pages: 0x%lx\n", kmem_total_page_count);
-        extern volatile UINT64 isr_fired;
-        Print(L"isr_fired (@ 0x%lx) == 0x%lx\n", &isr_fired, isr_fired);
-        Print(L"LFB base == 0x%lx\n", gfx_info.gop->Mode->FrameBufferBase);
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
     }
 
-    x64WriteCR3(k0_addr_space.pml4);
+    //x64WriteCR3(k0_addr_space.pml4);
 }
 
 // Dumpgs gdt to screen

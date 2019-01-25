@@ -35,7 +35,7 @@ VOID IsrHandler(unsigned int vector) {
 
 #ifdef __NEBULAE_ARCH_X64
     extern UINT64 bsp_apic_addr;
-    WriteIOApic(bsp_apic_addr, X64_APIC_EOI_REG_OFFSET, X64_APIC_END_OF_INTERRUPT);
+    x64OutportB(bsp_apic_addr, X64_APIC_END_OF_INTERRUPT);
 #endif
 }
 
