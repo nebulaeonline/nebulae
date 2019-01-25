@@ -2944,6 +2944,9 @@ VOID x64BuildInitialKernelPageTable() {
         //Print(L"sizeof(EFI_MEMORY_DESCRIPTOR) == 0x%lx\n", sizeof(EFI_MEMORY_DESCRIPTOR));
         //Print(L"memory descriptor size (per uefi): 0x%lx\n", memmap.descr_size);
         //Print(L"total pages: 0x%lx\n", kmem_total_page_count);
+        extern volatile UINT64 isr_fired;
+        Print(L"isr_fired (@ 0x%lx) == 0x%lx\n", &isr_fired, isr_fired);
+        Print(L"LFB base == 0x%lx\n", gfx_info.gop->Mode->FrameBufferBase);
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
     }
 
