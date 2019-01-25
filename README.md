@@ -20,7 +20,7 @@ Additionally, I have to give major kudos to Alex Ionescu for his excellent Visua
  
 ### Todos
 
- - Write (WAY) MORE Code
+ - Working on a refactoring
 
 License
 ----
