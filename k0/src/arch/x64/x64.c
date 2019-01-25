@@ -28,6 +28,7 @@
 
 #include "../../include/k0.h"
 #include "../../include/arch/x64/x64.h"
+#include "../../include/arch/uefi/graphics.h"
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/x64/ioapic.h"
 
@@ -2891,26 +2892,50 @@ VOID x64BuildInitialKernelPageTable() {
         current_addr += SIZE_4KB;
     }
 
-    // We still have to map the last 64KB of physical memory, which seems
-    // to be missing from the uefi memory map, and thus is likely verboten
-    current_addr = 0x1FFF0000;
-    while (current_addr < SIZE_1MB) {
-        UINTN pml4_index = PML4_INDEX(current_addr);
-        UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
-        UINTN pde_index = PAGE_DIR_INDEX(current_addr);
-        UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
+    // We need to map the UEFI GOP LFB
+    // 1024x768x32bpp == 3MB
+    current_addr = gfx_info.gop->Mode->FrameBufferBase;
 
-        x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
-        x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
-        x64_pte   *cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+    UINTN pml4_index = PML4_INDEX(current_addr);
+    UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
+    UINTN pde_index = PAGE_DIR_INDEX(current_addr);
 
-        cur_pt[pte_index] = (UINT64)current_addr |
+    x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
+    x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+
+    if (cur_pdpt[pdpt_index] == 0) {
+        cur_pd = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
+
+        if (ISNULL(cur_pd)) {
+            kernel_panic(L"Problem building kernel page tables for UEFI GOP - pde allocation\n");
+        }
+
+        if (ZeroMem(cur_pd, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count) != cur_pd) {
+            kernel_panic(L"Problem building kernel page tables for UEFI GOP - pde storage initialization\n");
+        }
+
+        cur_pdpt[pdpt_index] = (UINT64)cur_pd |
             X64_PAGING_PRESENT |
             X64_PAGING_DATA_WRITEABLE |
             X64_PAGING_SUPERVISOR_MODE;
-
-        current_addr += SIZE_4KB;
     }
+    else {
+        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+    }
+
+    cur_pd[pde_index] = (UINT64)current_addr |
+        X64_PAGING_PRESENT |
+        X64_PAGING_DATA_WRITEABLE |
+        X64_PAGING_SUPERVISOR_MODE |
+        X64_PAGING_IS_PAGES;
+    
+    current_addr += SIZE_2MB;
+
+    cur_pd[pde_index + 1] = (UINT64)current_addr |
+        X64_PAGING_PRESENT |
+        X64_PAGING_DATA_WRITEABLE |
+        X64_PAGING_SUPERVISOR_MODE |
+        X64_PAGING_IS_PAGES;
 
     if (k0_VERBOSE_DEBUG) {
         Print(L"Finished building page tables for 4KB pages\n");
@@ -2922,7 +2947,7 @@ VOID x64BuildInitialKernelPageTable() {
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
     }
 
-    //x64WriteCR3(k0_addr_space.pml4);
+    x64WriteCR3(k0_addr_space.pml4);
 }
 
 // Dumpgs gdt to screen

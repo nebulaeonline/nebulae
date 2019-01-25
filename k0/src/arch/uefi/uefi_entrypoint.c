@@ -152,10 +152,10 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 
     // Create our page tables
 #ifdef __NEBULAE_ARCH_X64
-    x64BuildInitialKernelPageTable();
     x64InitKernelStacks();
     x64InitGDT();
     x64InitIDT();
+    x64BuildInitialKernelPageTable();
 #endif
     
     // Allocate and free pages -- BEGIN MEMORY TEST
