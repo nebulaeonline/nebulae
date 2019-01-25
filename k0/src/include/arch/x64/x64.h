@@ -151,20 +151,20 @@
 
 // x64 Paging
 #define X64_PAGING_TABLE_MAX            0x200ULL
-#define X64_PAGING_PRESENT              BIT0_64
-#define X64_PAGING_DATA_WRITEABLE       BIT1_64
-#define X64_PAGING_CODE_READABLE        BIT1_64
-#define X64_PAGING_USER_MODE            BIT2_64
+#define X64_PAGING_PRESENT              0x01ULL
+#define X64_PAGING_DATA_WRITEABLE       0x02ULL
+#define X64_PAGING_CODE_READABLE        0x02ULL
+#define X64_PAGING_USER_MODE            0x04ULL
 #define X64_PAGING_SUPERVISOR_MODE      0x00ULL
-#define X64_PAGING_WRITE_THROUGH        BIT3_64
-#define X64_PAGING_CACHE_DISABLE        BIT4_64
-#define X64_PAGING_ACCESSED             BIT5_64
-#define X64_PAGING_DIRTY                BIT6_64
-#define X64_PAGING_IS_PAGES             BIT7_64
-#define X64_PAGING_GLOBAL               BIT8_64
-#define X64_PAGING_PAT                  BIT12_64
-#define X64_PAGING_PTE_PAT              BIT7_64
-#define X64_PAGING_NX                   BIT63
+#define X64_PAGING_WRITE_THROUGH        0x08ULL
+#define X64_PAGING_CACHE_DISABLE        0x10ULL
+#define X64_PAGING_ACCESSED             0x20ULL
+#define X64_PAGING_DIRTY                0x40ULL
+#define X64_PAGING_IS_PAGES             0x80ULL
+#define X64_PAGING_GLOBAL               0x100ULL
+#define X64_PAGING_PAT                  0x1000ULL
+#define X64_PAGING_PTE_PAT              0x80ULL
+#define X64_PAGING_NX                   0x8000000000000000ULL
 
 // x64 Segments
 #define X64_SEG_ACCESSED                BIT40
