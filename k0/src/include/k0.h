@@ -103,6 +103,7 @@ typedef PACKED_MS struct s_nebulae_system_table {
     UINT64  *next_free_byte;
     EFI_HANDLE  uefi_image_handle;
     EFI_SYSTEM_TABLE *uefi_system_table;
+    EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt;
 } PACKED_GNU nebulae_system_table;
 
 // Function signatures

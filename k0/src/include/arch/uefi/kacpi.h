@@ -36,8 +36,6 @@
 #define EFI_ACPI_TABLE_GUID \
     { 0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 }}
 
-extern EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt;
-
 nebStatus LocateACPI_XSDT();
 
 #endif // __K0_KACPI_H

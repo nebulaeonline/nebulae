@@ -32,7 +32,7 @@
 
 #include "../../include/klib/kstring.h"
 
-EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt = NULL;
+BOOLEAN _xsdt_located = FALSE;
 
 nebStatus ParseRSDP(EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* guid) {
     EFI_ACPI_DESCRIPTION_HEADER *xsdt, *entry;
@@ -68,7 +68,10 @@ nebStatus ParseRSDP(EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp, CHAR16* 
         Print(L"Found XSDT @ 0x%lx. OEM ID: %s  Entry Count: %d\n\n", (UINT64)xsdt, oemstr, entry_count);
 
     entry_ptr = (UINT64 *)(xsdt + 1);
-    acpi_xsdt = xsdt;
+    extern nebulae_system_table *system_table;
+    system_table->acpi_xsdt = xsdt;
+    _xsdt_located = TRUE;
+
     for (index = 0; index < entry_count; index++, entry_ptr++) {
         entry = (EFI_ACPI_DESCRIPTION_HEADER *)((UINTN)(*entry_ptr));
         kAscii2UnicodeStr((CHAR8 *)(entry->Signature), sig, 4);

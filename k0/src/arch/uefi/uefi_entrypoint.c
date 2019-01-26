@@ -98,9 +98,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     x64InitBootCPU();
 #endif
 
-    // Locate the ACPI XSDT tables
-    LocateACPI_XSDT();
-
     // Change the graphics mode
     Print(L"Changing graphics mode\n");
 
@@ -131,17 +128,20 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 #endif
 
     // Set aside our system data structure
-    //extern nebulae_system_table *system_table;
-    //AllocateSystemStruct();
-    //Print(L"System struct allocated at %lx\n", system_table);
+    extern nebulae_system_table *system_table;
+    AllocateSystemStruct();
+    Print(L"System struct allocated at %lx\n", system_table);
 
     // Setup our system struct
-    //if (system_table->magic != NEBULAE_SIG) {
-        //kernel_panic(L"System table allocation signature mismatch\n");
-    //}
+    if (system_table->magic != NEBULAE_SIG) {
+        kernel_panic(L"System table allocation signature mismatch\n");
+    }
 
-    //system_table->uefi_image_handle = uefi_image_handle;
-    //system_table->uefi_system_table = uefi_system_table;
+    system_table->uefi_image_handle = uefi_image_handle;
+    system_table->uefi_system_table = uefi_system_table;
+
+    // Locate the ACPI XSDT tables
+    LocateACPI_XSDT();
 
     // Exit Boot Services and start flying solo
     gBS->ExitBootServices(uefi_image_handle, uefi_mem_key);

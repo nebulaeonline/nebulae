@@ -2610,8 +2610,8 @@ VOID x64InitIDT() {
     }
         
     // Mask the spurious interrupt register bit to begin receiving interrupts
-    UINT32 interrupt_mask = ReadIOApic(bsp_apic_addr, 0xF0);
-    WriteIOApic(bsp_apic_addr, 0xF0, interrupt_mask | 0x100);
+    UINT32 interrupt_mask = ReadIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET);
+    WriteIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, interrupt_mask | BIT8);
 
     // Away we go!
     x64EnableInterrupts();
@@ -2643,19 +2643,10 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, UINT64 size, UINT64 alignme
     
     addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64(lowest_addr, highest_addr) & alignment_mask);
     
-    Print(L"Generated random #: 0x%lx\n", addr);
-    Print(L"kmem_largest_block == 0x%lx\n", kmem_largest_block);
-    Print(L"kmem_largest_block_size == %lu\n", kmem_largest_block_size);
-    Print(L"kmem_total_page_count == 0x%lx\n", kmem_total_page_count);
-    Print(L"lowest_addr == 0x%lx\n", lowest_addr);
-    Print(L"highest_addr == 0x%lx\n", highest_addr);
-    
-
     while (addr == 0 || !IsPageFree_Preboot(addr)) {
         addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
             (UINT64)(kmem_largest_block + (kmem_largest_block_size - size))) & alignment_mask);
-        Print(L"Generated random #: 0x%lx\n", addr);
-        kernel_panic(L"");
+        kernel_panic(L"Generated random #: 0x%lx\n", addr);
     }
     
     if (!ISNULL(addr) && ZeroMem(addr, size) != addr) {
@@ -2668,29 +2659,29 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, UINT64 size, UINT64 alignme
         Print(L"Scratch area allocated @ 0x%lx\n", addr);
     }
 
-    // Initialize our boot scratch area struct
+    // Initialize the pre-boot memory block (the scratch area) struct
     if (InitPrebootMemBlock(mb, addr, size) != mb) {
-        kernel_panic(L"There was a problem initializing the kernel's boot scratch area - preboot mem block allocation failed!\n");
+        kernel_panic(L"There was a problem initializing a kernel scratch area - preboot mem block allocation failed!\n");
     }
 
     // Remove the(se) page(s) from the physical free page stack
-    INTN bytes_to_remove = size;
-    nebStatus remove_scratch_page_result = NEB_OK;
+    UINT64 bytes_to_remove = size;
     UINT64 current_addr = addr;
+    nebStatus remove_scratch_page_result; 
 
-    while ((bytes_to_remove -= (remove_scratch_page_result = RemoveFreePageContainingAddr(current_addr))) > 0) {
+    while (bytes_to_remove > 0) {
+        
+        remove_scratch_page_result = RemoveFreePageContainingAddr(current_addr);
 
         if (NEB_ERROR(remove_scratch_page_result)) {
-            kernel_panic(L"Unable to remove scratch pages from physical memory stacks: %ld\n",
+            kernel_panic(L"Unable to remove scratch pages from physical memory stacks @ 0x%lx: %ld\n",
+                current_addr,
                 remove_scratch_page_result);
         }
         else {
-            if (k0_VERBOSE_DEBUG) {
-                Print(L"Removed scratch page from physical memory stacks\n");
-            }
+            bytes_to_remove -= remove_scratch_page_result;
+            current_addr += remove_scratch_page_result;
         }
-
-        current_addr += remove_scratch_page_result;
     }
 
     return mb->base_addr;

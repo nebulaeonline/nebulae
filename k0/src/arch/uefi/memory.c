@@ -425,28 +425,6 @@ VOID AllocateSystemStruct() {
     x64AllocateSystemStruct();
 #endif
 
-    // We need to remove the pages we just "allocated" for the system
-    // struct
-    INTN bytes_to_remove = nebulae_system_table_reserved_bytes;
-    nebStatus remove_sys_struct_page_result = NEB_OK;
-    UINT64 current_addr = system_table;
-
-    while ((bytes_to_remove -= (remove_sys_struct_page_result = RemoveFreePageContainingAddr(current_addr))) > 0) {
-
-        if (NEB_ERROR(remove_sys_struct_page_result)) {
-            // well, this just shouldn't happen
-            kernel_panic(L"Unable to remove system struct pages from physical memory stacks: %ld\n",
-                remove_sys_struct_page_result);
-        }
-        else {
-            if (k0_VERBOSE_DEBUG) {
-                Print(L"Removed system struct page from physical memory stacks\n");
-            }
-        }
-
-        current_addr += remove_sys_struct_page_result;
-    }
-
     system_table->magic = NEBULAE_SIG;
     system_table->version_major = NEBULAE_VERSION_MAJOR;
     system_table->version_minor = NEBULAE_VERSION_MINOR;
@@ -467,6 +445,9 @@ nebStatus RemoveFreePageContainingAddr(UINT64 addr) {
 
         if (NEB_ERROR(found_in_4KB)) {
             // We didn't find shit
+            if (k0_VERBOSE_DEBUG) {
+                Print(L"Unable to locate requested address @ 0x%lx\n", addr);
+            }
             return NEBERROR_STACK_ELEMENT_NOT_FOUND;
         }
         else {

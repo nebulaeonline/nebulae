@@ -253,6 +253,7 @@ reload_context_and_iretq:
     pop     rcx
     pop     rax
 
+    sti
     iretq
 
 ; Exception 0x00 (0) - Divide Error
