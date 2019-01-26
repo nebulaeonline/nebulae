@@ -1,4 +1,6 @@
 // Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
+// Portions Copyright (c) 2012 Patrick Doane and others.  See AUTHORS.ioapic 
+//   file for list.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -28,6 +30,29 @@
 UINT64 bsp_apic_addr = NULL;
 UINT8  bsp_apic_id = 0;
 UINT32 *bsp_apic_version = NULL;
+
+// Initialize the legacy PIC
+VOID InitPIC() {
+    // ICW1: start initialization, ICW4 needed
+    IoWrite8(X64_PIC1_CMD, X64_PIC_ICW1_INIT | X64_PIC_ICW1_ICW4);
+    IoWrite8(X64_PIC2_CMD, X64_PIC_ICW1_INIT | X64_PIC_ICW1_ICW4);
+
+    // ICW2: interrupt vector address
+    IoWrite8(X64_PIC1_DATA, X64_PIC_IRQ_BASE);
+    IoWrite8(X64_PIC2_DATA, X64_PIC_IRQ_BASE + 8);
+
+    // ICW3: master/slave wiring
+    IoWrite8(X64_PIC1_DATA, 4);
+    IoWrite8(X64_PIC2_DATA, 2);
+
+    // ICW4: 8086 mode, not special fully nested, not buffered, normal EOI
+    IoWrite8(X64_PIC1_DATA, X64_PIC_ICW4_8086);
+    IoWrite8(X64_PIC2_DATA, X64_PIC_ICW4_8086);
+
+    // OCW1: Disable all IRQs
+    IoWrite8(X64_PIC1_DATA, 0xff);
+    IoWrite8(X64_PIC2_DATA, 0xff);
+}
 
 // Initialize the I/O APIC
 VOID InitLocalAPIC() {
