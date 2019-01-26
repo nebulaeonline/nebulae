@@ -1,4 +1,6 @@
 // Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
+// Portions Copyright (c) 2012 Patrick Doane and others.  See AUTHORS.ioapic 
+//   file for list.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -134,6 +136,23 @@
 #define X64_APIC_DIVIDE_CONFIG_BY_1         b1011
 
 #define X64_APIC_END_OF_INTERRUPT           0x20
+
+#define X64_PIC1_CMD                        0x0020
+#define X64_PIC1_DATA                       0x0021
+#define X64_PIC2_CMD                        0x00a0
+#define X64_PIC2_DATA                       0x00a1
+
+#define X64_PIC_ICW1_ICW4                   0x01        // ICW4 command word: 0 = not needed, 1 = needed
+#define X64_PIC_ICW1_SINGLE                 0x02        // Single mode: 0 = cascade, 1 = single
+#define X64_PIC_ICW1_ADI                    0x04        // Call address interval: 0 = interval of 8, 1 = interval of 4
+#define X64_PIC_ICW1_LTIM                   0x08        // Interrupt trigger mode: 0 = edge, 1 = level
+#define X64_PIC_ICW1_INIT                   0x10        // Initialization
+
+#define X64_PIC_ICW4_8086                   0x01        // Microprocessor mode: 0=MCS-80/85, 1=8086/8088
+#define X64_PIC_ICW4_AUTO                   0x02        // Auto EOI: 0 = disabled, 1 = enabled
+#define X64_PIC_ICW4_BUF_SLAVE              0x04        // Buffered mode/slave
+#define X64_PIC_ICW4_BUF_MASTER             0x0C        // Buffered mode/master
+#define X64_PIC_ICW4_SFNM                   0x10        // Special fully nested is programmed
 
 VOID   InitLocalAPIC();
 UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);

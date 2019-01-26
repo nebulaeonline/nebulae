@@ -269,7 +269,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\AUTHORS.x64_ioapic.txt" />
     <Text Include="..\LICENSE.txt" />
+    <Text Include="..\LICENSE.x64_ioapic.txt" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="src\arch\x64\x64_interrupts.asm" />

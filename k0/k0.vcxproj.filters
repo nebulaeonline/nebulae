@@ -124,6 +124,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
+    <Text Include="..\AUTHORS.x64_ioapic.txt" />
+    <Text Include="..\LICENSE.x64_ioapic.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
