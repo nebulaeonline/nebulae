@@ -1,6 +1,6 @@
 // Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
-// Portions Copyright (c) 2012 Patrick Doane and others.  See AUTHORS.ioapic 
-//   file for list.
+// Portions Copyright (c) 2012 Patrick Doane and others.  See 
+//   AUTHORS.x64_ioapic.txt file for list.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
