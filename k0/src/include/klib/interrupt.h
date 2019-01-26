@@ -32,7 +32,8 @@
 #define INTERRUPT_VECTOR_COUNT      0xFF
 
 VOID InitInterrupts();
-VOID c_isr_handler(unsigned int vector);
-VOID c_nmi_handler();
+VOID ExceptionHandler(UINT64 vector, UINT64 error_code);
+VOID IsrHandler(unsigned int vector);
+VOID NMIHandler();
 
 #endif // __K0_INTERRUPT_H

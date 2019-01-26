@@ -82,7 +82,25 @@ NORETURN VOID k0_main() {
     // Draw a blue triangle to the screen
     drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
 
-    Print(L"isr_fired == 0x%lx\n", isr_fired);
+    /*
+    // List the video modes supported by the current card
+    UINTN mode_num;
+    EFI_STATUS status;
+
+    for (mode_num = 0;
+        (status = gfx_info.gop->QueryMode(gfx_info.gop, mode_num, &gfx_info.size_of_info, &gfx_info.gop_mode_info)) == EFI_SUCCESS;
+        mode_num++) {
+        Print(L"UEFI GOP video mode #%u: %ux%u PixelFormat: 0x%lx\n",
+            mode_num + 1,
+            gfx_info.gop_mode_info->HorizontalResolution,
+            gfx_info.gop_mode_info->VerticalResolution,
+            gfx_info.gop_mode_info->PixelFormat);
+    }
+    */
+
+    // fun with page faults
+    // try to read just beyond the video buffer
+    UINT64 page_fault_now = *(volatile UINT64*)(0x80600000ULL);
 
     // Woo-hoo!
     while (TRUE) {}

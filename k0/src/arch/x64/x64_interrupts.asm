@@ -28,9 +28,10 @@ bits 64
 segment .text
 
 ; Our C fns
-extern IsrHandler, NMIHandler
+extern IsrHandler, ExceptionHandler, NMIHandler
 
 ; Exceptions/Faults/Traps
+global default_exception_handler
 global interrupt_0x00_wrapper, interrupt_0x01_wrapper, interrupt_0x02_wrapper, interrupt_0x03_wrapper
 global interrupt_0x04_wrapper, interrupt_0x05_wrapper, interrupt_0x06_wrapper, interrupt_0x07_wrapper
 global interrupt_0x08_wrapper, interrupt_0x09_wrapper, interrupt_0x0A_wrapper, interrupt_0x0B_wrapper
@@ -38,6 +39,7 @@ global interrupt_0x0C_wrapper, interrupt_0x0D_wrapper, interrupt_0x0E_wrapper, i
 global interrupt_0x11_wrapper, interrupt_0x12_wrapper, interrupt_0x13_wrapper, interrupt_0x14_wrapper
 
 ; Hardware / User-Defined Interrupts
+global default_interrupt_handler
 global interrupt_0x20_wrapper, interrupt_0x21_wrapper, interrupt_0x22_wrapper, interrupt_0x23_wrapper
 global interrupt_0x24_wrapper, interrupt_0x25_wrapper, interrupt_0x26_wrapper, interrupt_0x27_wrapper
 global interrupt_0x28_wrapper, interrupt_0x29_wrapper, interrupt_0x2A_wrapper, interrupt_0x2B_wrapper
@@ -106,7 +108,65 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
 ; CPU0_TSS_INDEX_GDT              0x130
 
-%macro  isr_entrypoint 2
+default_exception_handler:
+    jmp     $
+
+default_interrupt_handler:
+    iretq
+
+%macro create_exception_handler 2
+    cli
+    save_context
+    load_interrupt_context_seg_regs
+    
+    mov     rcx, %1                 ; Exception # in rcx (msabi arg1)
+    mov     rdx, 0                  ; No error code for these exceptions
+
+    push    rsp                     ; push two copies of rsp 
+    push qword [rsp]
+    and     rsp,-0x10               ; align the stack to 16 bytes
+	call    %2                      ; call the specified c function
+    mov     rsp, [rsp + 8]          ; restore our stack
+    jmp     reload_context_and_iretq
+%endmacro
+
+%macro create_exception_handler_with_error_code 2
+    cli
+    save_context
+    load_interrupt_context_seg_regs
+    
+    mov     rcx, %1                 ; Exception # in rcx (msabi arg1)
+    pop     rdx                     ; Pop error code off the stack into rdx (msabi64 arg2)
+
+    push    rsp                     ; push two copies of rsp 
+    push qword [rsp]
+    and     rsp,-0x10               ; align the stack to 16 bytes
+	call    %2                      ; call the specified c function
+    mov     rsp, [rsp + 8]          ; restore our stack
+    jmp     reload_context_and_iretq
+%endmacro
+
+%macro isr_entrypoint 2
+    save_context
+    load_interrupt_context_seg_regs
+
+    mov     rcx, %1                 ; Send the vector to the C isr handler
+    
+    push    rsp                     ; push two copies of rsp 
+    push qword [rsp]
+    and     rsp,-0x10               ; align the stack to 16 bytes
+	call    %2                      ; call the specified c function
+    mov     rsp, [rsp + 8]          ; restore our stack
+    jmp     reload_context_and_iretq
+%endmacro
+
+%macro save_context 0
+    save_regs
+    save_fpstate
+    save_seg_regs
+%endmacro
+
+%macro save_regs 0
     push    rax
     push    rcx
     push    rdx
@@ -122,13 +182,17 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     push    r13
     push    r14
     push    r15
+%endmacro
 
+%macro save_fpstate 0
     ; floating point state
     ; allocate 512 bytes on the stack
     mov     rax, rsp
     sub     rsp, 512
     xsave64 [rax]
+%endmacro
 
+%macro save_seg_regs 0
     xor     rax, rax
     mov     ax, ds
     push    rax
@@ -144,22 +208,19 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     xor     rax, rax
     mov     ax, gs
     push    rax
+%endmacro
 
-	mov     ax, 0x100               ; DPL0_DATA_WRITEABLE
+%macro load_interrupt_context_seg_regs 0
+    mov     ax, 0x100               ; DPL0_DATA_WRITEABLE
 	mov     ds, ax
 	mov     es, ax                  ; load segments with valid selector
 	mov 	fs, ax
 	mov 	gs, ax
+%endmacro
 
-	mov     rcx, %1                 ; Send the vector to the C isr handler
-
-    push    rsp                     ; push two copies of rsp 
-    push qword [rsp]
-    and     rsp,-0x10               ; align the stack to 16 bytes
-	call    %2                      ; call the specified c function
-    mov     rsp, [rsp + 8]          ; restore our stack
+reload_context_and_iretq:
     
-	; restore the segment registers
+    ; restore the segment registers
     pop     rax                     ; return value - isrs return nothing, but do allocate
     pop     rax                     ; gs
     mov     gs, ax
@@ -194,15 +255,13 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
     iretq
 
-%endmacro
-
 ; Exception 0x00 (0) - Divide Error
 interrupt_0x00_wrapper:
-    isr_entrypoint 0x00, IsrHandler
+    create_exception_handler 0x00, IsrHandler
 
 ; Exception 0x01 (1) - Debug Exception	
 interrupt_0x01_wrapper:
-	isr_entrypoint 0x01, IsrHandler
+	create_exception_handler 0x01, ExceptionHandler
 
 ; Interrupt 0x02 (2) - NMI Interrupt
 interrupt_0x02_wrapper:
@@ -210,71 +269,71 @@ interrupt_0x02_wrapper:
 
 ; Exception 0x03 (3) - Breakpoint
 interrupt_0x03_wrapper:
-	isr_entrypoint 0x03, IsrHandler
+	create_exception_handler 0x03, ExceptionHandler
 
 ; Exception 0x04 (4) - Overflow
 interrupt_0x04_wrapper:
-	isr_entrypoint 0x04, IsrHandler
+	create_exception_handler 0x04, ExceptionHandler
 	
 ; Exception 0x05 (5) - Bound Range Exceeded
 interrupt_0x05_wrapper:
-	isr_entrypoint 0x05, IsrHandler
+	create_exception_handler 0x05, ExceptionHandler
 
 ; Exception 0x06 (6) - Invalid/Undefined Opcode
 interrupt_0x06_wrapper:
-    isr_entrypoint 0x06, IsrHandler
+    create_exception_handler 0x06, ExceptionHandler
 
 ; Exception 0x07 (7) - No Math Coprocessor
 interrupt_0x07_wrapper:
-	isr_entrypoint 0x07, IsrHandler
+	create_exception_handler 0x07, ExceptionHandler
 	
 ; Exception 0x08 (8) - Double Fault
 interrupt_0x08_wrapper:
-	isr_entrypoint 0x08, IsrHandler
+	create_exception_handler_with_error_code 0x08, ExceptionHandler
 	
 ; Exception 0x09 (9) - Coprocessor Segment Overrun (Reserved)
 interrupt_0x09_wrapper:
-	isr_entrypoint 0x09, IsrHandler
+	create_exception_handler 0x09, ExceptionHandler
 	
 ; Exception 0x0A (10) - Invalid TSS
 interrupt_0x0A_wrapper:
-	isr_entrypoint 0x0A, IsrHandler
+	create_exception_handler_with_error_code 0x0A, ExceptionHandler
 
 ; Exception 0x0B (11) - Segment Not Present	
 interrupt_0x0B_wrapper:
-	isr_entrypoint 0x0B, IsrHandler
+	create_exception_handler_with_error_code 0x0B, ExceptionHandler
 
 ; Exception 0x0C (12) - Stack-Segment Fault
 interrupt_0x0C_wrapper:
-	isr_entrypoint 0x0C, IsrHandler
+	create_exception_handler_with_error_code 0x0C, ExceptionHandler
 	
 ; Exception 0x0D (13) - General Protection Fault
 interrupt_0x0D_wrapper:
-	isr_entrypoint 0x0D, IsrHandler
+	create_exception_handler_with_error_code 0x0D, ExceptionHandler
 	
 ; Exception 0x0E (14) - Page Fault
 interrupt_0x0E_wrapper:
-	isr_entrypoint 0x0E, IsrHandler
+	create_exception_handler_with_error_code 0x0E, ExceptionHandler
 
 ; Exception 0x10 (16) - x86 Floating-Point Error	
 interrupt_0x10_wrapper:
-	isr_entrypoint 0x10, IsrHandler
+	create_exception_handler 0x10, ExceptionHandler
 	
 ; Exception 0x11 (17) - Alignment Check
 interrupt_0x11_wrapper:
-	isr_entrypoint 0x11, IsrHandler
+	create_exception_handler_with_error_code 0x11, ExceptionHandler
 	
 ; Exception 0x12 (18) - Machine Check
 interrupt_0x12_wrapper:
-	isr_entrypoint 0x12, IsrHandler
+	create_exception_handler 0x12, ExceptionHandler
 	
 ; Exception 0x13 (19) - SIMD Floating-Point
 interrupt_0x13_wrapper:
-	isr_entrypoint 0x13, IsrHandler
+	create_exception_handler 0x13, ExceptionHandler
 
 ; Exception 0x14 (20) - Virtualization Exception
 interrupt_0x14_wrapper:
-	isr_entrypoint 0x14, IsrHandler
+	create_exception_handler 0x14, ExceptionHandler
 
 ; Interrupt 0x20 (32) - INT32
 interrupt_0x20_wrapper:

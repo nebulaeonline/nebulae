@@ -39,6 +39,10 @@ VOID IsrHandler(unsigned int vector) {
 #endif
 }
 
+VOID ExceptionHandler(UINT64 vector, UINT64 error_code) {
+    kernel_panic(L"Unhandled exception: %u, error code == 0x%lx\n", vector, error_code);
+}
+
 VOID NMIHandler() {
     kernel_panic(L"NMI Detected\n");
 }
