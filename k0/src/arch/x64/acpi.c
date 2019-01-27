@@ -29,6 +29,7 @@
 #include <Library/UefiLib.h>
 #include <Library/BaseMemoryLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <Library/DebugLib.h>
 
 #include "../../include/arch/x64/acpi.h"
 #include "../../include/arch/x64/mmio.h"
@@ -282,6 +283,8 @@ VOID x64InitPIC() {
     // OCW1: Disable all IRQs
     MmioWrite8(X64_PIC1_DATA, 0xff);
     MmioWrite8(X64_PIC2_DATA, 0xff);
+
+    Print(L"PIC reprogrammed\n");
 }
 
 // Initialize the I/O APIC
@@ -295,7 +298,7 @@ VOID x64InitIoApic() {
     }
 
     // Get # of entries supported by IOAPIC
-    UINT32 x = x64ReadApic(NULL, X64_APIC_VERSION_REG_OFFSET);
+    UINT32 x = x64ReadIoApic(X64_APIC_VERSION_REG_OFFSET);
     UINT32 count = ((x >> 16) & 0xFF) + 1;
 
     UINT32 i;
@@ -308,38 +311,46 @@ VOID x64InitIoApic() {
 VOID x64InitLocalApic() {
 
     // Clear TPR to enable all interrupts
-    x64WriteApic(system_table->lapic_base_addr, X64_APIC_TPR_OFFSET, 0);
+    x64WriteLocalApic(X64_APIC_TPR_OFFSET, 0);
 
     // Flat mode, logical id 1 #TODO #FIXME
-    x64WriteApic(system_table->lapic_base_addr, X64_APIC_DEST_FORMAT_REG_OFFSET, 0xFFFFFFFF);
-    x64WriteApic(system_table->lapic_base_addr, X64_APIC_LOGICAL_DEST_REG_OFFSET, 0x01000000);
+    x64WriteLocalApic(X64_APIC_DEST_FORMAT_REG_OFFSET, 0xFFFFFFFF);
+    x64WriteLocalApic(X64_APIC_LOGICAL_DEST_REG_OFFSET, 0x01000000);
 
     // Set bit in spurious interrupt vector
-    x64WriteApic(system_table->lapic_base_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, 0x100 | 0xFF);
+    x64WriteLocalApic(X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, 0x100 | 0xFF);
 }
 
 // Set an entry in the IOAPIC
 VOID x64SetIoApicEntry(UINT8 index, UINT64 data) {
-    x64WriteApic(NULL, X64_APIC_IOREDTBL + index * 2, LO32(data));
-    x64WriteApic(NULL, X64_APIC_IOREDTBL + index * 2 + 1, HI32(data));
+    x64WriteIoApic(X64_APIC_IOREDTBL + index * 2, LO32(data));
+    x64WriteIoApic(X64_APIC_IOREDTBL + index * 2 + 1, HI32(data));
 }
 
-// Read the given apic; if NULL, reads the ioapic
-UINT32 x64ReadApic(EFI_PHYSICAL_ADDRESS *apic_addr, UINT8 reg) {
-    if (ISNULL(apic_addr)) {
-        apic_addr = system_table->ioapic_base_addr;
-    }
-
-    MmioWrite32(apic_addr + X64_APIC_IOREGSEL, reg);
-    return MmioRead32(apic_addr + X64_APIC_IOWIN);
+// Read the IOAPIC
+UINT32 x64ReadIoApic(UINT8 reg) {
+    ASSERT(!ISNULL(system_table->ioapic_base_addr));
+    
+    MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOREGSEL, reg);
+    return MmioRead32(system_table->ioapic_base_addr + X64_APIC_IOWIN);
 }
 
-// Writes the given apic; if NULL, writes the ioapic
-VOID x64WriteApic(EFI_PHYSICAL_ADDRESS *apic_addr, UINT8 reg, UINT32 value) {
-    if (ISNULL(apic_addr)) {
-        apic_addr = system_table->ioapic_base_addr;
-    }
+// Writes the IOAPIC
+VOID x64WriteIoApic(UINT8 reg, UINT32 value) {
+    ASSERT(!ISNULL(system_table->ioapic_base_addr));
 
-    MmioWrite32(apic_addr + X64_APIC_IOREGSEL, reg);
-    MmioWrite32(apic_addr + X64_APIC_IOWIN, value);
+    MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOREGSEL, reg);
+    MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOWIN, value);
+}
+
+// Reads the Local APIC
+UINT32 x64ReadLocalApic(UINT32 reg) {
+    ASSERT(!ISNULL(system_table->lapic_base_addr));
+
+    return MmioRead32(system_table->lapic_base_addr + reg);
+}
+
+// Writes the local APIC
+VOID x64WriteLocalApic(UINT32 reg, UINT32 data) {
+    MmioWrite32(system_table->lapic_base_addr + reg, data);
 }

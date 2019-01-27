@@ -196,7 +196,7 @@ typedef PACKED_MS struct s_x64_io_apic {
     UINT64 global_system_interrupt_base;
 } PACKED_GNU x64_io_apic;
 
-typedef PACKED_MS struct s_x64_overriden_interrupt {
+typedef PACKED_MS struct s_x64_overridden_interrupt {
     x64_apic_common_header header;
     UINT8  bus;
     UINT8  source;
@@ -204,12 +204,16 @@ typedef PACKED_MS struct s_x64_overriden_interrupt {
     UINT16 flags;
 } PACKED_GNU x64_overriden_interrupt;
 
+// Prototypes
 nebStatus x64PreInitAcpi();
+
 VOID   x64InitPIC();
 VOID   x64InitIoApic();
 VOID   x64InitLocalApic();
 VOID   x64SetIoApicEntry(UINT8 index, UINT64 data);
-UINT32 x64ReadApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);
-VOID   x64WriteApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value);
+UINT32 x64ReadIoApic(UINT8 reg);
+VOID   x64WriteIoApic(UINT8 reg, UINT32 value);
+UINT32 x64ReadLocalApic(UINT32 reg);
+VOID   x64WriteLocalApic(UINT32 reg, UINT32 data);
 
 #endif // __K0_KACPI_H
