@@ -307,7 +307,7 @@ extern VOID interrupt_0xFD_wrapper();
 extern VOID interrupt_0xFE_wrapper();
 extern VOID interrupt_0xFF_wrapper();
 
-x64_cpu cpu;
+x64_cpu cpu_info;
 x64_tss *tss;
 x64_seg_descr *gdt;
 
@@ -341,26 +341,26 @@ VOID x64InitBootCPU() {
 
     // CpuId
     cpuid_result = AsmCpuid(0x00,
-        &cpu.cpuinfo[0].reg[X64_REG_EAX],
-        &cpu.cpuinfo[0].reg[X64_REG_EBX],
-        &cpu.cpuinfo[0].reg[X64_REG_ECX],
-        &cpu.cpuinfo[0].reg[X64_REG_EDX]);
+        &cpu_info.cpuinfo[0].reg[X64_REG_EAX],
+        &cpu_info.cpuinfo[0].reg[X64_REG_EBX],
+        &cpu_info.cpuinfo[0].reg[X64_REG_ECX],
+        &cpu_info.cpuinfo[0].reg[X64_REG_EDX]);
 
     if (EFI_ERROR(cpuid_result)) {
         kernel_panic("Unable to query the cpu: %r\n", cpuid_result);
     }
 
     // Record the max eax value
-    cpu.max_cpuid_eax = cpu.cpuinfo[0].reg[X64_REG_EAX];
+    cpu_info.max_cpuid_eax = cpu_info.cpuinfo[0].reg[X64_REG_EAX];
 
     // Similar to the previous logic, the cpuidex function
     // returns its max value in eax
     cpuid_result = AsmCpuidEx(0x80000000, 
         0,        
-        &cpu.cpuinfo[3].reg[X64_REG_EAX],
-        &cpu.cpuinfo[3].reg[X64_REG_EBX],
-        &cpu.cpuinfo[3].reg[X64_REG_ECX],
-        &cpu.cpuinfo[3].reg[X64_REG_EDX]);
+        &cpu_info.cpuinfo[3].reg[X64_REG_EAX],
+        &cpu_info.cpuinfo[3].reg[X64_REG_EBX],
+        &cpu_info.cpuinfo[3].reg[X64_REG_ECX],
+        &cpu_info.cpuinfo[3].reg[X64_REG_EDX]);
 
     if (EFI_ERROR(cpuid_result)) {
         kernel_panic("Unable to extended query the cpu: %r\n", cpuid_result);
@@ -368,16 +368,16 @@ VOID x64InitBootCPU() {
 
     // Record the max eax values for the cpuid
     // family of functions
-    cpu.max_cpuid_eax = cpu.cpuinfo[0].reg[X64_REG_EAX];
-    cpu.max_cpuidex_eax = cpu.cpuinfo[3].reg[X64_REG_EAX];
+    cpu_info.max_cpuid_eax = cpu_info.cpuinfo[0].reg[X64_REG_EAX];
+    cpu_info.max_cpuidex_eax = cpu_info.cpuinfo[3].reg[X64_REG_EAX];
 
     // cpuid eax == 0x01
-    if (cpu.max_cpuid_eax >= 0x01) {
+    if (cpu_info.max_cpuid_eax >= 0x01) {
         cpuid_result = AsmCpuid(0x01,
-            &cpu.cpuinfo[1].reg[X64_REG_EAX],
-            &cpu.cpuinfo[1].reg[X64_REG_EBX],
-            &cpu.cpuinfo[1].reg[X64_REG_ECX],
-            &cpu.cpuinfo[1].reg[X64_REG_EDX]);
+            &cpu_info.cpuinfo[1].reg[X64_REG_EAX],
+            &cpu_info.cpuinfo[1].reg[X64_REG_EBX],
+            &cpu_info.cpuinfo[1].reg[X64_REG_ECX],
+            &cpu_info.cpuinfo[1].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x01): %r\n", cpuid_result);
@@ -385,12 +385,12 @@ VOID x64InitBootCPU() {
     }
 
     // cpuid eax == 0x02
-    if (cpu.max_cpuid_eax >= 0x02) {
+    if (cpu_info.max_cpuid_eax >= 0x02) {
         cpuid_result = AsmCpuid(0x02,
-            &cpu.cpuinfo[2].reg[X64_REG_EAX],
-            &cpu.cpuinfo[2].reg[X64_REG_EBX],
-            &cpu.cpuinfo[2].reg[X64_REG_ECX],
-            &cpu.cpuinfo[2].reg[X64_REG_EDX]);
+            &cpu_info.cpuinfo[2].reg[X64_REG_EAX],
+            &cpu_info.cpuinfo[2].reg[X64_REG_EBX],
+            &cpu_info.cpuinfo[2].reg[X64_REG_ECX],
+            &cpu_info.cpuinfo[2].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x02): %r\n", cpuid_result);
@@ -402,27 +402,27 @@ VOID x64InitBootCPU() {
 
     // CpuidEx eax == [0x80000001]...[0x80000001 + N]
     UINT32 current_cpuidex_fn, cpuinfo_offset = 0;
-    for (current_cpuidex_fn = 0x80000001; current_cpuidex_fn <= cpu.max_cpuidex_eax; current_cpuidex_fn++) {
+    for (current_cpuidex_fn = 0x80000001; current_cpuidex_fn <= cpu_info.max_cpuidex_eax; current_cpuidex_fn++) {
         
         cpuinfo_offset = current_cpuidex_fn - 0x7FFFFFFD;
         cpuid_result = AsmCpuid(current_cpuidex_fn,
-            &cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX],
-            &cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_EBX],
-            &cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_ECX],
-            &cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_EDX]);
+            &cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX],
+            &cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EBX],
+            &cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_ECX],
+            &cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
             kernel_panic("Unable to query the cpu (eax == 0x%x): %r\n", current_cpuidex_fn, cpuid_result);
         }
         else if (current_cpuidex_fn == 0x80000008) { // Record cpu bit counts
-            cpu.physical_address_bits = (UINT16)(cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX] & 0x000000FF);
-            cpu.linear_address_bits = (UINT16)((cpu.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX] & 0x0000FF00) >> 8);
+            cpu_info.physical_address_bits = (UINT16)(cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX] & 0x000000FF);
+            cpu_info.linear_address_bits = (UINT16)((cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX] & 0x0000FF00) >> 8);
         }
     }
 
     // Make sure we got the bit counts for physical and linear 
     // address spaces
-    if (cpu.physical_address_bits == 0 || cpu.linear_address_bits == 0) {
+    if (cpu_info.physical_address_bits == 0 || cpu_info.linear_address_bits == 0) {
         kernel_panic(L"Unable to determine the physical and linear address bit counts of the cpu(s)!\n");
     }
 }
@@ -436,7 +436,7 @@ BOOLEAN x64ReadCpuinfoFlags(UINT64 flag) {
     cpuid = ((flag & X64_CPUID_MASK) >> 32);
     reg = ((flag & X64_CPUID_REG_MASK) >> 36);
 
-    return CHECK_BIT(cpu.cpuinfo[cpuid].reg[reg], bit);
+    return CHECK_BIT(cpu_info.cpuinfo[cpuid].reg[reg], bit);
 }
 
 // Initialize the global descriptor table (GDT)

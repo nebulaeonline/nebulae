@@ -325,7 +325,7 @@ typedef PACKED_MS struct s_x64_seg_sel {
     UINT64 base;
 } PACKED_GNU x64_seg_sel;
 
-// This 4KB structure represents a virtual address space mapping
+// This structure represents a virtual address space mapping
 typedef PACKED_MS struct s_x64_virtual_address_space {
     x64_pml4e *pml4;
     x64_pdpte *pdpt;
@@ -353,10 +353,10 @@ typedef struct s_x64_kernel_stack {
 } x64_kernel_stack;
 
 // cpu struct
-extern x64_cpu cpu;
+extern x64_cpu cpu_info;
 
-// for paging structure masks
-#define MAXPHYADDR  cpu.physical_address_bits
+// for paging structures (in case we need to be dynamic)
+#define MAXPHYADDR  cpu_info.physical_address_bits
 
 // Function prototypes
 nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas);
