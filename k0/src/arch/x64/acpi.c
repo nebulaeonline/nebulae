@@ -230,6 +230,10 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     return NEB_OK;
 }
 
+// Parse the ACPI tables insofar as we need to determine
+// information about the local APIC, IOAPIC, and number
+// of cpus.  
+// **there is NO transition into ACPI mode at this point
 nebStatus x64PreInitAcpi() {
 
     EFI_CONFIGURATION_TABLE *ect = gST->ConfigurationTable;
