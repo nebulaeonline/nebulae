@@ -126,7 +126,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                 UINT8 type = hdr->type;
                 UINT8 length = hdr->length;
                 x64_local_apic *la = NULL;
-                x64_io_apic *ioapic = NULL;
+                x64_io_apic *ia = NULL;
                 x64_overriden_interrupt *oi = NULL;
 
                 switch (type) {
@@ -153,12 +153,12 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                     system_table->acpi_cpu_table.struct_count++;
 
                     new_cpu = (nebulae_sys_element *)(system_table->acpi_cpu_table.elementn_addr);
-                    new_cpu->type_id = NEBTYPE_ACPI_CPU;
+                    new_cpu->type_id = NEBTYPE_POINTER;
                     new_cpu->value = (UINT64)la;
                     break;
                 case EFI_ACPI_1_0_IO_APIC:
-                    ioapic = hdr;
-                    system_table->ioapic_base_addr = ioapic->addr;
+                    ia = hdr;
+                    system_table->ioapic_base_addr = ia->addr;
                     break;
                 case EFI_ACPI_1_0_INTERRUPT_SOURCE_OVERRIDE:
                     oi = hdr;
@@ -182,7 +182,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                     system_table->acpi_interrupt_override_table.struct_count++;
 
                     new_oi = (nebulae_sys_element *)(system_table->acpi_interrupt_override_table.elementn_addr);
-                    new_oi->type_id = NEBTYPE_ACPI_OVERRIDDEN_INTERRUPT;
+                    new_oi->type_id = NEBTYPE_POINTER;
                     new_oi->value = (UINT64)oi;
                     break;
                 case EFI_ACPI_1_0_NON_MASKABLE_INTERRUPT_SOURCE:

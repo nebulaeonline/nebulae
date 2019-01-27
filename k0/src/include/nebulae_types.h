@@ -28,8 +28,12 @@
 #ifndef __NEBULAE_TYPES_H
 #define __NEBULAE_TYPES_H
 
-#define NEBTYPE_CPU                     0x01ULL
-#define NEBTYPE_ACPI_CPU                0x02ULL
-#define NEBTYPE_ACPI_OVERRIDDEN_INTERRUPT 0x03ULL
+#define NEBTYPE_UNSIGNED_INT64                          0x0000000010000001ULL
+#define NEBTYPE_SIGNED_INT64                            0x0000000010000002ULL
+#define NEBTYPE_POINTER                                 0x0000000010000003ULL
+
+#define NEBTYPE_CPU                                     0x0000000100000001ULL
+#define NEBTYPE_ACPI_CPU                                0x0000000100000002ULL
+#define NEBTYPE_ACPI_OVERRIDDEN_INTERRUPT               0x0000000100000003ULL
 
 #endif // __NEBULAE_TYPES_H

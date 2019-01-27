@@ -94,6 +94,9 @@ NORETURN VOID k0_main() {
     }
     */
 
+    // how many cpus?
+    Print(L"Found %lu cpu(s)\n", system_table->cpu_count);
+
     // fun with page faults
     // try to read just beyond the video buffer
     UINT64 page_fault_now = *(volatile UINT64*)(0x80600000ULL);
