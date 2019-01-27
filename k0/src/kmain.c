@@ -73,9 +73,6 @@ NORETURN VOID k0_main() {
         Print(L"system_table->version_minor == 0x%x\n", system_table->version_minor);
         Print(L"system_table->version_build == 0x%lx\n", system_table->version_build);
         Print(L"system_table->xsdt_table == 0x%lx\n", system_table->acpi_xsdt);
-        Print(L"system_table->data_offset == 0x%x\n", system_table->data_offset);
-        Print(L"system_table->next_free_byte == 0x%lx\n", system_table->next_free_byte);
-        Print(L"system_table->free_space == 0x%lx\n", system_table->free_space);
     }
 
     // Draw a blue triangle to the screen

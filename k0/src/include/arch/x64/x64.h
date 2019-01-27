@@ -336,12 +336,13 @@ typedef PACKED_MS struct s_x64_virtual_address_space {
 // Structure for facilitating
 // one-time kernel allocations in preboot
 typedef struct s_x64_preboot_mem_block {
-    VOID *base_addr;
-    UINTN size;
-    VOID *current_addr;
-    UINTN free_space;
-    UINT8 alignment;
-    UINTN wasted_space;
+    VOID   *base_addr;
+    UINT64 size;
+    VOID   *current_addr;
+    UINT64 free_space;
+    UINT32 alignment;
+    UINT64 wasted_space;
+    CHAR8  id[5];
 } x64_preboot_mem_block;
 
 // This structure represents a kernel stack
@@ -365,7 +366,7 @@ VOID x64InitGDT();
 VOID x64InitKernelStacks();
 VOID x64InitIDT();
 EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr();
-VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, UINT64 size, UINT64 alignment_mask);
+VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR8 id[4], UINT64 size, UINT64 alignment_mask);
 VOID x64AllocateBootScratchArea();
 VOID x64BuildInitialKernelPageTable();
 VOID x64DumpGdt();

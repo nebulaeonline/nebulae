@@ -2,12 +2,12 @@ The following programmers have contributed to this code base --
 
 within nebulae, this refers specifically to:
 
-src/include/arch/x64/ioapic.h
-src/arch/x64/ioapic.c
+src/include/arch/x64/acpi.h
+src/arch/x64/acpi.c
 
 Craig Tiller
 MWDD
 Patrick Doane
 William Warnecke
 
-See LICENSE.x64_ioapic.txt
+See LICENSE.x64_acpi.txt

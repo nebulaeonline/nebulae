@@ -38,7 +38,7 @@
 #include "../../include/klib/bootconfig.h"
 
 #include "../../include/arch/uefi/memory.h"
-#include "../../include/arch/uefi/kacpi.h"
+#include "../../include/arch/x64/acpi.h"
 
 // We run on any UEFI Specification
 extern CONST UINT32 _gUefiDriverRevision;
@@ -140,41 +140,44 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     system_table->uefi_image_handle = uefi_image_handle;
     system_table->uefi_system_table = uefi_system_table;
 
-    // Locate the ACPI XSDT tables
-    LocateACPI_XSDT();
+    // Locate the ACPI XSDT tables, and parse the MADT
+    // table to determine the # of cpus and ioapic/lapic info
+#ifdef __NEBULAE_ARCH_X64
+    x64PreInitAcpi();
+#endif
 
     // Exit Boot Services and start flying solo
     gBS->ExitBootServices(uefi_image_handle, uefi_mem_key);
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
-    // Initialize interrupts (APIC)
-    InitInterrupts();
-
     // Create our page tables
 #ifdef __NEBULAE_ARCH_X64
     x64InitKernelStacks();
     x64InitGDT();
     x64InitIDT();
+    x64InitPIC();
+    x64InitLocalApic();
+    x64InitIoApic();
     x64BuildInitialKernelPageTable();
 #endif
     
     // Allocate and free pages -- BEGIN MEMORY TEST
-    EFI_PHYSICAL_ADDRESS *page_2MB = AllocPage(SIZE_2MB);
+    EFI_PHYSICAL_ADDRESS *page_2MB = AllocPhysicalPage(SIZE_2MB);
     if (ISNULL(page_2MB)) {
         kernel_panic(L"Unable to allocate 2MB page\n");
     }
-    EFI_PHYSICAL_ADDRESS *page_4KB = AllocPage(SIZE_4KB);
+    EFI_PHYSICAL_ADDRESS *page_4KB = AllocPhysicalPage(SIZE_4KB);
     if (ISNULL(page_4KB)) {
         kernel_panic(L"Unable to allocate 4KB page\n");
     }
 
-    nebStatus free_result = FreePage(page_2MB, SIZE_2MB);
+    nebStatus free_result = FreePhysicalPage(page_2MB, SIZE_2MB);
 
     if (NEB_ERROR(free_result)) {
         kernel_panic(L"Unable to free 2MB page; result == %ld\n", free_result);
     }
 
-    free_result = FreePage(page_4KB, SIZE_4KB);
+    free_result = FreePhysicalPage(page_4KB, SIZE_4KB);
 
     if (NEB_ERROR(free_result)) {
         kernel_panic(L"Unable to free 4KB page; result == %ld\n", free_result);

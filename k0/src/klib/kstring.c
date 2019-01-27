@@ -65,7 +65,7 @@ UINT64 kStrlen(CHAR8 *s) {
 }
 
 // Converts an Ascii string to a unicode string
-INT64 kAscii2UnicodeStr(CHAR8 *String, CHAR16 *UniString, UINTN length) {
+nebStatus kAscii2UnicodeStr(CHAR8 *String, CHAR16 *UniString, UINTN length) {
     
     UINTN len = length;
     
@@ -83,7 +83,7 @@ INT64 kAscii2UnicodeStr(CHAR8 *String, CHAR16 *UniString, UINTN length) {
 }
 
 // Converts a guid to a wide character string
-INT64 kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
+nebStatus kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
     
     if (ISNULL(buffer) || ISNULL(guid)) {
         return NEBERROR_NULL_PTR_UNEXPECTED;

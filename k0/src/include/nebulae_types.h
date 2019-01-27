@@ -1,6 +1,7 @@
 // Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
-// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
-// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
+// Portions Copyright(c) 2003 - 2005, Robert C.Horvath, III
+// Portions Copyright (c) 2006 - 2017, Intel Corporation. All rights reserved.
+// Portions Copyright(c) 2008-2009, Apple Inc. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -24,18 +25,11 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __K0_KACPI_H
-#define __K0_KACPI_H
+#ifndef __NEBULAE_TYPES_H
+#define __NEBULAE_TYPES_H
 
-#include <IndustryStandard/Acpi62.h>
+#define NEBTYPE_CPU                     0x01ULL
+#define NEBTYPE_ACPI_CPU                0x02ULL
+#define NEBTYPE_ACPI_OVERRIDDEN_INTERRUPT 0x03ULL
 
-#include "../../k0.h"
-
-#define EFI_ACPI_10_TABLE_GUID \
-    { 0xeb9d2d30, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d }}
-#define EFI_ACPI_TABLE_GUID \
-    { 0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 }}
-
-nebStatus LocateACPI_XSDT();
-
-#endif // __K0_KACPI_H
+#endif // __NEBULAE_TYPES_H

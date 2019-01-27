@@ -28,10 +28,20 @@
 #ifndef __K0_K0_H
 #define __K0_K0_H
 
+// Our nebulae types
+#include "nebulae_types.h"
+
+// Main OS constants
 #define NEBULAE_SIG                     0x0065616C7562656EULL
+#define NEBULAE_SHORT_ID                0x5335
 #define NEBULAE_VERSION_MAJOR           0x01
 #define NEBULAE_VERSION_MINOR           0x01
 #define NEBULAE_VERSION_BUILD           0x35
+
+// OS header constants
+#define NEBULAE_ACPI_CPU_TABLE          0x007570636162656EULL
+#define NEBULAE_CPU_TABLE               0x007375706362656EULL
+#define NEBULAE_ACPI_INTERRUPT_OVERRIDE_TABLE 0x006F746E6962656EULL
 
 // Structure packing
 #ifdef _MSC_VER
@@ -65,6 +75,7 @@
 #define ISNULL(X)                       (X == NULL)
 #define UDIV_UP(A, B)                   ((((UINT64)A) + ((UINT64)B) - 1ULL) / ((UINT64)B))
 #define ALIGN_UP(A, B)                  (UDIV_UP((UINT64)A, (UINT64)B) * ((UINT64)B))
+#define ARRAYLEN(X)                     (sizeof(X) / sizeof((X)[0]))
 
 #ifdef __GNUC__
 #if __GNUC__ >= 4
@@ -93,24 +104,45 @@ extern BOOLEAN k0_PAGETABLE_DEBUG;
 // Have we called our actual kernel entry function yet?
 extern BOOLEAN k0_main_called;
 
+// Generic common header for system structures
+typedef PACKED_MS struct s_nebulae_sys_common_header {
+    UINT64  signature;
+    UINT64  type_id;
+    UINT64  struct_sz;
+    UINT64  struct_count;
+    UINT64  element0_addr;
+    UINT64  elementn_addr;
+    UINT64  parent_addr;
+    UINT64  reserved;
+} PACKED_GNU nebulae_sys_common_header;
+
+// Generic element structure
+typedef PACKED_MS struct s_nebulae_sys_element {
+    UINT64  type_id;
+    UINT64  value;
+} PACKED_GNU nebulae_sys_element;
+
+// System table struct declaration
 typedef PACKED_MS struct s_nebulae_system_table {
     UINT64  magic;
     UINT8   version_major;
     UINT8   version_minor;
     UINT32  version_build;
-    UINT16  data_offset;
-    UINT64  free_space;
-    UINT64  *next_free_byte;
     EFI_HANDLE  uefi_image_handle;
     EFI_SYSTEM_TABLE *uefi_system_table;
     EFI_ACPI_DESCRIPTION_HEADER *acpi_xsdt;
+    UINT64  ioapic_base_addr;
+    UINT64  lapic_base_addr;
+    UINT64  cpu_count;
+    nebulae_sys_common_header acpi_cpu_table;
+    nebulae_sys_common_header acpi_interrupt_override_table;
 } PACKED_GNU nebulae_system_table;
 
 // Function signatures
 NORETURN VOID k0_main();
 NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...);
 
-// Error type
+// Error codes
 #include "../include/klib/kerror.h"
 
 // We always want issac64 a step away

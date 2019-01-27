@@ -1,6 +1,8 @@
 // Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
-// Portions Copyright (c) 2012 Patrick Doane and others.  See 
-//   AUTHORS.x64_ioapic.txt file for list.
+// Contains code Copyright (c) 2015  Finnbarr P. Murphy.   All rights reserved.
+// Read more : https://blog.fpmurphy.com/2015/01/list-acpi-tables-from-uefi-shell.html
+// Contains code Copyright (c) 2012 Patrick Doane and others.  See 
+//   AUTHORS.x64_acpi.txt file for list.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -24,10 +26,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef __K0_IOAPIC_H
-#define __K0_IOAPIC_H
+#ifndef __K0_KACPI_H
+#define __K0_KACPI_H
 
-#include "x64.h"
+#include <IndustryStandard/Acpi62.h>
+
+#include "../../k0.h"
+
+#define EFI_ACPI_10_TABLE_GUID \
+    { 0xeb9d2d30, 0x2d88, 0x11d3, {0x9a, 0x16, 0x0, 0x90, 0x27, 0x3f, 0xc1, 0x4d }}
+#define EFI_ACPI_TABLE_GUID \
+    { 0x8868e871, 0xe4f1, 0x11d3, {0xbc, 0x22, 0x0, 0x80, 0xc7, 0x3c, 0x88, 0x81 }}
+
+#define ACPI_FACP_TABLE_SIG                 0x50434146
+#define ACPI_MADT_TABLE_SIG                 0x43495041
+#define ACPI_SSDT_TABLE_SIG                 0x54445353
+#define ACPI_HPET_TABLE_SIG                 0x54455048
+#define ACPI_MCFG_TABLE_SIG                 0x4746434d
+#define ACPI_BGRT_TABLE_SIG                 0x54524742
 
 #define X64_APIC_BASE_MSR                   0x1B
 #define X64_APIC_BASE_ADDR_MASK             X64_4KB_ALIGN_MASK
@@ -137,6 +153,12 @@
 
 #define X64_APIC_END_OF_INTERRUPT           0x20
 
+#define X64_ACPI_RSDP                       EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER
+#define X64_ACPI_RSDP_REV                   EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER_REVISION
+#define X64_LOCAL_APIC_STRUCT               EFI_ACPI_6_2_PROCESSOR_LOCAL_APIC_STRUCTURE
+#define X64_IO_APIC_STRUCT                  EFI_ACPI_6_2_IO_APIC_STRUCTURE
+#define X64_MADT_HEADER                     EFI_ACPI_6_2_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER
+
 #define X64_PIC1_CMD                        0x0020
 #define X64_PIC1_DATA                       0x0021
 #define X64_PIC2_CMD                        0x00a0
@@ -154,8 +176,40 @@
 #define X64_PIC_ICW4_BUF_MASTER             0x0C        // Buffered mode/master
 #define X64_PIC_ICW4_SFNM                   0x10        // Special fully nested is programmed
 
-VOID   InitLocalAPIC();
-UINT32 ReadIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);
-VOID   WriteIOApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value);
+typedef PACKED_MS struct s_x64_apic_common_header {
+    UINT8  type;
+    UINT8  length;
+} PACKED_GNU x64_apic_common_header;
 
-#endif // __K0_LOCAL_APIC_H
+typedef PACKED_MS struct s_x64_local_apic {
+    x64_apic_common_header header;
+    UINT8  processor_id;
+    UINT8  apic_id;
+    UINT32 flags;
+} PACKED_GNU x64_local_apic;
+
+typedef PACKED_MS struct s_x64_io_apic {
+    x64_apic_common_header header;
+    UINT8  ioapic_id;
+    UINT8  reserved;
+    UINT32 addr;
+    UINT64 global_system_interrupt_base;
+} PACKED_GNU x64_io_apic;
+
+typedef PACKED_MS struct s_x64_overriden_interrupt {
+    x64_apic_common_header header;
+    UINT8  bus;
+    UINT8  source;
+    UINT32 interrupt;
+    UINT16 flags;
+} PACKED_GNU x64_overriden_interrupt;
+
+nebStatus x64PreInitAcpi();
+VOID   x64InitPIC();
+VOID   x64InitIoApic();
+VOID   x64InitLocalApic();
+VOID   x64SetIoApicEntry(UINT8 index, UINT64 data);
+UINT32 x64ReadApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg);
+VOID   x64WriteApic(EFI_PHYSICAL_ADDRESS *ioapic_addr, UINT8 reg, UINT32 value);
+
+#endif // __K0_KACPI_H

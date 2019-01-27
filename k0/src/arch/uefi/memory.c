@@ -102,7 +102,7 @@ kstack kmem_free_pages_4KB;
 
 // Allocates a page of the requested page size
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
-EFI_PHYSICAL_ADDRESS* AllocPage(UINTN page_size) {
+EFI_PHYSICAL_ADDRESS* AllocPhysicalPage(UINTN page_size) {
     EFI_PHYSICAL_ADDRESS *new_page_base = NULL;
 
     switch (page_size) {
@@ -155,7 +155,7 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UI
 
 // Frees a physical page of memory allocated with AllocPage
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
-nebStatus FreePage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
+nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
     
     if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
         Print(L"Invalid page size\n");
@@ -213,7 +213,7 @@ nebStatus InitMem() {
 }
 
 // Sets up a preboot memory block
-preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, VOID *base_addr, UINTN block_size) {
+preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, CHAR8 id[5], VOID *base_addr, UINTN block_size) {
     if (ISNULL(pbmb) || ISNULL(base_addr) || block_size == 0) {
         return NULL;
     }
@@ -223,7 +223,8 @@ preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, VOID *base_addr,
     pbmb->size = block_size;
     pbmb->free_space = block_size;
     pbmb->wasted_space = 0;
-
+    CopyMem(&pbmb->id, &id, 4);
+    pbmb->id[4] = '\0';
     return pbmb;
 }
 
@@ -249,6 +250,22 @@ VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desi
     pbmb->free_space = (((UINT64)pbmb->base_addr + pbmb->size) - (UINT64)pbmb->current_addr);
     
     return (VOID*)return_addr;
+}
+
+// A critical version of kPrebootMalloc()
+VOID* kPrebootCriticalMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment) {
+
+    VOID* kpm_new = kPrebootMalloc(&pbmb, allocation_size, desired_alignment);
+
+    if (ISNULL(kpm_new)) {
+        kernel_panic(L"Critical memory allocation failed in preboot environment: %s\n", pbmb->id);
+    }
+
+    if (ZeroMem(kpm_new, allocation_size) != kpm_new) {
+        kernel_panic(L"Error clearing memory during a critical allocation in preboot environment: %s\n", pbmb->id);
+    }
+
+    return kpm_new;
 }
 
 // Dumps the memory map to the screen
@@ -429,10 +446,7 @@ VOID AllocateSystemStruct() {
     system_table->version_major = NEBULAE_VERSION_MAJOR;
     system_table->version_minor = NEBULAE_VERSION_MINOR;
     system_table->version_build = NEBULAE_VERSION_BUILD;
-    system_table->data_offset = sizeof(nebulae_system_table);
-    system_table->next_free_byte = (UINT64*)(ALIGN_UP(((UINT64)system_table + system_table->data_offset), 16));
-    system_table->free_space = (((UINT64)system_table + nebulae_system_table_reserved_bytes) - (UINT64)system_table->next_free_byte);
-}
+ }
 
 // Removes a page from the free system physical memory stacks
 // containing the specified address

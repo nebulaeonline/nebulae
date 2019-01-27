@@ -30,7 +30,7 @@
 #include "../../include/arch/x64/x64.h"
 #include "../../include/arch/uefi/graphics.h"
 #include "../../include/arch/uefi/memory.h"
-#include "../../include/arch/x64/ioapic.h"
+#include "../../include/arch/x64/acpi.h"
 
 // The number of bytes we reserve for the system
 extern UINTN nebulae_system_table_reserved_bytes;
@@ -596,7 +596,7 @@ VOID x64InitGDT() {
 VOID x64InitKernelStacks() {
     extern preboot_mem_block k0_kernel_stack_area;
 
-    VOID* kernel_stack_area_base_addr = x64AllocateRandomMemory(&k0_kernel_stack_area, SIZE_2MB, X64_4KB_ALIGN_MASK);
+    VOID* kernel_stack_area_base_addr = x64AllocateRandomMemory(&k0_kernel_stack_area, "NKSA", SIZE_2MB, X64_4KB_ALIGN_MASK);
     if (ISNULL(kernel_stack_area_base_addr)) {
         kernel_panic(L"Could not allocate space for kernel stacks\n");
     }
@@ -620,7 +620,7 @@ VOID x64InitKernelStacks() {
     // So now there's 1 regular stack + 7 interrupt stacks 
     // along with 16 guard pages, but the guard pages don't 
     // yet guard anything because we haven't moved to our own 
-    // page tables yet :/
+    // page tables yet :/ #TODO mark guard pages not present
     kernel_stacks_initialized = TRUE;
 }
 
@@ -2603,6 +2603,8 @@ VOID x64InitIDT() {
     x64DisableInterrupts();
     x64WriteIdtr(&idt_sel);
     
+    // #TODO #INTERRUPTS
+    /*
     extern UINT64 bsp_apic_addr;
     
     if (ISNULL(bsp_apic_addr)) {
@@ -2612,6 +2614,7 @@ VOID x64InitIDT() {
     // Mask the spurious interrupt register bit to begin receiving interrupts
     UINT32 interrupt_mask = ReadIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET);
     WriteIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, interrupt_mask | BIT8);
+    */
 
     // Away we go!
     x64EnableInterrupts();
@@ -2629,7 +2632,7 @@ EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
 
 // Allocates a block of random memory within
 // the largest available conventional chunk
-VOID* x64AllocateRandomMemory(preboot_mem_block *mb, UINT64 size, UINT64 alignment_mask) {
+VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR8 id[4], UINT64 size, UINT64 alignment_mask) {
 
     // Memory Subsystem Vars
     extern VOID* kmem_largest_block;
@@ -2660,7 +2663,7 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, UINT64 size, UINT64 alignme
     }
 
     // Initialize the pre-boot memory block (the scratch area) struct
-    if (InitPrebootMemBlock(mb, addr, size) != mb) {
+    if (InitPrebootMemBlock(mb, id, addr, size) != mb) {
         kernel_panic(L"There was a problem initializing a kernel scratch area - preboot mem block allocation failed!\n");
     }
 
@@ -2704,7 +2707,7 @@ VOID x64AllocateBootScratchArea() {
         bytes_to_alloc = SIZE_4MB;
     }
 
-    VOID *bs = x64AllocateRandomMemory(&k0_boot_scratch_area, bytes_to_alloc, X64_2MB_ALIGN_MASK);
+    VOID *bs = x64AllocateRandomMemory(&k0_boot_scratch_area, "NBSA", bytes_to_alloc, X64_2MB_ALIGN_MASK);
 }
 
 // Builds our initial kernel page table
@@ -2972,7 +2975,7 @@ VOID x64AllocateSystemStruct() {
 
     // We are randomly choosing an area in the largest block of free conventional memory
     // this buffer is 4KB aligned
-    system_table = x64AllocateRandomMemory(&k0_kernel_system_area, nebulae_system_table_reserved_bytes, X64_4KB_ALIGN_MASK);
+    system_table = x64AllocateRandomMemory(&k0_kernel_system_area, "NKSA", nebulae_system_table_reserved_bytes, X64_4KB_ALIGN_MASK);
 
     if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 

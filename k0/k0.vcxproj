@@ -225,11 +225,10 @@
   <ItemGroup>
     <ClCompile Include="src\arch\interrupt.c" />
     <ClCompile Include="src\arch\uefi\graphics.c" />
-    <ClCompile Include="src\arch\uefi\kacpi.c" />
     <ClCompile Include="src\arch\uefi\memory.c" />
     <ClCompile Include="src\arch\uefi\panic.c" />
     <ClCompile Include="src\arch\uefi\uefi_entrypoint.c" />
-    <ClCompile Include="src\arch\x64\ioapic.c" />
+    <ClCompile Include="src\arch\x64\acpi.c" />
     <ClCompile Include="src\arch\x64\mmio.c" />
     <ClCompile Include="src\arch\x64\x64.c" />
     <ClCompile Include="src\deps\isaac64.c" />
@@ -244,10 +243,9 @@
   <ItemGroup>
     <ClInclude Include="src\arch\x64\mmio_internal.h" />
     <ClInclude Include="src\include\arch\uefi\graphics.h" />
-    <ClInclude Include="src\include\arch\uefi\kacpi.h" />
     <ClInclude Include="src\include\arch\uefi\memory.h" />
     <ClInclude Include="src\include\arch\uefi\panic.h" />
-    <ClInclude Include="src\include\arch\x64\ioapic.h" />
+    <ClInclude Include="src\include\arch\x64\acpi.h" />
     <ClInclude Include="src\include\arch\x64\mmio.h" />
     <ClInclude Include="src\include\arch\x64\x64.h" />
     <ClInclude Include="src\include\deps\isaac64.h" />
@@ -263,15 +261,16 @@
     <ClInclude Include="src\include\klib\kstring.h" />
     <ClInclude Include="src\include\klib\pe.h" />
     <ClInclude Include="src\include\lib\stddef.h" />
+    <ClInclude Include="src\include\nebulae_types.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\AUTHORS.x64_ioapic.txt" />
+    <Text Include="..\AUTHORS.x64_acpi.txt" />
     <Text Include="..\LICENSE.txt" />
-    <Text Include="..\LICENSE.x64_ioapic.txt" />
+    <Text Include="..\LICENSE.x64_acpi.txt" />
   </ItemGroup>
   <ItemGroup>
     <NASM Include="src\arch\x64\x64_interrupts.asm" />

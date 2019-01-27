@@ -26,12 +26,11 @@
 #define __K0_INTERRUPT_H
 
 #ifdef __NEBULAE_ARCH_X64
-#include "../arch/x64/ioapic.h"
+#include "../arch/x64/acpi.h"
 #endif
 
 #define INTERRUPT_VECTOR_COUNT      0xFF
 
-VOID InitInterrupts();
 VOID ExceptionHandler(UINT64 vector, UINT64 error_code);
 VOID IsrHandler(unsigned int vector);
 VOID NMIHandler();

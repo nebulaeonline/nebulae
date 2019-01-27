@@ -34,9 +34,6 @@
     <ClCompile Include="src\klib\kstack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\uefi\kacpi.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\klib\kavl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -49,7 +46,7 @@
     <ClCompile Include="src\arch\x64\mmio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\x64\ioapic.c">
+    <ClCompile Include="src\arch\x64\acpi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -93,9 +90,6 @@
     <ClInclude Include="src\include\klib\kstack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\uefi\kacpi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\klib\pe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -114,7 +108,10 @@
     <ClInclude Include="src\include\arch\x64\mmio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\arch\x64\ioapic.h">
+    <ClInclude Include="src\include\arch\x64\acpi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\nebulae_types.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -124,8 +121,8 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\LICENSE.txt" />
-    <Text Include="..\AUTHORS.x64_ioapic.txt" />
-    <Text Include="..\LICENSE.x64_ioapic.txt" />
+    <Text Include="..\AUTHORS.x64_acpi.txt" />
+    <Text Include="..\LICENSE.x64_acpi.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
