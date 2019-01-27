@@ -2638,7 +2638,7 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR8 id[4], UINT64 size, U
     
     addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64(lowest_addr, highest_addr) & alignment_mask);
     
-    while (addr == 0 || !IsPageFree_Preboot(addr)) {
+    while (ISNULL(addr) || !IsPageFree_Preboot(addr)) {
         addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
             (UINT64)(kmem_largest_block + (kmem_largest_block_size - size))) & alignment_mask);
         kernel_panic(L"Generated random #: 0x%lx\n", addr);
