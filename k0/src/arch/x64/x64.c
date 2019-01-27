@@ -330,7 +330,7 @@ nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
 // Executes various cpuinfo leaf functions
 // and obtains the bit counts for the linear
 // and physical address space
-VOID x64InitBootCPU() {
+VOID x64InitCpuInfoStructs() {
 
     // First call cpuid with eax == 0x00
     // this call returns both the maximum
@@ -473,14 +473,7 @@ VOID x64InitGDT() {
 
     // Set up the 64-bit tss for CPU0
     tss->rsp[X64_PL0] = kernel_stack[0].stack_base;
-    
-    UINT32 i;
-    for (i = 0; i < 8; i++) {
-        tss->ist[i] = kernel_stack[i].stack_base;
-        Print(L"tss->ist[%u] == 0x%lx\n", i, tss->ist[i]);
-    }
     tss->io_map_base_address = sizeof(x64_tss);
-    Print(L"&tss == 0x%lx\n", tss);
 
     // Copy the existing gdt.
     // In order to keep uefi around, it is 

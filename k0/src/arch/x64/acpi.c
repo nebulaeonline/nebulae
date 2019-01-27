@@ -40,6 +40,8 @@
 BOOLEAN _xsdt_located = FALSE;
 extern nebulae_system_table *system_table;
 
+// this is the internal function that actually parses
+// the ACPI tables
 nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     EFI_ACPI_DESCRIPTION_HEADER *xsdt, *entry;
     CHAR16 sig[20], oemstr[20];

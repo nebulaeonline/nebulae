@@ -360,7 +360,7 @@ extern x64_cpu cpu_info;
 
 // Function prototypes
 nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas);
-VOID x64InitBootCPU();
+VOID x64InitCpuInfoStructs();
 BOOLEAN x64ReadCpuinfoFlags(UINT64 flag);
 VOID x64InitGDT();
 VOID x64InitKernelStacks();

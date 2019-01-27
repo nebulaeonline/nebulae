@@ -101,6 +101,8 @@ NORETURN VOID k0_main() {
     // try to read just beyond the video buffer
     UINT64 page_fault_now = *(volatile UINT64*)(0x80600000ULL);
 
+    Print(L"Continued after page fault\n");
+
     // Woo-hoo!
     while (TRUE) {}
 }
