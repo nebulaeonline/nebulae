@@ -475,9 +475,9 @@ VOID x64InitGDT() {
     tss->rsp[X64_PL0] = kernel_stack[0].stack_base;
     
     UINT32 i;
-    for (i = 1; i < 8; i++) {
-        tss->ist[i - 1] = kernel_stack[i].stack_base;
-        Print(L"tss->ist[%u] == 0x%lx\n", i - 1, tss->ist[i - 1]);
+    for (i = 0; i < 8; i++) {
+        tss->ist[i] = kernel_stack[i].stack_base;
+        Print(L"tss->ist[%u] == 0x%lx\n", i, tss->ist[i]);
     }
     tss->io_map_base_address = sizeof(x64_tss);
     Print(L"&tss == 0x%lx\n", tss);
@@ -616,11 +616,10 @@ VOID x64InitKernelStacks() {
         kernel_stack[i].stack_base = kernel_stack[i].guard_page_high_base - ALIGN_16; 
     }
 
-    // TODO
-    // So now there's 1 regular stack + 7 interrupt stacks 
-    // along with 16 guard pages, but the guard pages don't 
-    // yet guard anything because we haven't moved to our own 
-    // page tables yet :/ #TODO mark guard pages not present
+    // So now there's 7 interrupt stacks along with 14 guard 
+    // pages, but the guard pages don't yet guard anything 
+    // because we haven't moved to our own page tables yet :/ 
+    // #TODO mark guard pages not present
     kernel_stacks_initialized = TRUE;
 }
 

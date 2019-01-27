@@ -128,6 +128,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                 x64_local_apic *la = NULL;
                 x64_io_apic *ia = NULL;
                 x64_overriden_interrupt *oi = NULL;
+                nebulae_sys_element *prev_element = NULL;
 
                 switch (type) {
                 case EFI_ACPI_1_0_PROCESSOR_LOCAL_APIC:
@@ -144,6 +145,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                             system_table->acpi_cpu_table.element0_addr;                        
                     }
                     else {
+                        prev_element = system_table->acpi_cpu_table.elementn_addr;
                         system_table->acpi_cpu_table.elementn_addr =
                             kPrebootCriticalMalloc(
                                 &k0_kernel_system_area,
@@ -155,6 +157,12 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                     new_cpu = (nebulae_sys_element *)(system_table->acpi_cpu_table.elementn_addr);
                     new_cpu->type_id = NEBTYPE_POINTER;
                     new_cpu->value = (UINT64)la;
+
+                    if (!ISNULL(prev_element)) {
+                        new_cpu->prev = prev_element;
+                        new_cpu->next = NULL;
+                        prev_element->next = new_cpu;
+                    }
                     break;
                 case EFI_ACPI_1_0_IO_APIC:
                     ia = hdr;
@@ -173,6 +181,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                             system_table->acpi_interrupt_override_table.element0_addr;
                     }
                     else {
+                        prev_element = system_table->acpi_interrupt_override_table.elementn_addr;
                         system_table->acpi_interrupt_override_table.elementn_addr =
                             kPrebootCriticalMalloc(
                                 &k0_kernel_system_area,
@@ -184,6 +193,12 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                     new_oi = (nebulae_sys_element *)(system_table->acpi_interrupt_override_table.elementn_addr);
                     new_oi->type_id = NEBTYPE_POINTER;
                     new_oi->value = (UINT64)oi;
+
+                    if (!ISNULL(prev_element)) {
+                        new_oi->prev = prev_element;
+                        new_oi->next = NULL;
+                        prev_element->next = new_oi;
+                    }
                     break;
                 case EFI_ACPI_1_0_NON_MASKABLE_INTERRUPT_SOURCE:
                     break;

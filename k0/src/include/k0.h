@@ -116,10 +116,15 @@ typedef PACKED_MS struct s_nebulae_sys_common_header {
     UINT64  reserved;
 } PACKED_GNU nebulae_sys_common_header;
 
+// forward struct declaration
+typedef struct nebulae_sys_element;
+
 // Generic element structure
 typedef PACKED_MS struct s_nebulae_sys_element {
     UINT64  type_id;
     UINT64  value;
+    struct nebulae_sys_element *prev;
+    struct nebulae_sys_element *next;
 } PACKED_GNU nebulae_sys_element;
 
 // System table struct declaration
