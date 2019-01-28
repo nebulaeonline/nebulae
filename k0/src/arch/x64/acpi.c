@@ -275,8 +275,8 @@ VOID x64InitPIC() {
     MmioWrite8(X64_PIC2_CMD, X64_PIC_ICW1_INIT | X64_PIC_ICW1_ICW4);
 
     // ICW2: interrupt vector address
-    MmioWrite8(X64_PIC1_DATA, X64_PIC_IRQ_BASE);
-    MmioWrite8(X64_PIC2_DATA, X64_PIC_IRQ_BASE + 8);
+    MmioWrite8(X64_PIC1_DATA, X64_APIC_END_OF_INTERRUPT);
+    MmioWrite8(X64_PIC2_DATA, X64_APIC_END_OF_INTERRUPT + 8);
 
     // ICW3: master/slave wiring
     MmioWrite8(X64_PIC1_DATA, 4);

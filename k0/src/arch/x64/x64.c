@@ -475,6 +475,11 @@ VOID x64InitGDT() {
     tss->rsp[X64_PL0] = kernel_stack[0].stack_base;
     tss->io_map_base_address = sizeof(x64_tss);
 
+    UINTN i;
+    for (i = 1; i < 8; i++) {
+        tss->ist[i - 1] = kernel_stack[i].stack_base;
+    }
+
     // Copy the existing gdt.
     // In order to keep uefi around, it is 
     // imperative not to mess with its 

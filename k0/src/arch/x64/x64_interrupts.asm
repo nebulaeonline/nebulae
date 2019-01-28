@@ -115,7 +115,6 @@ default_interrupt_handler:
     iretq
 
 %macro create_exception_handler 2
-    cli
     save_context
     load_interrupt_context_seg_regs
     
@@ -131,7 +130,6 @@ default_interrupt_handler:
 %endmacro
 
 %macro create_exception_handler_with_error_code 2
-    cli
     save_context
     load_interrupt_context_seg_regs
     
@@ -162,7 +160,7 @@ default_interrupt_handler:
 
 %macro save_context 0
     save_regs
-    save_fpstate
+    ;save_fpstate
     save_seg_regs
 %endmacro
 
@@ -233,8 +231,8 @@ reload_context_and_iretq:
     
     ; restore floating point state
     ; skip over the 512 byte xsave/xrstor
-    add     rsp, 512
-    xrstor64 [rsp]
+    ;add     rsp, 512
+    ;xrstor64 [rsp]
 
     ; restore regular regs
     pop     r15

@@ -281,8 +281,6 @@ typedef PACKED_MS struct s_x64_inttrap_gate {
     UINT32 reserved;
 } PACKED_GNU x64_inttrap_gate;
 
-#define X64_PIC_IRQ_BASE                0x20
-
 // Task State Segment
 typedef PACKED_MS struct s_x64_tss {
     UINT32 reserved1;

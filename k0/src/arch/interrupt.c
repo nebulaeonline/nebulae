@@ -24,20 +24,28 @@
 
 #include "../include/klib/interrupt.h"
 
-volatile UINT64 isr_fired = 0;
+volatile UINT64 isr_fired = 5;
+volatile UINT64 page_fault_count = 99;
 
 VOID IsrHandler(unsigned int vector) {
-    isr_fired++;
+    UINT64 *isr_ct = (volatile UINT64*)&isr_fired;
+    *isr_ct++;
 
 #ifdef __NEBULAE_ARCH_X64
-// #TODO #ACK #INTERRUPT
-    //extern UINT64 bsp_apic_addr;
-    //WriteIOApic(bsp_apic_addr, X64_APIC_EOI_REG_OFFSET, X64_APIC_END_OF_INTERRUPT);
+    x64WriteIoApic(X64_APIC_EOI_REG_OFFSET, X64_APIC_END_OF_INTERRUPT);
 #endif
 }
 
 VOID ExceptionHandler(UINT64 vector, UINT64 error_code) {
-    kernel_panic(L"Unhandled exception: %u, error code == 0x%lx\n", vector, error_code);
+    UINT64 *pf_ct = (volatile UINT64*)&page_fault_count;
+
+    if (vector == 0x0E) {
+        *pf_ct++;
+        kernel_panic(L"Page fault exception: %u, error code == 0x%lx\n", vector, error_code);
+    }
+    else {
+        kernel_panic(L"Unhandled exception: %u, error code == 0x%lx\n", vector, error_code);
+    }
 }
 
 VOID NMIHandler() {

@@ -60,6 +60,7 @@ BOOLEAN k0_main_called = FALSE;
 NORETURN VOID k0_main() {
     
     extern volatile UINT64 isr_fired;
+    extern volatile UINT64 page_fault_count;
 
     // We're here!
     k0_main_called = TRUE;
@@ -96,6 +97,15 @@ NORETURN VOID k0_main() {
 
     // how many cpus?
     Print(L"Found %lu cpu(s)\n", system_table->cpu_count);
+
+    // talk about the idt/isrs
+    extern VOID interrupt_0x00_wrapper();
+    extern VOID interrupt_0x0E_wrapper();
+    Print(L"address of interrupt_0x00_wrapper == 0x%lx\n", &interrupt_0x00_wrapper);
+    Print(L"address of interrupt_0x0E_wrapper == 0x%lx\n", &interrupt_0x0E_wrapper);
+    Print(L"address of IsrHandler == 0x%lx\n", &IsrHandler);
+
+    Print(L"page fault handler count @ 0x%lx == 0x%lx\n", &page_fault_count, page_fault_count);
 
     // fun with page faults
     // try to read just beyond the video buffer
