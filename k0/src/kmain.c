@@ -59,7 +59,6 @@ BOOLEAN k0_main_called = FALSE;
 // Graphics are initialized, we're flying solo!
 NORETURN VOID k0_main() {
     
-    extern volatile UINT64 isr_fired;
     extern volatile UINT64 page_fault_count;
 
     // We're here!

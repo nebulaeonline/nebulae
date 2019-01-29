@@ -40,13 +40,13 @@
     <ClCompile Include="src\klib\bootconfig.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\arch\interrupt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\arch\x64\mmio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\arch\x64\acpi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\arch\x64\interrupt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -93,9 +93,6 @@
     <ClInclude Include="src\include\klib\pe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\include\klib\interrupt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\include\klib\kavl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -112,6 +109,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\include\nebulae_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\include\arch\x64\interrupt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

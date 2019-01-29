@@ -25,12 +25,23 @@
 #ifndef __K0_INTERRUPT_H
 #define __K0_INTERRUPT_H
 
+typedef VOID(*IntHandler)();
+
 #ifdef __NEBULAE_ARCH_X64
 #include "../arch/x64/acpi.h"
-#endif
-
 #define INTERRUPT_VECTOR_COUNT      0xFF
 
+typedef PACKED_MS struct s_nebulae_interrupt {
+    IntHandler isr_fn;
+    UINT32 data;
+    UINT32 status;
+    UINT32 flags;
+    BOOLEAN present;
+} PACKED_GNU nebulae_interrupt;
+#endif
+
+VOID RegisterInterruptHandler(UINT64 vector, nebulae_interrupt interrupt);
+VOID UnRegisterInterruptHandler(UINT64 vector);
 VOID ExceptionHandler(UINT64 vector, UINT64 error_code);
 VOID IsrHandler(unsigned int vector);
 VOID NMIHandler();

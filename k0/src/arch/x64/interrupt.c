@@ -22,6 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include <Library/BaseMemoryLib.h>
 #include "../include/klib/interrupt.h"
 
 VOID Exception_0x00();
@@ -44,11 +45,63 @@ VOID Exception_0x12();
 VOID Exception_0x13();
 VOID Exception_0x14();
 
-volatile UINT64 isr_fired = 0;
 volatile UINT64 page_fault_count = 0;
 
+nebulae_interrupt *interrupt_table = NULL;
+
+VOID RegisterInterruptHandler(UINT64 vector, nebulae_interrupt interrupt) {
+    if (ISNULL(interrupt_table)) {
+        kernel_panic(L"Attempting to register an interrupt handler before interrupt have been initialized\n");
+    }
+
+    if (vector > INTERRUPT_VECTOR_COUNT) {
+        kernel_panic(L"Attempting to unregister an interrupt vector outside allowed bounds: %ld\n", vector);
+    }
+
+    interrupt_table[vector] = interrupt;
+}
+
+VOID RegisterInterruptHandlerManual(UINT64 vector,
+    IntHandler isr_fn,
+    UINT32 data,
+    UINT32 status,
+    UINT32 flags) {
+
+    if (ISNULL(interrupt_table)) {
+        kernel_panic(L"Attempting to register an interrupt handler before interrupt have been initialized\n");
+    }
+
+    if (vector > INTERRUPT_VECTOR_COUNT) {
+        kernel_panic(L"Attempting to unregister an interrupt vector outside allowed bounds: %ld\n", vector);
+    }
+
+    if (ISNULL(isr_fn)) {
+        kernel_panic(L"Attempting to register an interrupt handler with a null address\n");
+    }
+
+    interrupt_table[vector].isr_fn = isr_fn;
+    interrupt_table[vector].data = data;
+    interrupt_table[vector].status = status;
+    interrupt_table[vector].flags = flags;
+}
+
+VOID UnRegisterInterruptHandler(UINT64 vector) {
+    if (ISNULL(interrupt_table)) {
+        kernel_panic(L"Attempting to unregister an interrupt handler before interrupt have been initialized\n");
+    }
+
+    if (vector > INTERRUPT_VECTOR_COUNT) {
+        kernel_panic(L"Attempting to unregister an interrupt vector outside allowed bounds: %ld\n", vector);
+    }
+
+    ZeroMem(&interrupt_table[vector], sizeof(nebulae_interrupt));
+}
+
 VOID IsrHandler(unsigned int vector) {
-    isr_fired++;
+
+    if (!ISNULL(interrupt_table[vector].isr_fn)) {
+        interrupt_table[vector].isr_fn();
+    }
 
 #ifdef __NEBULAE_ARCH_X64
     x64WriteIoApic(X64_APIC_EOI_REG_OFFSET, X64_APIC_END_OF_INTERRUPT);

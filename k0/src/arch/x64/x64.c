@@ -31,6 +31,7 @@
 #include "../../include/arch/uefi/graphics.h"
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/x64/acpi.h"
+#include "../../include/klib/interrupt.h"
 
 // The number of bytes we reserve for the system
 extern UINTN nebulae_system_table_reserved_bytes;
@@ -625,18 +626,17 @@ VOID x64InitKernelStacks() {
 VOID x64InitIDT() {
     extern preboot_mem_block k0_boot_scratch_area;
     
-    x64_inttrap_gate *idt = kPrebootMalloc(&k0_boot_scratch_area, 
+    x64_inttrap_gate *idt = kPrebootCriticalMalloc(&k0_boot_scratch_area, 
         X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), 
         ALIGN_4KB);
     
-    if (ISNULL(idt)) {
-        kernel_panic(L"Problem allocating memory for interrupt descriptor table\n");
-    }
-
-    if (ZeroMem(idt, X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate)) != idt) {
-        kernel_panic(L"Problem allocating memory for interrupt descriptor table - storage initialization failure\n");
-    }
-
+    // Allocate memory for our interrupt table
+    extern nebulae_interrupt *interrupt_table;
+    
+    interrupt_table = (nebulae_interrupt *)kPrebootCriticalMalloc(&k0_boot_scratch_area, 
+        sizeof(nebulae_interrupt) * INTERRUPT_VECTOR_COUNT, 
+        ALIGN_64);
+    
     // idt[0]
     idt[0].procedure_entry_offset_00_15 = X64_ADDR_00_15((UINT64)&interrupt_0x00_wrapper);
     idt[0].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x00_wrapper);
@@ -2936,8 +2936,6 @@ VOID x64BuildInitialKernelPageTable() {
         //Print(L"sizeof(EFI_MEMORY_DESCRIPTOR) == 0x%lx\n", sizeof(EFI_MEMORY_DESCRIPTOR));
         //Print(L"memory descriptor size (per uefi): 0x%lx\n", memmap.descr_size);
         //Print(L"total pages: 0x%lx\n", kmem_total_page_count);
-        extern volatile UINT64 isr_fired;
-        Print(L"isr_fired (@ 0x%lx) == 0x%lx\n", &isr_fired, isr_fired);
         Print(L"LFB base == 0x%lx\n", gfx_info.gop->Mode->FrameBufferBase);
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
     }
