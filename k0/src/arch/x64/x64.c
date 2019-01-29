@@ -31,7 +31,7 @@
 #include "../../include/arch/uefi/graphics.h"
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/x64/acpi.h"
-#include "../../include/klib/interrupt.h"
+#include "../../include/arch/x64/interrupt.h"
 
 // The number of bytes we reserve for the system
 extern UINTN nebulae_system_table_reserved_bytes;
