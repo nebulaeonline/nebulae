@@ -124,7 +124,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     push qword 0                    ; r8 shadow space
     push qword 0                    ; r9 shadow space
 
-	call    %2                      ; call the specified c function    
+    call    %2                      ; call the specified c function    
     pop     rsp                     ; pop c stack
     mov qword rsp, [rsp + 8]        ; restore our stack
     
@@ -148,7 +148,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     push qword 0                    ; r8 shadow space
     push qword 0                    ; r9 shadow space
 
-	call    %2                      ; call the specified c function    
+    call    %2                      ; call the specified c function    
     pop     rsp                     ; pop c stack
     mov qword rsp, [rsp + 8]        ; restore our stack
 
@@ -171,7 +171,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     push qword 0                    ; r8 shadow space
     push qword 0                    ; r9 shadow space
 
-	call    %2                      ; call the specified c function    
+    call    %2                      ; call the specified c function    
     pop     rsp                     ; pop c stack
     mov qword rsp, [rsp + 8]        ; restore our stack
     
@@ -269,10 +269,10 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
 %macro load_interrupt_context_seg_regs 0
     mov     ax, 0x100               ; DPL0_DATA_WRITEABLE
-	mov     ds, ax
-	mov     es, ax                  ; load segments with valid selector
-	mov 	fs, ax
-	mov 	gs, ax
+    mov     ds, ax
+    mov     es, ax                  ; load segments with valid selector
+    mov     fs, ax
+    mov     gs, ax
 %endmacro
 
 %macro bounce 0
@@ -286,9 +286,9 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 interrupt_0x00_wrapper:
     create_exception_handler 0x00, IsrHandler
 
-; Exception 0x01 (1) - Debug Exception	
+; Exception 0x01 (1) - Debug Exception    
 interrupt_0x01_wrapper:
-	create_exception_handler 0x01, ExceptionHandler
+    create_exception_handler 0x01, ExceptionHandler
 
 ; Interrupt 0x02 (2) - NMI Interrupt
 interrupt_0x02_wrapper:
@@ -296,15 +296,15 @@ interrupt_0x02_wrapper:
 
 ; Exception 0x03 (3) - Breakpoint
 interrupt_0x03_wrapper:
-	create_exception_handler 0x03, ExceptionHandler
+    create_exception_handler 0x03, ExceptionHandler
 
 ; Exception 0x04 (4) - Overflow
 interrupt_0x04_wrapper:
-	create_exception_handler 0x04, ExceptionHandler
-	
+    create_exception_handler 0x04, ExceptionHandler
+    
 ; Exception 0x05 (5) - Bound Range Exceeded
 interrupt_0x05_wrapper:
-	create_exception_handler 0x05, ExceptionHandler
+    create_exception_handler 0x05, ExceptionHandler
 
 ; Exception 0x06 (6) - Invalid/Undefined Opcode
 interrupt_0x06_wrapper:
@@ -312,55 +312,55 @@ interrupt_0x06_wrapper:
 
 ; Exception 0x07 (7) - No Math Coprocessor
 interrupt_0x07_wrapper:
-	create_exception_handler 0x07, ExceptionHandler
-	
+    create_exception_handler 0x07, ExceptionHandler
+    
 ; Exception 0x08 (8) - Double Fault
 interrupt_0x08_wrapper:
-	create_exception_handler_with_error_code 0x08, ExceptionHandler
-	
+    create_exception_handler_with_error_code 0x08, ExceptionHandler
+    
 ; Exception 0x09 (9) - Coprocessor Segment Overrun (Reserved)
 interrupt_0x09_wrapper:
-	create_exception_handler 0x09, ExceptionHandler
-	
+    create_exception_handler 0x09, ExceptionHandler
+    
 ; Exception 0x0A (10) - Invalid TSS
 interrupt_0x0A_wrapper:
-	create_exception_handler_with_error_code 0x0A, ExceptionHandler
+    create_exception_handler_with_error_code 0x0A, ExceptionHandler
 
-; Exception 0x0B (11) - Segment Not Present	
+; Exception 0x0B (11) - Segment Not Present    
 interrupt_0x0B_wrapper:
-	create_exception_handler_with_error_code 0x0B, ExceptionHandler
+    create_exception_handler_with_error_code 0x0B, ExceptionHandler
 
 ; Exception 0x0C (12) - Stack-Segment Fault
 interrupt_0x0C_wrapper:
-	create_exception_handler_with_error_code 0x0C, ExceptionHandler
-	
+    create_exception_handler_with_error_code 0x0C, ExceptionHandler
+    
 ; Exception 0x0D (13) - General Protection Fault
 interrupt_0x0D_wrapper:
-	create_exception_handler_with_error_code 0x0D, ExceptionHandler
-	
+    create_exception_handler_with_error_code 0x0D, ExceptionHandler
+    
 ; Exception 0x0E (14) - Page Fault
 interrupt_0x0E_wrapper:
-	create_exception_handler_with_error_code 0x0E, ExceptionHandler
+    create_exception_handler_with_error_code 0x0E, ExceptionHandler
 
-; Exception 0x10 (16) - x86 Floating-Point Error	
+; Exception 0x10 (16) - x86 Floating-Point Error    
 interrupt_0x10_wrapper:
-	create_exception_handler 0x10, ExceptionHandler
-	
+    create_exception_handler 0x10, ExceptionHandler
+    
 ; Exception 0x11 (17) - Alignment Check
 interrupt_0x11_wrapper:
-	create_exception_handler_with_error_code 0x11, ExceptionHandler
-	
+    create_exception_handler_with_error_code 0x11, ExceptionHandler
+    
 ; Exception 0x12 (18) - Machine Check
 interrupt_0x12_wrapper:
-	create_exception_handler 0x12, ExceptionHandler
-	
+    create_exception_handler 0x12, ExceptionHandler
+    
 ; Exception 0x13 (19) - SIMD Floating-Point
 interrupt_0x13_wrapper:
-	create_exception_handler 0x13, ExceptionHandler
+    create_exception_handler 0x13, ExceptionHandler
 
 ; Exception 0x14 (20) - Virtualization Exception
 interrupt_0x14_wrapper:
-	create_exception_handler 0x14, ExceptionHandler
+    create_exception_handler 0x14, ExceptionHandler
 
 ; Interrupt 0x20 (32) - INT32
 interrupt_0x20_wrapper:

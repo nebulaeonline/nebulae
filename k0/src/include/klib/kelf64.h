@@ -77,32 +77,32 @@ typedef struct s_Elf64_Ehdr {
 // Operating System and ABI Identifiers, e_ident[EI_OSABI]
 // From FreeBSD Master 2019-01-07
 // https://github.com/freebsd/freebsd/blob/master/sys/sys/elf_common.h
-#define	ELFOSABI_NONE		0	    /* UNIX System V ABI */
-#define	ELFOSABI_HPUX		1	    /* HP-UX operating system */
-#define	ELFOSABI_NETBSD		2	    /* NetBSD */
-#define	ELFOSABI_LINUX		3	    /* GNU/Linux */
-#define	ELFOSABI_HURD		4	    /* GNU/Hurd */
-#define	ELFOSABI_86OPEN		5	    /* 86Open common IA32 ABI */
-#define	ELFOSABI_SOLARIS	6	    /* Solaris */
-#define	ELFOSABI_AIX		7	    /* AIX */
-#define	ELFOSABI_IRIX		8	    /* IRIX */
-#define	ELFOSABI_FREEBSD	9	    /* FreeBSD */
-#define	ELFOSABI_TRU64		10	    /* TRU64 UNIX */
-#define	ELFOSABI_MODESTO	11	    /* Novell Modesto */
-#define	ELFOSABI_OPENBSD	12	    /* OpenBSD */
-#define	ELFOSABI_OPENVMS	13	    /* Open VMS */
-#define	ELFOSABI_NSK		14	    /* HP Non-Stop Kernel */
-#define	ELFOSABI_AROS		15	    /* Amiga Research OS */
-#define	ELFOSABI_FENIXOS	16	    /* FenixOS */
-#define	ELFOSABI_CLOUDABI	17	    /* Nuxi CloudABI */
-#define	ELFOSABI_ARM_AEABI	64	    /* ARM EABI */
-#define	ELFOSABI_ARM		97	    /* ARM */
+#define    ELFOSABI_NONE        0        /* UNIX System V ABI */
+#define    ELFOSABI_HPUX        1        /* HP-UX operating system */
+#define    ELFOSABI_NETBSD        2        /* NetBSD */
+#define    ELFOSABI_LINUX        3        /* GNU/Linux */
+#define    ELFOSABI_HURD        4        /* GNU/Hurd */
+#define    ELFOSABI_86OPEN        5        /* 86Open common IA32 ABI */
+#define    ELFOSABI_SOLARIS    6        /* Solaris */
+#define    ELFOSABI_AIX        7        /* AIX */
+#define    ELFOSABI_IRIX        8        /* IRIX */
+#define    ELFOSABI_FREEBSD    9        /* FreeBSD */
+#define    ELFOSABI_TRU64        10        /* TRU64 UNIX */
+#define    ELFOSABI_MODESTO    11        /* Novell Modesto */
+#define    ELFOSABI_OPENBSD    12        /* OpenBSD */
+#define    ELFOSABI_OPENVMS    13        /* Open VMS */
+#define    ELFOSABI_NSK        14        /* HP Non-Stop Kernel */
+#define    ELFOSABI_AROS        15        /* Amiga Research OS */
+#define    ELFOSABI_FENIXOS    16        /* FenixOS */
+#define    ELFOSABI_CLOUDABI    17        /* Nuxi CloudABI */
+#define    ELFOSABI_ARM_AEABI    64        /* ARM EABI */
+#define    ELFOSABI_ARM        97        /* ARM */
 #define ELFOSABI_NEBULAE    254     /* nebulae */
-#define	ELFOSABI_STANDALONE	255	    /* Standalone (embedded) application */
+#define    ELFOSABI_STANDALONE    255        /* Standalone (embedded) application */
 
-#define	ELFOSABI_SYSV		ELFOSABI_NONE	/* symbol used in old spec */
-#define	ELFOSABI_MONTEREY	ELFOSABI_AIX	/* Monterey */
-#define	ELFOSABI_GNU		ELFOSABI_LINUX
+#define    ELFOSABI_SYSV        ELFOSABI_NONE    /* symbol used in old spec */
+#define    ELFOSABI_MONTEREY    ELFOSABI_AIX    /* Monterey */
+#define    ELFOSABI_GNU        ELFOSABI_LINUX
 
 // Object File Types, e_type
 #define ET_NONE         0           // No file type
