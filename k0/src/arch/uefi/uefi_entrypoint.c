@@ -96,6 +96,42 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     // Initialize the cpu architecture
 #ifdef __NEBULAE_ARCH_X64    
     x64InitCpuInfoStructs();
+
+    // Initialize SSE & beyond
+    if (!x64ReadCpuinfoFlags(X64_HAS_SSE)) {
+        kernel_panic(L"nebulae requires a system that supports SSE instructions\n");
+    }
+
+    if (!x64ReadCpuinfoFlags(X64_HAS_SSE2)) {
+        kernel_panic(L"nebulae requires a system that supports SSE2 instructions\n");
+    }
+
+    if (!x64ReadCpuinfoFlags(X64_HAS_SSE3)) {
+        kernel_panic(L"nebulae requires a system that supports SSE3 instructions\n");
+    }
+
+    if (!x64ReadCpuinfoFlags(X64_HAS_SSE41)) {
+        kernel_panic(L"nebulae requires a system that supports SSE4.1 instructions\n");
+    }
+
+    if (!x64ReadCpuinfoFlags(X64_HAS_SSE42)) {
+        kernel_panic(L"nebulae requires a system that supports SSE4.2 instructions\n");
+    }
+
+    if (!x64ReadCpuinfoFlags(X64_HAS_FXSAVE)) {
+        kernel_panic(L"nebulae requires a system that supports FXSAVE/FXRSTOR instructions\n");
+    }
+
+    /*
+    if (!x64ReadCpuinfoFlags(X64_HAS_POPCNT)) {
+        kernel_panic(L"nebulae requires a system that supports the POPCNT instruction\n");
+    }
+
+    
+    if (!x64ReadCpuinfoFlags(X64_HAS_OSXSAVE)) {
+        kernel_panic(L"nebulae requires a system that supports OSXSAVE instructions atm\n");
+    }
+    */
 #endif
 
     // Change the graphics mode

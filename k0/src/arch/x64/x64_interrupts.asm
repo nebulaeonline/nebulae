@@ -108,12 +108,6 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
 ; CPU0_TSS_INDEX_GDT              0x130
 
-default_exception_handler:
-    jmp     $
-
-default_interrupt_handler:
-    iretq
-
 %macro create_exception_handler 2
     save_context
     load_interrupt_context_seg_regs
@@ -124,24 +118,42 @@ default_interrupt_handler:
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
     and     rsp,-0x10               ; align the stack to 16 bytes
-	call    %2                      ; call the specified c function
-    mov     rsp, [rsp + 8]          ; restore our stack
-    jmp     reload_context_and_iretq
+
+    push qword %1                   ; rcx shadow space
+    push qword 0                    ; rdx shadow space
+    push qword 0                    ; r8 shadow space
+    push qword 0                    ; r9 shadow space
+
+	call    %2                      ; call the specified c function    
+    pop     rsp                     ; pop c stack
+    mov qword rsp, [rsp + 8]        ; restore our stack
+    
+    restore_context
+    bounce
 %endmacro
 
 %macro create_exception_handler_with_error_code 2
     save_context
     load_interrupt_context_seg_regs
-    
+
     mov     rcx, %1                 ; Exception # in rcx (msabi arg1)
     pop     rdx                     ; Pop error code off the stack into rdx (msabi64 arg2)
 
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
     and     rsp,-0x10               ; align the stack to 16 bytes
-	call    %2                      ; call the specified c function
-    mov     rsp, [rsp + 8]          ; restore our stack
-    jmp     reload_context_and_iretq
+
+    push qword %1                   ; rcx shadow space
+    push    rdx                     ; rdx shadow space
+    push qword 0                    ; r8 shadow space
+    push qword 0                    ; r9 shadow space
+
+	call    %2                      ; call the specified c function    
+    pop     rsp                     ; pop c stack
+    mov qword rsp, [rsp + 8]        ; restore our stack
+
+    restore_context
+    bounce
 %endmacro
 
 %macro isr_entrypoint 2
@@ -153,33 +165,61 @@ default_interrupt_handler:
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
     and     rsp,-0x10               ; align the stack to 16 bytes
-	call    %2                      ; call the specified c function
-    mov     rsp, [rsp + 8]          ; restore our stack
-    jmp     reload_context_and_iretq
+
+    push qword %1                   ; rcx shadow space
+    push qword 0                    ; rdx shadow space
+    push qword 0                    ; r8 shadow space
+    push qword 0                    ; r9 shadow space
+
+	call    %2                      ; call the specified c function    
+    pop     rsp                     ; pop c stack
+    mov qword rsp, [rsp + 8]        ; restore our stack
+    
+    restore_context
+    bounce
 %endmacro
 
 %macro save_context 0
     save_regs
-    ;save_fpstate
     save_seg_regs
+%endmacro
+
+%macro restore_context 0
+    restore_seg_regs
+    restore_regs
+%endmacro
+
+%macro save_context_with_fp 0
+    save_regs
+    save_fpstate
+    save_seg_regs
+%endmacro
+
+%macro restore_context_with_fp 0
+    restore_seg_regs
+    restore_fpstate
+    restore_regs
 %endmacro
 
 %macro save_regs 0
     push    rax
     push    rcx
     push    rdx
-    push    rbx
-    push    rsi
-    push    rdi
-    push    rbp
     push    r8
     push    r9
     push    r10
     push    r11
-    push    r12
-    push    r13
-    push    r14
-    push    r15
+%endmacro
+
+%macro restore_regs 0
+    ; restore regular regs
+    pop     r11
+    pop     r10
+    pop     r9
+    pop     r8
+    pop     rdx
+    pop     rcx
+    pop     rax
 %endmacro
 
 %macro save_fpstate 0
@@ -187,7 +227,14 @@ default_interrupt_handler:
     ; allocate 512 bytes on the stack
     mov     rax, rsp
     sub     rsp, 512
-    xsave64 [rax]
+    fxsave  [rax]
+%endmacro
+
+%macro restore_fpstate 0
+    ; restore floating point state
+    ; skip over the 512 byte xsave/xrstor
+    add     rsp, 512
+    fxrstor [rsp]
 %endmacro
 
 %macro save_seg_regs 0
@@ -208,18 +255,8 @@ default_interrupt_handler:
     push    rax
 %endmacro
 
-%macro load_interrupt_context_seg_regs 0
-    mov     ax, 0x100               ; DPL0_DATA_WRITEABLE
-	mov     ds, ax
-	mov     es, ax                  ; load segments with valid selector
-	mov 	fs, ax
-	mov 	gs, ax
-%endmacro
-
-reload_context_and_iretq:
-    
+%macro restore_seg_regs 0
     ; restore the segment registers
-    pop     rax                     ; return value - isrs return nothing, but do allocate
     pop     rax                     ; gs
     mov     gs, ax
     pop     rax                     ; fs
@@ -228,31 +265,22 @@ reload_context_and_iretq:
     mov     es, ax
     pop     rax                     ; ds
     mov     ds, ax
-    
-    ; restore floating point state
-    ; skip over the 512 byte xsave/xrstor
-    ;add     rsp, 512
-    ;xrstor64 [rsp]
+%endmacro
 
-    ; restore regular regs
-    pop     r15
-    pop     r14
-    pop     r13
-    pop     r12
-    pop     r11
-    pop     r10
-    pop     r9
-    pop     r8
-    pop     rbp
-    pop     rdi
-    pop     rsi
-    pop     rbx
-    pop     rdx
-    pop     rcx
-    pop     rax
+%macro load_interrupt_context_seg_regs 0
+    mov     ax, 0x100               ; DPL0_DATA_WRITEABLE
+	mov     ds, ax
+	mov     es, ax                  ; load segments with valid selector
+	mov 	fs, ax
+	mov 	gs, ax
+%endmacro
 
+%macro bounce 0
     sti
     iretq
+%endmacro
+
+; Begin generic entrypoints
 
 ; Exception 0x00 (0) - Divide Error
 interrupt_0x00_wrapper:
