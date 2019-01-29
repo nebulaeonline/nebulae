@@ -24,6 +24,26 @@
 
 #include "../include/klib/interrupt.h"
 
+VOID Exception_0x00();
+VOID Exception_0x01();
+VOID Exception_0x03();
+VOID Exception_0x04();
+VOID Exception_0x05();
+VOID Exception_0x06();
+VOID Exception_0x07();
+VOID Exception_0x08();
+VOID Exception_0x09();
+VOID Exception_0x0A();
+VOID Exception_0x0B();
+VOID Exception_0x0C();
+VOID Exception_0x0D();
+VOID Exception_0x0E();
+VOID Exception_0x10();
+VOID Exception_0x11();
+VOID Exception_0x12();
+VOID Exception_0x13();
+VOID Exception_0x14();
+
 volatile UINT64 isr_fired = 0;
 volatile UINT64 page_fault_count = 0;
 
@@ -36,12 +56,64 @@ VOID IsrHandler(unsigned int vector) {
 }
 
 VOID ExceptionHandler(UINT64 vector, UINT64 error_code) {
-    if (vector == 0x0E) {
-        page_fault_count++;
-        //kernel_panic(L"Page fault exception: %u, error code == 0x%lx\n", vector, error_code);
-    }
-    else {
-        kernel_panic(L"Unhandled exception: %u, error code == 0x%lx\n", vector, error_code);
+    switch (vector) {
+    case 0x00:
+        Exception_0x00();
+        return;
+    case 0x01:
+        Exception_0x01();
+        return;
+    case 0x03:
+        Exception_0x03();
+        return;
+    case 0x04:
+        Exception_0x04();
+        return;
+    case 0x05:
+        Exception_0x05();
+        return;
+    case 0x06:
+        Exception_0x06();
+        return;
+    case 0x07:
+        Exception_0x07();
+        return;
+    case 0x08:
+        Exception_0x08(error_code);
+        return;
+    case 0x09:
+        Exception_0x09();
+        return;
+    case 0x0A:
+        Exception_0x0A(error_code);
+        return;
+    case 0x0B:
+        Exception_0x0B(error_code);
+        return;
+    case 0x0C:
+        Exception_0x0C(error_code);
+        return;
+    case 0x0D:
+        Exception_0x0D(error_code);
+        return;
+    case 0x0E:
+        Exception_0x0E(error_code);
+        return;
+    case 0x10:
+        Exception_0x10();
+        return;
+    case 0x11:
+        Exception_0x11(error_code);
+        return;
+    case 0x12:
+        Exception_0x12();
+        return;
+    case 0x13:
+        Exception_0x13();
+        return;
+    case 0x14:
+        Exception_0x14();
+        return;
     }
 }
 
@@ -49,108 +121,78 @@ VOID NMIHandler() {
     kernel_panic(L"NMI Detected\n");
 }
 
-VOID Exception00() {
-    kernel_panic(L"\nException 0x00 -- Divide by Zero\n");
+VOID Exception_0x00() {
+    kernel_panic(L"Exception 0x00 -- Divide by Zero\n");
 }
 
-VOID Exception01() {
-    kernel_panic(L"\nException 0x01 -- Debug\n");
+VOID Exception_0x01() {
+    kernel_panic(L"Exception 0x01 -- Debug\n");
 }
 
-VOID Exception03() {
-    kernel_panic(L"\nException 0x03 -- Breakpoint\n");
+VOID Exception_0x03() {
+    kernel_panic(L"Exception 0x03 -- Breakpoint\n");
 }
 
-VOID Exception04() {
-    kernel_panic(L"\nException 0x04 -- Overflow\n");
+VOID Exception_0x04() {
+    kernel_panic(L"Exception 0x04 -- Overflow\n");
 }
 
-VOID Exception05() {
-    kernel_panic(L"\nException 0x05 -- BOUND Range Exceeded\n");
+VOID Exception_0x05() {
+    kernel_panic(L"Exception 0x05 -- BOUND Range Exceeded\n");
 }
 
-VOID Exception06() {
-    kernel_panic(L"\nException 0x06 -- Invalid or Undefined Opcode\n");
+VOID Exception_0x06() {
+    kernel_panic(L"Exception 0x06 -- Invalid or Undefined Opcode\n");
 }
 
-VOID Exception07() {
-    kernel_panic(L"\nException 0x07 -- Device not Available (no math coprocessor)\n");
+VOID Exception_0x07() {
+    kernel_panic(L"Exception 0x07 -- Device not Available (no math coprocessor)\n");
 }
 
-VOID Exception08(UINT32 err_code) {
-    kernel_panic(L"\nException 0x08 -- Double Fault\n");
+VOID Exception_0x08(UINT32 err_code) {
+    kernel_panic(L"Exception 0x08 -- Double Fault; Error Code == %ld\n", err_code);
 }
 
-VOID Exception09() {
+VOID Exception_0x09() {
     kernel_panic(L"\nException 0x09 -- Coprocessor Segment Overrun\n");
 }
 
-VOID Exception0A(UINT32 err_code) {
+VOID Exception_0x0A(UINT32 err_code) {
     kernel_panic(L"\nException 0x0A -- Invalid TSS\n");
 }
 
-VOID Exception0B(UINT32 err_code) {
+VOID Exception_0x0B(UINT32 err_code) {
     kernel_panic(L"\nException 0x0B -- Segment Not Present\n");
 }
 
-VOID Exception0C(UINT32 err_code) {
+VOID Exception_0x0C(UINT32 err_code) {
     kernel_panic(L"\nException 0x0C -- Stack-Segment Fault\n");
 }
 
-VOID Exception0D(UINT32 err_code) {
+VOID Exception_0x0D(UINT32 err_code) {
     kernel_panic(L"\nException 0x0D -- General Protection Fault\n");
 }
 
-VOID Exception0E(UINT32 err_code, UINT64 rip, UINT64 cs, UINT64 rflags) {
-    UINT8  present, read_write, user_sup, reserved;
-    UINT64 fault_address;
-
-    present = (err_code & 0x01);
-    read_write = ((err_code >> 1) & 1);
-    user_sup = ((err_code >> 2) & 1);
-    reserved = ((err_code >> 3) & 1);
-    fault_address = x64ReadCR2();
-
-    Print(L"\n\nException 0x0E -- Page Fault [err_code == 0x%08x]\n", err_code);
-    Print(L"=====================================================\n");
-    if (user_sup == 1)
-        Print(L"User mode ");
-    else
-        Print(L"Supervisor mode ");
-
-    if (read_write == 1)
-        Print(L"write ");
-    else
-        Print(L"read ");
-
-    if (present == 1)
-        Print(L"of page protected memory ");
-    else
-        Print(L"of non-present memory ");
-
-    Print(L"at 0x%08x\nException at CS == 0x%02x | RIP == 0x%lx | RFLAGS == 0x%lx\n", fault_address, cs, rip, rflags);
-
-    if (reserved == 1)
-        Print(L"This fault was caused by a reserved bit violation.\n");
-
-    kernel_panic(L"");
+VOID Exception_0x0E(UINT32 err_code) {
+    kernel_panic(L"Exception 0x0E -- Page Fault [err_code == 0x%lx] @ 0x%lx\n", err_code, x64ReadCR2());
 }
 
-
-VOID Exception10() {
+VOID Exception_0x10() {
     kernel_panic(L"\nException 0x10 -- x87 Floating Point Error\n");
 }
 
-
-VOID Exception11(UINT32 err_code) {
+VOID Exception_0x11(UINT32 err_code) {
     kernel_panic(L"\nException 0x11 -- Alignment Check\n");
 }
 
-
-VOID Exception12() {
+VOID Exception_0x12() {
     kernel_panic(L"\nException 0x12 -- Machine Check\n");
 }
 
-VOID Exception_13() {
+VOID Exception_0x13() {
     kernel_panic(L"\nException 0x13 -- SIMD Floating Point Exception\n");
+}
+
+VOID Exception_0x14() {
+    kernel_panic(L"\nException 0x14 -- VMX Exception\n");
 }

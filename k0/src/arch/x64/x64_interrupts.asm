@@ -160,7 +160,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     save_context
     load_interrupt_context_seg_regs
 
-    mov     rcx, %1                 ; Send the vector to the C isr handler
+    mov     rcx, %1                 ; Interrupt # in rcx (msabi arg1)
     
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
