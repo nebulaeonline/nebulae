@@ -40,7 +40,7 @@
 #include "include/arch/x64/interrupt.h"
 
 // kernel page tables
-preboot_mem_block k0_boot_scratch_area;
+preboot_mem_block k0_preboot_heap;
 x64_virtual_address_space k0_addr_space;
 
 // kernel stacks

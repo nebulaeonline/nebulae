@@ -128,10 +128,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                 x64_apic_common_header *hdr = (x64_apic_common_header *)xsdt_curr;
                 UINT8 type = hdr->type;
                 UINT8 length = hdr->length;
-                x64_local_apic *la = NULL;
                 x64_io_apic *ia = NULL;
-                x64_overriden_interrupt *oi = NULL;
-                nebulae_sys_element *prev_element = NULL;
 
                 switch (type) {
                 case EFI_ACPI_1_0_PROCESSOR_LOCAL_APIC:

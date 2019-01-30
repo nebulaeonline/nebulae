@@ -442,7 +442,7 @@ BOOLEAN x64ReadCpuinfoFlags(UINT64 flag) {
 
 // Initialize the global descriptor table (GDT)
 VOID x64InitGDT() {
-    extern preboot_mem_block k0_boot_scratch_area;
+    extern preboot_mem_block k0_preboot_heap;
 
     // If the kernel stacks have not been initialized yet, error out
     if (!kernel_stacks_initialized) {
@@ -450,7 +450,7 @@ VOID x64InitGDT() {
     }
 
     // Allocate for gdt
-    gdt = kPrebootMalloc(&k0_boot_scratch_area, X64_GDT_MAX * sizeof(x64_seg_descr), ALIGN_16);
+    gdt = kPrebootMalloc(&k0_preboot_heap, X64_GDT_MAX * sizeof(x64_seg_descr), ALIGN_16);
     x64_seg_sel gdt_sel = { .base = gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
 
     if (ISNULL(gdt)) {
@@ -462,7 +462,7 @@ VOID x64InitGDT() {
     }
 
     // Allocate for TSS
-    tss = (x64_tss*)kPrebootMalloc(&k0_boot_scratch_area, sizeof(x64_tss), ALIGN_16);
+    tss = (x64_tss*)kPrebootMalloc(&k0_preboot_heap, sizeof(x64_tss), ALIGN_16);
 
     if (ISNULL(tss)) {
         kernel_panic(L"Problem allocating memory for task state segment\n");
@@ -624,16 +624,16 @@ VOID x64InitKernelStacks() {
 
 // Initializes the interrupt descriptor table (IDT)
 VOID x64InitIDT() {
-    extern preboot_mem_block k0_boot_scratch_area;
+    extern preboot_mem_block k0_preboot_heap;
     
-    x64_inttrap_gate *idt = kPrebootCriticalMalloc(&k0_boot_scratch_area, 
+    x64_inttrap_gate *idt = kPrebootCriticalMalloc(&k0_preboot_heap, 
         X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate), 
         ALIGN_4KB);
     
     // Allocate memory for our interrupt table
     extern nebulae_interrupt *interrupt_table;
     
-    interrupt_table = (nebulae_interrupt *)kPrebootCriticalMalloc(&k0_boot_scratch_area, 
+    interrupt_table = (nebulae_interrupt *)kPrebootCriticalMalloc(&k0_preboot_heap, 
         sizeof(nebulae_interrupt) * INTERRUPT_VECTOR_COUNT, 
         ALIGN_64);
     
@@ -642,7 +642,7 @@ VOID x64InitIDT() {
     idt[0].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x00_wrapper);
     idt[0].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x00_wrapper);
     idt[0].ist = 1;
-    idt[0].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[0].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[0].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[1]
@@ -650,7 +650,7 @@ VOID x64InitIDT() {
     idt[1].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x01_wrapper);
     idt[1].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x01_wrapper);
     idt[1].ist = 1;
-    idt[1].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[1].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[1].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[2]
@@ -658,7 +658,7 @@ VOID x64InitIDT() {
     idt[2].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x02_wrapper);
     idt[2].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x02_wrapper);
     idt[2].ist = 1;
-    idt[2].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[2].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[2].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[3]
@@ -666,7 +666,7 @@ VOID x64InitIDT() {
     idt[3].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x03_wrapper);
     idt[3].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x03_wrapper);
     idt[3].ist = 1;
-    idt[3].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[3].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[3].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[4]
@@ -674,7 +674,7 @@ VOID x64InitIDT() {
     idt[4].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x04_wrapper);
     idt[4].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x04_wrapper);
     idt[4].ist = 1;
-    idt[4].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[4].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[4].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[5]
@@ -682,7 +682,7 @@ VOID x64InitIDT() {
     idt[5].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x05_wrapper);
     idt[5].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x05_wrapper);
     idt[5].ist = 1;
-    idt[5].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[5].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[5].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[6]
@@ -690,7 +690,7 @@ VOID x64InitIDT() {
     idt[6].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x06_wrapper);
     idt[6].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x06_wrapper);
     idt[6].ist = 1;
-    idt[6].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[6].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[6].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[7]
@@ -698,7 +698,7 @@ VOID x64InitIDT() {
     idt[7].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x07_wrapper);
     idt[7].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x07_wrapper);
     idt[7].ist = 1;
-    idt[7].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[7].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[7].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[8]
@@ -706,7 +706,7 @@ VOID x64InitIDT() {
     idt[8].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x08_wrapper);
     idt[8].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x08_wrapper);
     idt[8].ist = 1;
-    idt[8].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[8].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[8].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[9]
@@ -714,7 +714,7 @@ VOID x64InitIDT() {
     idt[9].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x09_wrapper);
     idt[9].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x09_wrapper);
     idt[9].ist = 1;
-    idt[9].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[9].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[9].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[10]
@@ -722,7 +722,7 @@ VOID x64InitIDT() {
     idt[10].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x0A_wrapper);
     idt[10].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x0A_wrapper);
     idt[10].ist = 1;
-    idt[10].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[10].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[10].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[11]
@@ -730,7 +730,7 @@ VOID x64InitIDT() {
     idt[11].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x0B_wrapper);
     idt[11].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x0B_wrapper);
     idt[11].ist = 1;
-    idt[11].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[11].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[11].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[12]
@@ -738,7 +738,7 @@ VOID x64InitIDT() {
     idt[12].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x0C_wrapper);
     idt[12].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x0C_wrapper);
     idt[12].ist = 1;
-    idt[12].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[12].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[12].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[13]
@@ -746,7 +746,7 @@ VOID x64InitIDT() {
     idt[13].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x0D_wrapper);
     idt[13].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x0D_wrapper);
     idt[13].ist = 1;
-    idt[13].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[13].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[13].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[14]
@@ -754,7 +754,7 @@ VOID x64InitIDT() {
     idt[14].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x0E_wrapper);
     idt[14].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x0E_wrapper);
     idt[14].ist = 1;
-    idt[14].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[14].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[14].segment_selector = DPL0_CODE64_READABLE;
 
 
@@ -766,7 +766,7 @@ VOID x64InitIDT() {
     idt[16].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x10_wrapper);
     idt[16].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x10_wrapper);
     idt[16].ist = 1;
-    idt[16].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[16].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[16].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[17]
@@ -774,7 +774,7 @@ VOID x64InitIDT() {
     idt[17].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x11_wrapper);
     idt[17].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x11_wrapper);
     idt[17].ist = 1;
-    idt[17].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[17].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[17].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[18]
@@ -782,7 +782,7 @@ VOID x64InitIDT() {
     idt[18].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x12_wrapper);
     idt[18].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x12_wrapper);
     idt[18].ist = 1;
-    idt[18].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[18].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[18].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[19]
@@ -790,7 +790,7 @@ VOID x64InitIDT() {
     idt[19].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x13_wrapper);
     idt[19].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x13_wrapper);
     idt[19].ist = 1;
-    idt[19].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[19].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[19].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[20]
@@ -798,7 +798,7 @@ VOID x64InitIDT() {
     idt[20].procedure_entry_offset_16_31 = X64_ADDR_16_31((UINT64)&interrupt_0x14_wrapper);
     idt[20].procedure_entry_offset_32_63 = X64_ADDR_32_63((UINT64)&interrupt_0x14_wrapper);
     idt[20].ist = 1;
-    idt[20].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
+    idt[20].typeflags = X64_TYPE_TRAP_GATE | X64_INT_GATE_PRESENT;
     idt[20].segment_selector = DPL0_CODE64_READABLE;
 
     // idt[21] - idt[31] Intel Reserved
@@ -2687,28 +2687,20 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR16 id[5], UINT64 size, 
 }
 
 // Finds a random block of memory that begins on a 2MB boundary and zeroes it.
-// This will be the location of our initial boot scratch area
-VOID x64AllocateBootScratchArea() {
+// This will be the location of our initial kernel heap
+VOID x64AllocatePrebootKernelHeap() {
 
     // Memory Subsystem Vars
     extern UINTN kmem_total_page_count;
-    extern preboot_mem_block k0_boot_scratch_area;
+    extern preboot_mem_block k0_preboot_heap;
 
-    // Allocate 2MB unless we need to map more than 256GB to start with
-    UINTN bytes_to_alloc;
-    if ((kmem_total_page_count * EFI_PAGE_SIZE) > SIZE_256GB) {
-        bytes_to_alloc = SIZE_2MB;
-    }
-    else {
-        bytes_to_alloc = SIZE_4MB;
-    }
-
-    VOID *bs = x64AllocateRandomMemory(&k0_boot_scratch_area, L"NBSA", bytes_to_alloc, X64_2MB_ALIGN_MASK);
+    // Allocate 32MB to start with
+    VOID *bs = x64AllocateRandomMemory(&k0_preboot_heap, L"NBSA", SIZE_32MB, X64_2MB_ALIGN_MASK);
 }
 
 // Builds our initial kernel page table
 VOID x64BuildInitialKernelPageTable() {
-    extern preboot_mem_block k0_boot_scratch_area;
+    extern preboot_mem_block k0_preboot_heap;
     extern x64_virtual_address_space k0_addr_space;
     extern UINTN kmem_total_page_count;
 
@@ -2718,7 +2710,11 @@ VOID x64BuildInitialKernelPageTable() {
     }
 
     // allocate memory space for our kernel page table and zero the memory
-    k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), ALIGN_4KB);
+    k0_addr_space.pml4 = (x64_pml4e*)kPrebootMalloc(
+        &k0_preboot_heap, 
+        X64_PAGING_TABLE_MAX * sizeof(x64_pml4e), 
+        ALIGN_4KB);
+    
     if (ISNULL(k0_addr_space.pml4)) {
         kernel_panic(L"Problem building initial kernel page tables - pml4 allocation\n");
     }
@@ -2727,7 +2723,11 @@ VOID x64BuildInitialKernelPageTable() {
         kernel_panic(L"Problem building initial kernel page tables - pml4 storage initialization\n");
     }
     
-    k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), ALIGN_4KB);
+    k0_addr_space.pdpt = (x64_pdpte*)kPrebootMalloc(
+        &k0_preboot_heap, 
+        X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), 
+        ALIGN_4KB);
+
     if (ISNULL(k0_addr_space.pdpt)) {
         kernel_panic(L"Problem building initial kernel page tables - pdpt allocation\n");
     }
@@ -2736,7 +2736,11 @@ VOID x64BuildInitialKernelPageTable() {
         kernel_panic(L"Problem building initial kernel page tables - pdpt storage initialization\n");
     }
 
-    k0_addr_space.pde = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
+    k0_addr_space.pde = (x64_pde*)kPrebootMalloc(
+        &k0_preboot_heap, 
+        X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, 
+        ALIGN_4KB);
+    
     if (ISNULL(k0_addr_space.pde)) {
         kernel_panic(L"Problem building initial kernel page tables - pde allocation\n");
     }
@@ -2747,6 +2751,8 @@ VOID x64BuildInitialKernelPageTable() {
 
     UINT64 current_addr = 0x0;
 
+    // TODO: #TODO #MAX #MEM 
+    // This currently limits nebulae to 512GB at boot time
     // Point the first pml4 entry at pdpt[0]
     k0_addr_space.pml4[0] = ((UINT64)k0_addr_space.pdpt & X64_4KB_ALIGN_MASK) |
         X64_PAGING_PRESENT |
@@ -2821,7 +2827,7 @@ VOID x64BuildInitialKernelPageTable() {
                     // This page directory currently maps a 2MB page, so we need to 
                     // allocate space for a page table (X64_PAGING_TABLE_MAX ptes) 
                     // and set the page mapping
-                    cur_pt = kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pte), SIZE_4KB);
+                    cur_pt = kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pte), SIZE_4KB);
                     if (ISNULL(cur_pt)) {
                         kernel_panic(L"Problem building initial kernel page tables - 4KB pt allocation\n");
                     }
@@ -2863,7 +2869,7 @@ VOID x64BuildInitialKernelPageTable() {
         memmap_iter = (CHAR8*)memmap_iter + memmap.descr_size;        
     }
 
-    // Fill in the "gap" pages from 640KB-1MB; Hi IBM!
+    // Fill in the "gap" pages from 640KB-1MB;
     current_addr = 0xA0000;
     while (current_addr < SIZE_1MB) {
         UINTN pml4_index = PML4_INDEX(current_addr);
@@ -2895,13 +2901,13 @@ VOID x64BuildInitialKernelPageTable() {
     x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
 
     if (cur_pdpt[pdpt_index] == 0) {
-        cur_pd = (x64_pde*)kPrebootMalloc(&k0_boot_scratch_area, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count, ALIGN_4KB);
+        cur_pd = (x64_pde*)kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pde), ALIGN_4KB);
 
         if (ISNULL(cur_pd)) {
             kernel_panic(L"Problem building kernel page tables for UEFI GOP - pde allocation\n");
         }
 
-        if (ZeroMem(cur_pd, X64_PAGING_TABLE_MAX * sizeof(x64_pde) * page_dir_count) != cur_pd) {
+        if (ZeroMem(cur_pd, X64_PAGING_TABLE_MAX * sizeof(x64_pde)) != cur_pd) {
             kernel_panic(L"Problem building kernel page tables for UEFI GOP - pde storage initialization\n");
         }
 
@@ -2940,6 +2946,158 @@ VOID x64BuildInitialKernelPageTable() {
     }
 
     x64WriteCR3(k0_addr_space.pml4);
+}
+
+// Reloads CR3 after a change to the page tables for the current address space
+VOID x64ReloadCR3() {
+    x64WriteCR3(x64GetCurrentPML4TableAddr());
+}
+
+// Maps a physical page to the specified virtual address in the given address space;
+// If no address space is specified, then the mapping is done in the current address
+// space- note that there is no actual change of address space mappings here; i.e.
+// you have to reload your own CR3 if you're modifying the current address space
+VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_ADDRESS virt, UINT64 page_size) {
+    if (ISNULL(pml4e_base)) {
+        pml4e_base = x64GetCurrentPML4TableAddr();
+    }
+
+    UINT64 virt_base_addr = virt;
+
+    UINTN pml4_index = PML4_INDEX(virt_base_addr);
+    UINTN pdpt_index = PAGE_DIR_PTR_INDEX(virt_base_addr);
+    UINTN pde_index = PAGE_DIR_INDEX(virt_base_addr);
+    UINTN pt_index = PAGE_TABLE_INDEX(virt_base_addr);
+
+    x64_pdpte *cur_pdpt = pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK;
+    x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+    x64_pte   *cur_pt = NULL;
+
+    extern preboot_mem_block k0_preboot_heap;
+
+    if (ISNULL(cur_pdpt)) {
+        cur_pdpt = (x64_pdpte*)kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte), ALIGN_4KB);
+
+        if (ISNULL(cur_pdpt)) {
+            kernel_panic(L"Problem allocating memory to map physical page - pdpt allocation\n");
+        }
+
+        if (ZeroMem(cur_pdpt, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte)) != cur_pdpt) {
+            kernel_panic(L"Problem clearing memory to map physical page - pdpte storage initialization\n");
+        }
+    }
+
+    if (cur_pdpt[pdpt_index] == 0) {
+        cur_pd = (x64_pde*)kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pde), ALIGN_4KB);
+
+        if (ISNULL(cur_pd)) {
+            kernel_panic(L"Problem allocating memory to map physical page - pde allocation\n");
+        }
+
+        if (ZeroMem(cur_pd, X64_PAGING_TABLE_MAX * sizeof(x64_pde)) != cur_pd) {
+            kernel_panic(L"Problem clearing memory to map physical page - pde storage initialization\n");
+        }
+
+        cur_pdpt[pdpt_index] = (UINT64)cur_pd |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE;
+    }
+    else {
+        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+    }
+
+    // See if this new entry will be a page or a page table
+    if (page_size == SIZE_2MB) {
+        cur_pd[pde_index] = (UINT64)phys |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE |
+            X64_PAGING_IS_PAGES;
+    } 
+    else if (page_size == SIZE_4KB) {
+        // See if this entry already points to a page table
+        if (CHECK_BIT(cur_pd[pde_index], X64_PAGING_IS_PAGES)) {
+            // We need to create a page table
+            cur_pt = kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pte), SIZE_4KB);
+            if (ISNULL(cur_pt)) {
+                kernel_panic(L"Problem allocating memory to map physical page - 4KB pt allocation\n");
+            }
+            if (ZeroMem(cur_pt, X64_PAGING_TABLE_MAX * sizeof(x64_pte)) != cur_pt) {
+                kernel_panic(L"Problem allocating memory to map physical page - 4KB pt storage initialization\n");
+            }
+
+            // Rewrite this pde, because it now points to a pte
+            cur_pd[pde_index] = (UINT64)cur_pt |
+                X64_PAGING_PRESENT |
+                X64_PAGING_DATA_WRITEABLE |
+                X64_PAGING_SUPERVISOR_MODE;
+        }
+        else {
+            cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+        }
+
+        cur_pt[pt_index] = (UINT64)phys |
+            X64_PAGING_PRESENT |
+            X64_PAGING_DATA_WRITEABLE |
+            X64_PAGING_SUPERVISOR_MODE;
+    }
+}
+
+// Un-maps a physical page from the specified virtual address in the given address space;
+// If no address space is specified, then the mapping is removed from the current address
+// space- note that there is no actual change of address space mappings here; i.e.
+// you have to flush your own CR3 if you're modifying the current address space
+VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
+    if (ISNULL(pml4e_base)) {
+        pml4e_base = x64GetCurrentPML4TableAddr();
+    }
+
+    UINT64 virt_base_addr = virt;
+
+    UINTN pml4_index = PML4_INDEX(virt_base_addr);
+    UINTN pdpt_index = PAGE_DIR_PTR_INDEX(virt_base_addr);
+    UINTN pde_index = PAGE_DIR_INDEX(virt_base_addr);
+    UINTN pt_index = PAGE_TABLE_INDEX(virt_base_addr);
+
+    x64_pdpte *cur_pdpt = pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK;
+    x64_pde   *cur_pd = NULL;
+    x64_pte   *cur_pt = NULL;
+
+    if (ISNULL(cur_pdpt) || cur_pdpt[pdpt_index] == 0) {
+        // This virtual address is not mapped
+        return;
+    }
+    else {
+        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+
+        if (ISNULL(cur_pd) || !CHECK_BIT(cur_pd[pde_index], X64_PAGING_PRESENT)) {
+            // This page directory is not here, or the index for this
+            // virtual address is marked as not-present
+            return;
+        }
+
+        // It's present so far, so we need to see if this
+        // is a 2MB page or a page table pointer
+        if (CHECK_BIT(cur_pd[pde_index], X64_PAGING_IS_PAGES)) {
+            // it's a 2MB page-- mark it zero dude
+            cur_pd[pde_index] = 0x00ULL;
+            return;
+        }
+        
+        // Ok, must be a page table
+        cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+
+        if (ISNULL(cur_pt) || !CHECK_BIT(cur_pt[pt_index], X64_PAGING_PRESENT)) {
+            // This page table is not here, or the index for this
+            // virtual address is marked as not-present
+            return;
+        }
+
+        // Go ahead and set the entry for this virtual address to zero
+        cur_pt[pt_index] = 0x00ULL;
+        return;
+    }   
 }
 
 // Dumpgs gdt to screen
