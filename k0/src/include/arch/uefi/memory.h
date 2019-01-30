@@ -66,7 +66,6 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UI
 
 nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
 UINT64    GetFreeMemStackCount(UINT32 which_size);
-UINT64    GetAllocatedMemStackCount(UINT32 which_size);
 nebStatus InitMem();
 UINTN     ReadUefiMemoryMap();
 VOID      AllocateSystemStruct();
