@@ -2599,21 +2599,6 @@ VOID x64InitIDT() {
     
     x64DisableInterrupts();
     x64WriteIdtr(&idt_sel);
-    
-    // #TODO #INTERRUPTS
-    /*
-    extern UINT64 bsp_apic_addr;
-    
-    if (ISNULL(bsp_apic_addr)) {
-        kernel_panic(L"Boot service processor I/O apic not found after init\n");
-    }
-        
-    // Mask the spurious interrupt register bit to begin receiving interrupts
-    UINT32 interrupt_mask = ReadIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET);
-    WriteIOApic(bsp_apic_addr, X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, interrupt_mask | BIT8);
-    */
-
-    // Away we go!
     x64EnableInterrupts();
 
     if (k0_VERBOSE_DEBUG) {
