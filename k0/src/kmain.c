@@ -75,9 +75,6 @@ NORETURN VOID k0_main() {
         Print(L"system_table->xsdt_table == 0x%lx\n", system_table->acpi_xsdt);
     }
 
-    // Draw a blue triangle to the screen
-    drawTriangle(0x00000F0000000000ULL + gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
-
     /*
     // List the video modes supported by the current card
     UINTN mode_num;
@@ -110,7 +107,8 @@ NORETURN VOID k0_main() {
     // try to read just beyond the video buffer
     // UINT64 page_fault_now = *(volatile UINT64*)(0x80600000ULL);
 
-    
+    // Draw a blue triangle to the screen
+    drawTriangle(gfx_info.gop->Mode->FrameBufferBase, 100, 100, 75, 0x000000ff);
 
     // Woo-hoo!
     while (TRUE) {}

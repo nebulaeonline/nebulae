@@ -233,12 +233,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     Print(L"Total available physical memory == %lu KB\n", 
         ((count_free_pages_2MB * SIZE_2MB) + (count_free_pages_4KB * SIZE_4KB)) / 1024);
 
-    x64MapPage(NULL, gfx_info.gop->Mode->FrameBufferBase, 0x00000F0000000000ULL + gfx_info.gop->Mode->FrameBufferBase, X64_PAGING_PRESENT | X64_PAGING_SUPERVISOR_MODE | X64_PAGING_DATA_WRITEABLE, SIZE_2MB);
-    x64GetPageInfo(NULL, 0x00000F0000000000ULL + gfx_info.gop->Mode->FrameBufferBase);
-    x64MapPage(NULL, gfx_info.gop->Mode->FrameBufferBase + SIZE_2MB, 0x00000F0000000000ULL + gfx_info.gop->Mode->FrameBufferBase + SIZE_2MB, X64_PAGING_PRESENT | X64_PAGING_SUPERVISOR_MODE | X64_PAGING_DATA_WRITEABLE, SIZE_2MB);
-    x64GetPageInfo(NULL, 0x00000F0000000000ULL + gfx_info.gop->Mode->FrameBufferBase + SIZE_2MB);
-    x64ReloadCR3();
-
     k0_main();
 
 exit:
