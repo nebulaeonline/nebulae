@@ -371,7 +371,7 @@ VOID x64ReloadCR3();
 VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_ADDRESS virt, UINT64 page_size);
 VOID x64DumpGdt();
 VOID x64AllocateSystemStruct();
-UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
+UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr);
 
 // Functions defined in assembler
 extern VOID EFIAPI x64EnableInterrupts();

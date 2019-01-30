@@ -554,7 +554,7 @@ BOOLEAN IsPageFree_Preboot(UINT64 addr) {
 UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 
 #ifdef __NEBULAE_ARCH_X64
-    x64GetPageInfo(addr);
+    x64GetPageInfo(NULL, addr);
 #endif
 
 }

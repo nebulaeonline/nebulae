@@ -2629,7 +2629,7 @@ EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
 
 // Allocates a block of random memory within
 // the largest available conventional chunk
-VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR16 id[5], UINT64 size, UINT64 alignment_mask) {
+VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 size, UINT64 alignment_mask) {
 
     // Memory Subsystem Vars
     extern VOID* kmem_largest_block;
@@ -3132,30 +3132,25 @@ VOID x64AllocateSystemStruct() {
     if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 
             system_table,
-            *x64GetPageInfo(system_table));
+            *x64GetPageInfo(NULL, system_table));
     }
 }
 
-// This function will return either the curent page table
-// information for the page that contains this address, 
-// or if the address is 0, it will return the page size
-// of the page containing the first page of the address space
-UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
+// This function will return the page table information
+// for the page that contains the specified virtual address.
+UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr) {
     
     x64_pml4e *l4_table = NULL;
 
-    if (k0_PAGETABLE_DEBUG) {
-        Print(L"cr3 == 0x%lx\n", AsmReadCr3());
+    if (ISNULL(pml4e_base)) {
+        l4_table = (x64_pml4e*)x64GetCurrentPML4TableAddr();
+    }
+    else {
+        l4_table = pml4e_base;
     }
 
-    // Attempt to locate the pml4 table
-    if (!(l4_table = (x64_pml4e*)x64GetCurrentPML4TableAddr())) {
-        kernel_panic(L"Unable to locate address to PML4 data structures!\n");
-    } else if (k0_PAGETABLE_DEBUG) {
-        Print(L"PML4 Table found at 0x%lx == 0x%lx\n", l4_table, *l4_table);
-    }
-    
     if (k0_PAGETABLE_DEBUG) {
+        Print(L"cr3 == 0x%lx\n", AsmReadCr3());
         Print(L"PML4Entry at PML4Table[0x%lx] found at 0x%lx == 0x%lx\n", 
             PML4_INDEX(addr), 
             &l4_table[PML4_INDEX(addr)], 
@@ -3211,12 +3206,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
             Print(L"2MB pages found\n");
         }
 
-        if (addr == 0) {
-            return X64_2MB_ALIGN_MASK;
-        }
-        else {
-            return &l2_table[PAGE_DIR_INDEX(addr)];
-        }
+        return &l2_table[PAGE_DIR_INDEX(addr)];
     }
 
     x64_pte *l1_table = l2_table[PAGE_DIR_INDEX(addr)];
@@ -3235,10 +3225,5 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
         Print(L"4KB pages found\n");
     }
 
-    if (addr == 0) {
-        return X64_4KB_ALIGN_MASK;
-    }
-    else {
-        return &l1_table[PAGE_TABLE_INDEX(addr)];
-    }
+    return &l1_table[PAGE_TABLE_INDEX(addr)];
 }
