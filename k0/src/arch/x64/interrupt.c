@@ -23,7 +23,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <Library/BaseMemoryLib.h>
-#include "../include/klib/interrupt.h"
+#include "../../include/arch/x64/interrupt.h"
 
 VOID Exception_0x00();
 VOID Exception_0x01();

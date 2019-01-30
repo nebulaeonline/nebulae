@@ -135,73 +135,13 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
 
                 switch (type) {
                 case EFI_ACPI_1_0_PROCESSOR_LOCAL_APIC:
-                    la = hdr;
                     system_table->cpu_count++;
-                    nebulae_sys_element *new_cpu = NULL;
-
-                    if (ISNULL(system_table->acpi_cpu_table.element0_addr)) {
-                        system_table->acpi_cpu_table.element0_addr = kPrebootCriticalMalloc(
-                            &k0_kernel_system_area,
-                            sizeof(nebulae_sys_element),
-                            ALIGN_16);
-                        system_table->acpi_cpu_table.elementn_addr =
-                            system_table->acpi_cpu_table.element0_addr;                        
-                    }
-                    else {
-                        prev_element = system_table->acpi_cpu_table.elementn_addr;
-                        system_table->acpi_cpu_table.elementn_addr =
-                            kPrebootCriticalMalloc(
-                                &k0_kernel_system_area,
-                                sizeof(nebulae_sys_element),
-                                ALIGN_16);
-                    }
-                    system_table->acpi_cpu_table.struct_count++;
-
-                    new_cpu = (nebulae_sys_element *)(system_table->acpi_cpu_table.elementn_addr);
-                    new_cpu->type_id = NEBTYPE_POINTER;
-                    new_cpu->value = (UINT64)la;
-
-                    if (!ISNULL(prev_element)) {
-                        new_cpu->prev = prev_element;
-                        new_cpu->next = NULL;
-                        prev_element->next = new_cpu;
-                    }
                     break;
                 case EFI_ACPI_1_0_IO_APIC:
                     ia = hdr;
                     system_table->ioapic_base_addr = ia->addr;
                     break;
                 case EFI_ACPI_1_0_INTERRUPT_SOURCE_OVERRIDE:
-                    oi = hdr;
-                    nebulae_sys_element *new_oi = NULL;
-
-                    if (ISNULL(system_table->acpi_interrupt_override_table.element0_addr)) {
-                        system_table->acpi_interrupt_override_table.element0_addr = kPrebootCriticalMalloc(
-                            &k0_kernel_system_area,
-                            sizeof(nebulae_sys_element),
-                            ALIGN_16);
-                        system_table->acpi_interrupt_override_table.elementn_addr =
-                            system_table->acpi_interrupt_override_table.element0_addr;
-                    }
-                    else {
-                        prev_element = system_table->acpi_interrupt_override_table.elementn_addr;
-                        system_table->acpi_interrupt_override_table.elementn_addr =
-                            kPrebootCriticalMalloc(
-                                &k0_kernel_system_area,
-                                sizeof(nebulae_sys_element),
-                                ALIGN_16);
-                    }
-                    system_table->acpi_interrupt_override_table.struct_count++;
-
-                    new_oi = (nebulae_sys_element *)(system_table->acpi_interrupt_override_table.elementn_addr);
-                    new_oi->type_id = NEBTYPE_POINTER;
-                    new_oi->value = (UINT64)oi;
-
-                    if (!ISNULL(prev_element)) {
-                        new_oi->prev = prev_element;
-                        new_oi->next = NULL;
-                        prev_element->next = new_oi;
-                    }
                     break;
                 case EFI_ACPI_1_0_NON_MASKABLE_INTERRUPT_SOURCE:
                     break;
@@ -227,7 +167,6 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
             Print(L"Found ACPI table: 0x%lx  Version: %d  OEM ID: %s\n", entry->Signature, (int)(entry->Revision), oemstr);
         }
     }
-    //kernel_panic(L"");
 
     return NEB_OK;
 }
@@ -239,7 +178,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
 nebStatus x64PreInitAcpi() {
 
     EFI_CONFIGURATION_TABLE *ect = gST->ConfigurationTable;
-    EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *rsdp = NULL;
+    X64_ACPI_RSDP *rsdp = NULL;
     EFI_GUID acpi_table_guid = EFI_ACPI_10_TABLE_GUID;
     EFI_GUID acpi2_table_guid = EFI_ACPI_TABLE_GUID;
     CHAR16 guidstr[100];
@@ -251,7 +190,7 @@ nebStatus x64PreInitAcpi() {
             (CompareGuid(&(gST->ConfigurationTable[index].VendorGuid), &acpi2_table_guid))) {
             if (!kStrnCmpA("RSD PTR ", (CHAR8 *)(ect->VendorTable), 8)) {
                 kGuid2String(guidstr, 100, &(gST->ConfigurationTable[index].VendorGuid));
-                rsdp = (EFI_ACPI_6_2_ROOT_SYSTEM_DESCRIPTION_POINTER *)ect->VendorTable;
+                rsdp = (X64_ACPI_RSDP *)ect->VendorTable;
                 ParseRSDP(rsdp, guidstr);
             }
         }

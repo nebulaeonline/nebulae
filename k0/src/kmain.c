@@ -37,7 +37,7 @@
 #include "include/arch/uefi/panic.h"
 
 #include "include/klib/kstring.h"
-#include "include/klib/interrupt.h"
+#include "include/arch/x64/interrupt.h"
 
 // kernel page tables
 preboot_mem_block k0_boot_scratch_area;

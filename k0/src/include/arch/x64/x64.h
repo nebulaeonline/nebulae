@@ -340,7 +340,7 @@ typedef struct s_x64_preboot_mem_block {
     UINT64 free_space;
     UINT32 alignment;
     UINT64 wasted_space;
-    CHAR8  id[5];
+    CHAR16 id[5];
 } x64_preboot_mem_block;
 
 // This structure represents a kernel stack
@@ -364,7 +364,7 @@ VOID x64InitGDT();
 VOID x64InitKernelStacks();
 VOID x64InitIDT();
 EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr();
-VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR8 id[4], UINT64 size, UINT64 alignment_mask);
+VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 size, UINT64 alignment_mask);
 VOID x64AllocateBootScratchArea();
 VOID x64BuildInitialKernelPageTable();
 VOID x64DumpGdt();

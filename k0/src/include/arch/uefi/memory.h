@@ -57,7 +57,7 @@ typedef struct s_uefi_memory_map_info {
 // Our memory map
 uefi_memory_map_info memmap;
 
-preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, CHAR8 id[5], VOID *base_addr, UINTN block_size);
+preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, CHAR16 id[5], VOID *base_addr, UINTN block_size);
 VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment);
 VOID* kPrebootCriticalMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment);
 

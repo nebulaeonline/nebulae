@@ -348,7 +348,7 @@ VOID x64InitCpuInfoStructs() {
         &cpu_info.cpuinfo[0].reg[X64_REG_EDX]);
 
     if (EFI_ERROR(cpuid_result)) {
-        kernel_panic("Unable to query the cpu: %r\n", cpuid_result);
+        kernel_panic(L"Unable to query the cpu: %r\n", cpuid_result);
     }
 
     // Record the max eax value
@@ -364,7 +364,7 @@ VOID x64InitCpuInfoStructs() {
         &cpu_info.cpuinfo[3].reg[X64_REG_EDX]);
 
     if (EFI_ERROR(cpuid_result)) {
-        kernel_panic("Unable to extended query the cpu: %r\n", cpuid_result);
+        kernel_panic(L"Unable to extended query the cpu: %r\n", cpuid_result);
     }
 
     // Record the max eax values for the cpuid
@@ -381,7 +381,7 @@ VOID x64InitCpuInfoStructs() {
             &cpu_info.cpuinfo[1].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
-            kernel_panic("Unable to query the cpu (eax == 0x01): %r\n", cpuid_result);
+            kernel_panic(L"Unable to query the cpu (eax == 0x01): %r\n", cpuid_result);
         }
     }
 
@@ -394,7 +394,7 @@ VOID x64InitCpuInfoStructs() {
             &cpu_info.cpuinfo[2].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
-            kernel_panic("Unable to query the cpu (eax == 0x02): %r\n", cpuid_result);
+            kernel_panic(L"Unable to query the cpu (eax == 0x02): %r\n", cpuid_result);
         }
     }
 
@@ -413,7 +413,7 @@ VOID x64InitCpuInfoStructs() {
             &cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EDX]);
 
         if (EFI_ERROR(cpuid_result)) {
-            kernel_panic("Unable to query the cpu (eax == 0x%x): %r\n", current_cpuidex_fn, cpuid_result);
+            kernel_panic(L"Unable to query the cpu (eax == 0x%x): %r\n", current_cpuidex_fn, cpuid_result);
         }
         else if (current_cpuidex_fn == 0x80000008) { // Record cpu bit counts
             cpu_info.physical_address_bits = (UINT16)(cpu_info.cpuinfo[cpuinfo_offset].reg[X64_REG_EAX] & 0x000000FF);
@@ -595,7 +595,7 @@ VOID x64InitGDT() {
 VOID x64InitKernelStacks() {
     extern preboot_mem_block k0_kernel_stack_area;
 
-    VOID* kernel_stack_area_base_addr = x64AllocateRandomMemory(&k0_kernel_stack_area, "NKSA", SIZE_2MB, X64_4KB_ALIGN_MASK);
+    VOID* kernel_stack_area_base_addr = x64AllocateRandomMemory(&k0_kernel_stack_area, L"NKSA", SIZE_2MB, X64_4KB_ALIGN_MASK);
     if (ISNULL(kernel_stack_area_base_addr)) {
         kernel_panic(L"Could not allocate space for kernel stacks\n");
     }
@@ -2629,7 +2629,7 @@ EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
 
 // Allocates a block of random memory within
 // the largest available conventional chunk
-VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR8 id[4], UINT64 size, UINT64 alignment_mask) {
+VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR16 id[5], UINT64 size, UINT64 alignment_mask) {
 
     // Memory Subsystem Vars
     extern VOID* kmem_largest_block;
@@ -2646,7 +2646,6 @@ VOID* x64AllocateRandomMemory(preboot_mem_block *mb, CHAR8 id[4], UINT64 size, U
     while (ISNULL(addr) || !IsPageFree_Preboot(addr)) {
         addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
             (UINT64)(kmem_largest_block + (kmem_largest_block_size - size))) & alignment_mask);
-        kernel_panic(L"Generated random #: 0x%lx\n", addr);
     }
     
     if (!ISNULL(addr) && ZeroMem(addr, size) != addr) {
@@ -2704,7 +2703,7 @@ VOID x64AllocateBootScratchArea() {
         bytes_to_alloc = SIZE_4MB;
     }
 
-    VOID *bs = x64AllocateRandomMemory(&k0_boot_scratch_area, "NBSA", bytes_to_alloc, X64_2MB_ALIGN_MASK);
+    VOID *bs = x64AllocateRandomMemory(&k0_boot_scratch_area, L"NBSA", bytes_to_alloc, X64_2MB_ALIGN_MASK);
 }
 
 // Builds our initial kernel page table
@@ -2970,7 +2969,7 @@ VOID x64AllocateSystemStruct() {
 
     // We are randomly choosing an area in the largest block of free conventional memory
     // this buffer is 4KB aligned
-    system_table = x64AllocateRandomMemory(&k0_kernel_system_area, "NKSA", nebulae_system_table_reserved_bytes, X64_4KB_ALIGN_MASK);
+    system_table = x64AllocateRandomMemory(&k0_kernel_system_area, L"NKSA", nebulae_system_table_reserved_bytes, X64_4KB_ALIGN_MASK);
 
     if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 
@@ -2993,7 +2992,7 @@ UINT64* x64GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 
     // Attempt to locate the pml4 table
     if (!(l4_table = (x64_pml4e*)x64GetCurrentPML4TableAddr())) {
-        kernel_panic("Unable to locate address to PML4 data structures!\n");
+        kernel_panic(L"Unable to locate address to PML4 data structures!\n");
     } else if (k0_PAGETABLE_DEBUG) {
         Print(L"PML4 Table found at 0x%lx == 0x%lx\n", l4_table, *l4_table);
     }
