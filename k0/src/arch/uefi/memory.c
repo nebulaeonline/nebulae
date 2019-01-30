@@ -232,29 +232,6 @@ preboot_mem_block* InitPrebootMemBlock(preboot_mem_block *pbmb, CHAR16 id[5], VO
 // Basically a one-way malloc without free for preboot
 VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment) {
 
-    Print(L"kPrebootMalloc() called:\npbmb == 0x%lx\nallocation_size == 0x%lx\ndesired_alignment == 0x%lx\n",
-        pbmb,
-        allocation_size,
-        desired_alignment);
-
-    /*
-    VOID   *base_addr;
-    UINT64 size;
-    VOID   *current_addr;
-    UINT64 free_space;
-    UINT32 alignment;
-    UINT64 wasted_space;
-    CHAR8  id[5];
-    */
-    Print(L"pbmb->base_addr == 0x%lx\npbmb->size == 0x%lx\npbmb->current_addr == 0x%lx\npbmb->free_space == 0x%lx\npbmb->alignment == 0x%lx\npbmb->wasted_space == 0x%lx\npbmb->id == %s\n",
-        pbmb->base_addr,
-        pbmb->size,
-        pbmb->current_addr,
-        pbmb->free_space,
-        pbmb->alignment,
-        pbmb->wasted_space,
-        pbmb->id);
-
     // No NULLs
     if (ISNULL(pbmb) || allocation_size == 0) {
         return NULL;
@@ -262,7 +239,6 @@ VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desi
 
     // Calculate our new address given the requested alignment
     UINT64 return_addr = ALIGN_UP((UINT64)pbmb->current_addr, desired_alignment);
-    Print(L"return_addr == 0x%lx\n", return_addr);
 
     // Do we have the space to account for the requested alignment and the size?
     if ((return_addr + allocation_size) > ((UINT64)pbmb->current_addr + (UINT64)pbmb->free_space)) {
@@ -280,29 +256,6 @@ VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desi
 // A critical version of kPrebootMalloc()
 VOID* kPrebootCriticalMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment) {
 
-    Print(L"kPrebootCriticalMalloc() called:\npbmb == 0x%lx\nallocation_size == 0x%lx\ndesired_alignment == 0x%lx\n",
-        pbmb,
-        allocation_size,
-        desired_alignment);
-
-    /*
-    VOID   *base_addr;
-    UINT64 size;
-    VOID   *current_addr;
-    UINT64 free_space;
-    UINT32 alignment;
-    UINT64 wasted_space;
-    CHAR8  id[5];
-    */
-    Print(L"pbmb->base_addr == 0x%lx\npbmb->size == 0x%lx\npbmb->current_addr == 0x%lx\npbmb->free_space == 0x%lx\npbmb->alignment == 0x%lx\npbmb->wasted_space == 0x%lx\npbmb->id == %s\n",
-        pbmb->base_addr,
-        pbmb->size,
-        pbmb->current_addr,
-        pbmb->free_space,
-        pbmb->alignment,
-        pbmb->wasted_space,
-        pbmb->id);
-    
     VOID* kpm_new = kPrebootMalloc(pbmb, allocation_size, desired_alignment);
 
     if (ISNULL(kpm_new)) {
