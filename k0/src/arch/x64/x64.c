@@ -2607,7 +2607,7 @@ VOID x64InitIDT() {
 }
 
 // Read CR3 to obtain the address of the PML4 Table
-EFI_VIRTUAL_ADDRESS x64GetCurrentPML4TableAddr() {
+EFI_PHYSICAL_ADDRESS x64GetCurrentPML4TableAddr() {
     UINT64 cr3 = AsmReadCr3();
     return (cr3 & X64_4KB_ALIGN_MASK);
 }
@@ -2942,7 +2942,7 @@ VOID x64ReloadCR3() {
 // If no address space is specified, then the mapping is done in the current address
 // space- note that there is no actual change of address space mappings here; i.e.
 // you have to reload your own CR3 if you're modifying the current address space
-VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_ADDRESS virt, UINT64 page_size) {
+VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_ADDRESS virt, UINT64 flags, UINT64 page_size) {
     if (ISNULL(pml4e_base)) {
         pml4e_base = x64GetCurrentPML4TableAddr();
     }
@@ -2970,6 +2970,8 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
         if (ZeroMem(cur_pdpt, X64_PAGING_TABLE_MAX * sizeof(x64_pdpte)) != cur_pdpt) {
             kernel_panic(L"Problem clearing memory to map physical page - pdpte storage initialization\n");
         }
+
+        pml4e_base[pml4_index] = (UINT64)cur_pdpt | flags;
     }
 
     if (cur_pdpt[pdpt_index] == 0) {
@@ -2983,7 +2985,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
             kernel_panic(L"Problem clearing memory to map physical page - pde storage initialization\n");
         }
 
-        cur_pdpt[pdpt_index] = (UINT64)cur_pd |
+        cur_pdpt[pdpt_index] = (UINT64)cur_pd | 
             X64_PAGING_PRESENT |
             X64_PAGING_DATA_WRITEABLE |
             X64_PAGING_SUPERVISOR_MODE;
@@ -2995,9 +2997,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
     // See if this new entry will be a page or a page table
     if (page_size == SIZE_2MB) {
         cur_pd[pde_index] = (UINT64)phys |
-            X64_PAGING_PRESENT |
-            X64_PAGING_DATA_WRITEABLE |
-            X64_PAGING_SUPERVISOR_MODE |
+            flags |
             X64_PAGING_IS_PAGES;
     } 
     else if (page_size == SIZE_4KB) {
@@ -3012,20 +3012,13 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
                 kernel_panic(L"Problem allocating memory to map physical page - 4KB pt storage initialization\n");
             }
 
-            // Rewrite this pde, because it now points to a pte
-            cur_pd[pde_index] = (UINT64)cur_pt |
-                X64_PAGING_PRESENT |
-                X64_PAGING_DATA_WRITEABLE |
-                X64_PAGING_SUPERVISOR_MODE;
+            cur_pd[pde_index] = (UINT64)cur_pt | flags;
         }
         else {
             cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
         }
 
-        cur_pt[pt_index] = (UINT64)phys |
-            X64_PAGING_PRESENT |
-            X64_PAGING_DATA_WRITEABLE |
-            X64_PAGING_SUPERVISOR_MODE;
+        cur_pt[pt_index] = (UINT64)phys | flags;
     }
 }
 
