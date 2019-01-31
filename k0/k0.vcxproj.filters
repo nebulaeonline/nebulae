@@ -49,6 +49,9 @@
     <ClCompile Include="src\arch\x64\interrupt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\klib\pe.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\include\k0.h">

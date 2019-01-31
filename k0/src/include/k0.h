@@ -76,6 +76,7 @@
 #define UDIV_UP(A, B)                   ((((UINT64)A) + ((UINT64)B) - 1ULL) / ((UINT64)B))
 #define ALIGN_UP(A, B)                  (UDIV_UP((UINT64)A, (UINT64)B) * ((UINT64)B))
 #define ARRAYLEN(X)                     (sizeof(X) / sizeof((X)[0]))
+#define ALIGN_DOWN(A, B)                (A - (A % B))
 
 #ifdef __GNUC__
 #if __GNUC__ >= 4

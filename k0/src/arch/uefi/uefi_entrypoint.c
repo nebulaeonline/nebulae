@@ -34,11 +34,14 @@
 // Kernel Include(s)
 #include "../../include/k0.h"
 #include "../../include/deps/jsmn.h"
+
 #include "../../include/klib/kstring.h"
 #include "../../include/klib/bootconfig.h"
+#include "../../include/klib/pe.h"
 
 #include "../../include/arch/uefi/memory.h"
 #include "../../include/arch/uefi/graphics.h"
+
 #include "../../include/arch/x64/acpi.h"
 
 // We run on any UEFI Specification
@@ -52,6 +55,9 @@ CHAR8 *gEfiCallerBaseName = "k0";
 BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
 BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
 BOOLEAN k0_PAGETABLE_DEBUG = FALSE;     // Only set when debugging pagetables
+
+// fun with PE!
+uefi_file other_pe_executable;
 
 // Placeholder
 EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
@@ -87,6 +93,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 
     // Read the boot configuration file
     ProcessBootConfig();
+
+    // Load ourselves as "another" executable
+    UefiLoadPEFile(L"k0.efi", &other_pe_executable);
 
     // Initialize the Isaac64 CSPRNG
     // Isaac64 generates a 64-bit cryptographically
@@ -232,6 +241,10 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 
     Print(L"Total available physical memory == %lu KB\n", 
         ((count_free_pages_2MB * SIZE_2MB) + (count_free_pages_4KB * SIZE_4KB)) / 1024);
+
+    
+    // #PE more fun with PE!
+
 
     k0_main();
 

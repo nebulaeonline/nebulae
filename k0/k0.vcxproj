@@ -238,6 +238,7 @@
     <ClCompile Include="src\klib\kelf64.c" />
     <ClCompile Include="src\klib\kstack.c" />
     <ClCompile Include="src\klib\kstring.c" />
+    <ClCompile Include="src\klib\pe.c" />
     <ClCompile Include="src\kmain.c" />
   </ItemGroup>
   <ItemGroup>
