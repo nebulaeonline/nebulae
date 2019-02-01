@@ -61,10 +61,10 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
     }
 
     if (ISNULL(exec_buffer)) {
-        kernel_panic(L"Failed to allocate pages to load exec file %s. Allocation operation returned NULL.\n", filename);
+        kernel_panic(L"Failed to allocate pages to load exec image %s. Allocation operation returned NULL.\n", filename);
     }
     else if (k0_VERBOSE_DEBUG) {
-        Print(L"Allocated %lu pages for %s file data\n", exec_file_pages, filename);
+        Print(L"Allocated %lu pages for %s image data\n", exec_file_pages, filename);
     }
 
     UINTN sz = exec_file_info->FileSize;
@@ -88,22 +88,24 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
 
     // Make sure this is a PE file
     uint32b *header_offset = (uint32b *)(&exec_buffer[PE_HEADER_OFFSET]);
-    pe_coff_file_header *coff_fh = (pe_coff_file_header *)(&exec_buffer[header_offset->i]);
+    pe_file_header *coff_fh = (pe_file_header *)(&exec_buffer[header_offset->i]);
 
     if (coff_fh->signature != PE_SIGNATURE) {
-        kernel_panic(L"PE file loaded is not a PE file: 0x%lx\n", coff_fh->signature);
+        kernel_panic(L"PE image loaded is not a valid PE image: 0x%lx\n", coff_fh->signature);
     }
     
     // Ok, "valid" PE file at this point
     // Perform additional verifications
     if (coff_fh->machine != PE_FILE_MACHINE_AMD64) {
-        kernel_panic(L"PE file loaded is not for AMD64: 0x%lx\n", coff_fh->machine);
+        kernel_panic(L"PE image loaded is not for x64: 0x%lx\n", coff_fh->machine);
     }
     
     // Get the actual PE header
-    pe32_coff_PE_header *pe_fh = (pe32_coff_PE_header *)((UINT64)coff_fh + 0x18ULL);
+    pe64_header *pe_fh = (pe64_header *)((UINT64)coff_fh + 0x18ULL);
     if (pe_fh->magic != PE_MAGIC_64) {
         Print(L"coff_fh @ 0x%lx\n", coff_fh);
-        kernel_panic(L"PE file loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
-    }    
+        kernel_panic(L"PE image loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
+    }   
+
+
 }

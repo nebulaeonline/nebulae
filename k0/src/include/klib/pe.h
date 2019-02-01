@@ -155,7 +155,7 @@
 #define PE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE 0x8000
 
 // COFF header struct
-typedef PACKED_MS struct s_pe_coff_file_header {
+typedef PACKED_MS struct s_pe_file_header {
     UINT32  signature;
     UINT16  machine;
     UINT16  number_of_sections;
@@ -164,7 +164,7 @@ typedef PACKED_MS struct s_pe_coff_file_header {
     UINT32  number_of_symbols;
     UINT16  optional_header_size;
     UINT16  characteristics;
-} PACKED_GNU pe_coff_file_header;
+} PACKED_GNU pe_file_header;
 
 // Image header 
 #define PE32_STANDARD_FIELDS_SIZE                   28
@@ -173,7 +173,7 @@ typedef PACKED_MS struct s_pe_coff_file_header {
 #define PE32_WINDOWS_FIELDS_SIZE                    68
 #define PE64_WINDOWS_FIELDS_SIZE                    88
 
-typedef PACKED_MS struct s_pe32_coff_PE_header {
+typedef PACKED_MS struct s_pe32_header {
     UINT16  magic;
     UINT8   major_linker_version;
     UINT8   minor_linker_version;
@@ -182,9 +182,9 @@ typedef PACKED_MS struct s_pe32_coff_PE_header {
     UINT32  entrypoint_addr;
     UINT32  base_of_code;
     UINT32  base_of_data;
-} PACKED_GNU pe32_coff_PE_header;
+} PACKED_GNU pe32_header;
 
-typedef PACKED_MS struct s_pe64_coff_PE_header {
+typedef PACKED_MS struct s_pe64_header {
     UINT16  magic;
     UINT8   major_linker_version;
     UINT8   minor_linker_version;
@@ -192,10 +192,10 @@ typedef PACKED_MS struct s_pe64_coff_PE_header {
     UINT32  size_of_initialized_data;
     UINT32  entrypoint_addr;
     UINT32  base_of_code;
-} PACKED_GNU pe64_coff_PE_header;
+} PACKED_GNU pe64_header;
 
-typedef PACKED_MS struct s_pe32_coff_windows_fields {
-    UINT32  PE_base;
+typedef PACKED_MS struct s_pe32_windows_fields {
+    UINT32  image_base;
     UINT32  section_alignment;
     UINT32  file_alignment;
     UINT16  major_os_version;
@@ -216,10 +216,10 @@ typedef PACKED_MS struct s_pe32_coff_windows_fields {
     UINT32  size_of_heap_commit;
     UINT32  loader_flags;
     UINT32  number_of_rva_and_sizes;
-} PACKED_GNU pe32_coff_windows_fields;
+} PACKED_GNU pe32_windows_fields;
 
-typedef PACKED_MS struct s_pe64_coff_windows_fields {
-    UINT64  PE_base;
+typedef PACKED_MS struct s_pe64_windows_fields {
+    UINT64  image_base;
     UINT32  section_alignment;
     UINT32  file_alignment;
     UINT16  major_os_version;
@@ -240,31 +240,31 @@ typedef PACKED_MS struct s_pe64_coff_windows_fields {
     UINT64  size_of_heap_commit;
     UINT32  loader_flags;
     UINT32  number_of_rva_and_sizes;
-} PACKED_GNU pe64_coff_windows_fields;
+} PACKED_GNU pe64_windows_fields;
 
-typedef PACKED_MS struct s_pe_coff_PE_data_dir_ptr {
+typedef PACKED_MS struct s_pe_data_dir_ptr {
     UINT32  virtual_address;
     UINT32  size;
-} PACKED_GNU pe_coff_PE_data_dir_ptr;
+} PACKED_GNU pe_data_dir_ptr;
 
-typedef PACKED_MS struct s_pe_coff_PE_data_dir {
-    pe_coff_PE_data_dir_ptr  export_table;
-    pe_coff_PE_data_dir_ptr  import_table;
-    pe_coff_PE_data_dir_ptr  resource_table;
-    pe_coff_PE_data_dir_ptr  exception_table;
-    pe_coff_PE_data_dir_ptr  certificate_table;
-    pe_coff_PE_data_dir_ptr  base_relocation_table;
-    pe_coff_PE_data_dir_ptr  debug_data;
-    pe_coff_PE_data_dir_ptr  architecture_reserved;  // must be zero
-    pe_coff_PE_data_dir_ptr  global_ptr;             // must be zero
-    pe_coff_PE_data_dir_ptr  thread_local_storage_table;
-    pe_coff_PE_data_dir_ptr  load_config_table;
-    pe_coff_PE_data_dir_ptr  bound_import;
-    pe_coff_PE_data_dir_ptr  import_address_table;
-    pe_coff_PE_data_dir_ptr  delay_import_descriptor;
-    pe_coff_PE_data_dir_ptr  clr_runtime_header;
-    pe_coff_PE_data_dir_ptr  reserved;               // must be zero
-} PACKED_GNU pe_coff_PE_data_dir;
+typedef PACKED_MS struct s_pe_data_dir {
+    pe_data_dir_ptr  export_table;
+    pe_data_dir_ptr  import_table;
+    pe_data_dir_ptr  resource_table;
+    pe_data_dir_ptr  exception_table;
+    pe_data_dir_ptr  certificate_table;
+    pe_data_dir_ptr  base_relocation_table;
+    pe_data_dir_ptr  debug_data;
+    pe_data_dir_ptr  architecture_reserved;  // must be zero
+    pe_data_dir_ptr  global_ptr;             // must be zero
+    pe_data_dir_ptr  thread_local_storage_table;
+    pe_data_dir_ptr  load_config_table;
+    pe_data_dir_ptr  bound_import;
+    pe_data_dir_ptr  import_address_table;
+    pe_data_dir_ptr  delay_import_descriptor;
+    pe_data_dir_ptr  clr_runtime_header;
+    pe_data_dir_ptr  reserved;               // must be zero
+} PACKED_GNU pe_data_dir;
 
 // Image sections
 
@@ -346,7 +346,7 @@ typedef PACKED_MS struct s_pe_coff_PE_data_dir {
 #define PE_SCN_MEM_WRITE                            0x80000000 
 
 // Section header
-typedef PACKED_MS struct s_pe_coff_section_header {
+typedef PACKED_MS struct s_pe_section_header {
     CHAR8   name[8];
     UINT32  virtual_size;
     UINT32  virtual_addr;
@@ -357,7 +357,7 @@ typedef PACKED_MS struct s_pe_coff_section_header {
     UINT16  number_of_relocations;
     UINT16  number_of_line_numbers;
     UINT32  characteristics;
-} PACKED_GNU pe_coff_section_header;
+} PACKED_GNU pe_section_header;
 
 // Relocations
 
@@ -600,60 +600,60 @@ typedef PACKED_MS struct s_pe_coff_section_header {
 #define PE_SYM_CLASS_CLR_TOKEN                      107
 
 // Relocation struct
-typedef PACKED_MS struct s_pe_coff_relocation {
+typedef PACKED_MS struct s_pe_relocation {
     UINT32  virtual_addr;
     UINT32  symbol_table_index;
     UINT16  relocation_type;
-} PACKED_GNU pe_coff_relocation;
+} PACKED_GNU pe_relocation;
 
 // Symbol name union
-typedef PACKED_MS union u_pe_coff_name {
+typedef PACKED_MS union u_pe_name {
     CHAR8   name[8];
     UINT64  string_table_offset;
-} PACKED_GNU pe_coff_name;
+} PACKED_GNU pe_name;
 
 // Symbol table record
-typedef PACKED_MS struct s_pe_coff_symbol_table_record {
-    pe_coff_name name;
+typedef PACKED_MS struct s_pe_symbol_table_record {
+    pe_name name;
     UINT32  value;
     UINT16  section_number;
     UINT16  type;
     UINT8   storage_class;
     UINT8   number_of_aux_symbols;
-} PACKED_GNU pe_coff_symbol_table_record;
+} PACKED_GNU pe_symbol_table_record;
 
 // Auxiliary format #1
-typedef PACKED_MS struct s_pe_coff_aux_format_1 {
+typedef PACKED_MS struct s_pe_aux_format_1 {
     UINT32  tag_index;
     UINT32  total_size;
     UINT32  pointer_to_line_number;
     UINT32  pointer_to_next_function;
     UINT16  unused;
-} PACKED_GNU pe_coff_aux_format_1;
+} PACKED_GNU pe_aux_format_1;
 
 // Auxiliary format #2
-typedef PACKED_MS struct s_pe_coff_aux_format_2 {
+typedef PACKED_MS struct s_pe_aux_format_2 {
     UINT32  unused1;
     UINT16  line_number;
     CHAR8   unused_bytes[6];
     UINT32  pointer_to_next_function;
     UINT16  unused2;
-} PACKED_GNU pe_coff_aux_format_2;
+} PACKED_GNU pe_aux_format_2;
 
 // Auxiliary format #3
-typedef PACKED_MS struct s_pe_coff_aux_format_3 {
+typedef PACKED_MS struct s_pe_aux_format_3 {
     UINT32  tag_index;
     UINT32  characteristics;
     CHAR8   unused_bytes[10];
-} PACKED_GNU pe_coff_aux_format_3;
+} PACKED_GNU pe_aux_format_3;
 
 // Auxiliary format #4
-typedef PACKED_MS struct s_pe_coff_aux_format_4 {
+typedef PACKED_MS struct s_pe_aux_format_4 {
     CHAR8   file_name[18];
-} PACKED_GNU pe_coff_aux_format_4;
+} PACKED_GNU pe_aux_format_4;
 
 // Auxiliary format #5
-typedef PACKED_MS struct s_pe_coff_aux_format_5 {
+typedef PACKED_MS struct s_pe_aux_format_5 {
     UINT32  length;
     UINT16  number_of_relocations;
     UINT16  number_of_line_numbers;
@@ -661,7 +661,7 @@ typedef PACKED_MS struct s_pe_coff_aux_format_5 {
     UINT16  number;
     UINT8   selection;
     CHAR8   unused[3];
-} PACKED_GNU pe_coff_aux_format_5;
+} PACKED_GNU pe_aux_format_5;
 
 // COMDAT sections
 // If this symbol is already defined, the linker issues a "multiply defined symbol" error.
@@ -687,20 +687,20 @@ typedef PACKED_MS struct s_pe_coff_aux_format_5 {
 #define PE_COMDAT_SELECT_LARGEST                    6
 
 // CLR token definition
-typedef PACKED_MS struct s_pe_coff_clr_token {
+typedef PACKED_MS struct s_pe_clr_token {
     UINT8   aux_type;
     UINT8   reserved;
     UINT32  symbol_table_index;
     CHAR8   reserved_bytes[12];
-} PACKED_GNU pe_coff_clr_token;
+} PACKED_GNU pe_clr_token;
 
 // Attribute certificate table
-typedef PACKED_MS struct s_pe_coff_attribute_certificate_table {
+typedef PACKED_MS struct s_pe_attribute_certificate_table {
     UINT32  length;
     UINT16  revision;
     UINT16  certificate_type;
     UINT32  certificate;
-} PACKED_GNU pe_coff_attribute_certificate_table;
+} PACKED_GNU pe_attribute_certificate_table;
 
 // WIN_CERTIFICATE
 // Version 1, legacy version of the Win_Certificate structure. It is supported only 
@@ -722,7 +722,7 @@ typedef PACKED_MS struct s_pe_coff_attribute_certificate_table {
 #define WIN_CERT_TYPE_TS_STACK_SIGNED               0x0004
 
 // Delay-load directory table
-typedef PACKED_MS struct s_pe_coff_delay_load_directory_table {
+typedef PACKED_MS struct s_pe_delay_load_directory_table {
     UINT32  attributes;                     // must be zero
     UINT32  name_rva;
     UINT32  module_handle;
@@ -731,14 +731,14 @@ typedef PACKED_MS struct s_pe_coff_delay_load_directory_table {
     UINT32  bound_delay_import_table;
     UINT32  unload_delay_import_table;
     UINT32  time_stamp;
-} PACKED_GNU pe_coff_delay_load_directory_table;
+} PACKED_GNU pe_delay_load_directory_table;
 
 // Debug types
 // An unknown value that is ignored by all tools.
 #define PE_DEBUG_TYPE_UNKNOWN                       0
 // The COFF debug information(line numbers, symbol table, and string table).
 // This type of debug information is also pointed to by fields in the file headers.
-#define PE_DEBUG_TYPE_COFF                          1
+#define PE_DEBUG_TYPE                          1
 // The Visual C++ debug information.
 #define PE_DEBUG_TYPE_CODEVIEW                      2
 // The frame pointer omission(FPO) information. This information tells the debugger 
@@ -765,7 +765,7 @@ typedef PACKED_MS struct s_pe_coff_delay_load_directory_table {
 #define PE_DEBUG_TYPE_REPRO                         16
 
 // Debug directory entry
-typedef PACKED_MS struct s_pe_coff_debug_directory_entry {
+typedef PACKED_MS struct s_pe_debug_directory_entry {
     UINT32  characteristics;
     UINT32  time_date_stamp;
     UINT16  major_version;
@@ -774,10 +774,10 @@ typedef PACKED_MS struct s_pe_coff_debug_directory_entry {
     UINT32  size_of_data;
     UINT32  addr_of_raw_data;
     UINT32  pointer_to_raw_data;
-} PACKED_GNU pe_coff_debug_directory_entry;
+} PACKED_GNU pe_debug_directory_entry;
 
 // FPO data
-typedef PACKED_MS struct s_pe_coff_fpo_data {
+typedef PACKED_MS struct s_pe_fpo_data {
     UINT32  offset_start;   // offset 1st byte of function code
     UINT32  proc_size;      // # bytes in function
     UINT32  locals_size;    // # bytes in locals/4
@@ -788,10 +788,10 @@ typedef PACKED_MS struct s_pe_coff_fpo_data {
     UINT16  bp : 1;         // TRUE if EBP has been allocated
     UINT16  reserved : 1;   // reserved for future use
     UINT16  frame : 2;      // frame type
-} PACKED_GNU pe_coff_fpo_data;
+} PACKED_GNU pe_fpo_data;
 
 // Export directory table
-typedef PACKED_MS struct s_pe_coff_export_directory_table {
+typedef PACKED_MS struct s_pe_export_directory_table {
     UINT32  export_flags;
     UINT32  time_date_stamp;
     UINT16  major_version;
@@ -803,55 +803,55 @@ typedef PACKED_MS struct s_pe_coff_export_directory_table {
     UINT32  export_addr_table_rva;
     UINT32  name_pointer_rva;
     UINT32  ordinal_table_rva;
-} PACKED_GNU pe_coff_export_directory_table;
+} PACKED_GNU pe_export_directory_table;
 
-typedef UINT32  pe_coff_export_rva;
-typedef UINT32  pe_coff_forwarder_rva;
+typedef UINT32  pe_export_rva;
+typedef UINT32  pe_forwarder_rva;
 
 // Import directory table
-typedef PACKED_MS struct s_pe_coff_import_directory_table {
+typedef PACKED_MS struct s_pe_import_directory_table {
     UINT32  import_lookup_table_rva;
     UINT32  time_date_stamp;
     UINT32  forwarder_chain;
     UINT32  name_rva;
     UINT32  import_addr_table_rva;
-} PACKED_GNU pe_coff_import_directory_table;
+} PACKED_GNU pe_import_directory_table;
 
-#define PE32_COFF_IMPORT_BY_ORDINAL                 BIT31
-#define PE32_COFF_IMPORT_BY_ORDINAL_MASK            0x0000FFFF
+#define PE32_IMPORT_BY_ORDINAL                 BIT31
+#define PE32_IMPORT_BY_ORDINAL_MASK            0x0000FFFF
 
-#define PE64_COFF_IMPORT_BY_ORDINAL                 BIT63
-#define PE64_COFF_IMPORT_BY_ORDINAL_MASK            0x000000000000FFFFLL
+#define PE64_IMPORT_BY_ORDINAL                 BIT63
+#define PE64_IMPORT_BY_ORDINAL_MASK            0x000000000000FFFFLL
 
-#define PE_COFF_HINT_NAME_TABLE_RVA_MASK            0x3FFFFFFF
+#define PE_HINT_NAME_TABLE_RVA_MASK            0x3FFFFFFF
 
 // x64 function table entry
-typedef PACKED_MS struct s_pe_coff_x64_fn_table_entry {
+typedef PACKED_MS struct s_pe_x64_fn_table_entry {
     UINT32  begin_addr;     // rva of corresponding fn
     UINT32  end_addr;       // rva of end of the fn
     UINT32  unwind_info;    // rva of the unwind info
-} PACKED_GNU pe_coff_x64_fn_table_entry;
+} PACKED_GNU pe_x64_fn_table_entry;
 
 // ARM function table entry
-typedef PACKED_MS struct s_pe_coff_arm_fn_table_entry {
+typedef PACKED_MS struct s_pe_arm_fn_table_entry {
     UINT32  begin_addr;         // va of corresponding fn
     UINT32  prolog_length : 8;  // number of instructions in the fn prolog
     UINT32  fn_length: 22;      // number of instructions in the fn
     UINT32  flag_32bit: 1;      // is 32-bit?
     UINT32  exception_flag : 1; // exception handler exists?
-} PACKED_GNU pe_coff_arm_fn_table_entry;
+} PACKED_GNU pe_arm_fn_table_entry;
 
 // Base relocation block
-typedef PACKED_MS struct s_pe_coff_base_relocation_block {
+typedef PACKED_MS struct s_pe_base_relocation_block {
     UINT32  page_rva;
     UINT32  block_size;
-} PACKED_GNU pe_coff_base_relocation_block;
+} PACKED_GNU pe_base_relocation_block;
 
 // Type of offset field entry
-typedef PACKED_MS struct s_pe_coff_type_or_offset_field {
+typedef PACKED_MS struct s_pe_type_or_offset_field {
     UINT16  base_relocation_type : 4;
     UINT16  offset : 12;
-} PACKED_GNU pe_coff_type_or_offset_field;
+} PACKED_GNU pe_type_or_offset_field;
 
 // Base relocation types
 // The base relocation is skipped.This type can be used to pad a block.
@@ -894,32 +894,32 @@ typedef PACKED_MS struct s_pe_coff_type_or_offset_field {
 #define PE_REL_BASED_DIR64                          10
 
 // Thread local storage directory
-typedef PACKED_MS struct s_pe32_coff_tls_directory {
+typedef PACKED_MS struct s_pe32_tls_directory {
     UINT32  raw_data_start_va;
     UINT32  raw_data_end_va;
     UINT32  address_of_index;
     UINT32  address_of_callbacks;
     UINT32  size_of_zero_fill;
     UINT32  characteristics;
-} PACKED_GNU pe32_coff_tls_directory;
+} PACKED_GNU pe32_tls_directory;
 
-typedef PACKED_MS struct s_pe64_coff_tls_directory {
+typedef PACKED_MS struct s_pe64_tls_directory {
     UINT64  raw_data_start_va;
     UINT64  raw_data_end_va;
     UINT64  address_of_index;
     UINT64  address_of_callbacks;
     UINT32  size_of_zero_fill;
     UINT32  characteristics;
-} PACKED_GNU pe64_coff_tls_directory;
+} PACKED_GNU pe64_tls_directory;
 
 typedef VOID(*PPE_TLS_CALLBACK)(VOID* dll_handle, UINT32 reason, VOID* reserved);
 
-#define PE_COFF_TLS_CALLBACK_REASON_DLL_PROCESS_ATTACH      1
-#define PE_COFF_TLS_CALLBACK_REASON_DLL_THREAD_ATTACH       2
-#define PE_COFF_TLS_CALLBACK_REASON_DLL_THREAD_DETACH       3
-#define PE_COFF_TLS_CALLBACK_REASON_DLL_PROCESS_DETACH      0
+#define PE_TLS_CALLBACK_REASON_DLL_PROCESS_ATTACH      1
+#define PE_TLS_CALLBACK_REASON_DLL_THREAD_ATTACH       2
+#define PE_TLS_CALLBACK_REASON_DLL_THREAD_DETACH       3
+#define PE_TLS_CALLBACK_REASON_DLL_PROCESS_DETACH      0
 
-typedef PACKED_MS struct s_pe32_coff_load_configuration_structure {
+typedef PACKED_MS struct s_pe32_load_configuration_structure {
     UINT32  characteristics;
     UINT32  time_date_stamp;
     UINT16  major_version;
@@ -950,9 +950,9 @@ typedef PACKED_MS struct s_pe32_coff_load_configuration_structure {
     UINT32  guard_address_taken_iat_entry_count;
     UINT32  guard_long_jump_target_table;
     UINT32  guard_long_jump_target_count;
-} PACKED_GNU pe32_coff_load_configuration_structure;
+} PACKED_GNU pe32_load_configuration_structure;
 
-typedef PACKED_MS struct s_pe64_coff_load_configuration_structure {
+typedef PACKED_MS struct s_pe64_load_configuration_structure {
     UINT32  characteristics;
     UINT32  time_date_stamp;
     UINT16  major_version;
@@ -983,7 +983,7 @@ typedef PACKED_MS struct s_pe64_coff_load_configuration_structure {
     UINT64  guard_address_taken_iat_entry_count;
     UINT64  guard_long_jump_target_table;
     UINT64  guard_long_jump_target_count;
-} PACKED_GNU pe64_coff_load_configuration_structure; 
+} PACKED_GNU pe64_load_configuration_structure; 
 
 // Module performs control flow integrity checks using system - supplied support.
 #define PE_GUARD_CF_INSTRUMENTED                    0x00000100
@@ -1013,37 +1013,37 @@ typedef PACKED_MS struct s_pe64_coff_load_configuration_structure {
 // function table stride:
 #define PE_GUARD_CF_FUNCTION_TABLE_SIZE_SHIFT 28
 
-typedef PACKED_MS struct s_pe_coff_resource_directory_table {
+typedef PACKED_MS struct s_pe_resource_directory_table {
     UINT32  characteristics;
     UINT32  time_date_stamp;
     UINT16  major_version;
     UINT16  minor_version;
     UINT16  number_of_name_entries;
     UINT16  number_of_id_entries;
-} PACKED_GNU pe_coff_resource_directory_table;
+} PACKED_GNU pe_resource_directory_table;
 
-typedef PACKED_MS struct s_pe_coff_resource_directory_entry {
+typedef PACKED_MS struct s_pe_resource_directory_entry {
     UINT32  name_offset;
     UINT32  integer_id;
     UINT32  data_entry_offset;
     UINT32  subdirectory_offset;
-} PACKED_GNU pe_coff_resource_directory_entry;
+} PACKED_GNU pe_resource_directory_entry;
 
-typedef PACKED_MS struct s_pe_coff_resource_directory_string {
+typedef PACKED_MS struct s_pe_resource_directory_string {
     UINT16  length;
     UINTN   start_of_string;
-} PACKED_GNU pe_coff_resource_directory_string;
+} PACKED_GNU pe_resource_directory_string;
 
-typedef PACKED_MS struct s_pe_coff_resource_data_entry {
+typedef PACKED_MS struct s_pe_resource_data_entry {
     UINT32  data_rva;
     UINT32  size;
     UINT32  codepage;
     UINT32  reserved;   // must be zero
-} PACKED_GNU pe_coff_resource_data_entry;
+} PACKED_GNU pe_resource_data_entry;
 
-#define PE_COFF_ARCHIVE_FILE_SIGNATURE                  "!<arch>"
+#define PE_ARCHIVE_FILE_SIGNATURE                  "!<arch>"
 
-typedef PACKED_MS struct s_pe_coff_archive_member_header {
+typedef PACKED_MS struct s_pe_archive_member_header {
     CHAR8   name[16];
     CHAR8   datestamp[12];
     CHAR8   user_id[6];
@@ -1051,10 +1051,10 @@ typedef PACKED_MS struct s_pe_coff_archive_member_header {
     CHAR8   mode[8];
     CHAR8   size[10];
     CHAR8   end_of_header[2];  // { '~', '\n' }
-} PACKED_GNU pe_coff_archive_member_header;
+} PACKED_GNU pe_archive_member_header;
 
 // Import header
-typedef PACKED_MS struct s_pe_coff_import_header {
+typedef PACKED_MS struct s_pe_import_header {
     UINT16  sig1;
     UINT16  sig2;
     UINT16  version;
@@ -1065,11 +1065,11 @@ typedef PACKED_MS struct s_pe_coff_import_header {
     UINT16  import_type: 2;
     UINT16  name_type : 3;
     UINT16  reserved : 11;
-} PACKED_GNU pe_coff_import_header;
+} PACKED_GNU pe_import_header;
 
-#define PE_COFF_IMPORT_TYPE_CODE                        0
-#define PE_COFF_IMPORT_TYPE_DATA                        1
-#define PE_COFF_IMPORT_TYPE_CONST                       2
+#define PE_IMPORT_TYPE_CODE                        0
+#define PE_IMPORT_TYPE_DATA                        1
+#define PE_IMPORT_TYPE_CONST                       2
 
 #define PE_HEADER_OFFSET                            0x3c
 
