@@ -87,15 +87,16 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
     }
 
     // Make sure this is a PE file
-    uint32b *header_offset = (uint32b *)(&exec_buffer[PE_HEADER_OFFSET]);
-    pe_file_header *coff_fh = (pe_file_header *)(&exec_buffer[header_offset->i]);
+    UINT32 *header_offset = (UINT32 *)(&exec_buffer[PE_HEADER_OFFSET]);
+    pe_file_header *coff_fh = (pe_file_header *)(&exec_buffer[*header_offset]);
 
     if (coff_fh->signature != PE_SIGNATURE) {
         kernel_panic(L"PE image loaded is not a valid PE image: 0x%lx\n", coff_fh->signature);
     }
     
     // Ok, "valid" PE file at this point
-    // Perform additional verifications
+
+    // Perform additional verification
     if (coff_fh->machine != PE_FILE_MACHINE_AMD64) {
         kernel_panic(L"PE image loaded is not for x64: 0x%lx\n", coff_fh->machine);
     }
@@ -107,5 +108,11 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
         kernel_panic(L"PE image loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
     }   
 
+    // uefi executables have the Windows specific fields
+    pe64_windows_fields *win_fields = (pe64_windows_fields *)((UINT64)pe_fh + 0x18ULL);
 
+    if (win_fields->subsystem != PE_SUBSYSTEM_EFI_APPLICATION) {
+        Print(L"win_fields @ 0x%lx\n", win_fields);
+        kernel_panic(L"nebulae only supports applications of type efi_subsystem; this image type == 0x%lx\n", win_fields->subsystem);
+    }
 }
