@@ -26,15 +26,24 @@
 
 #include "../include/klib/pe.h"
 
-VOID UefiLoadPEFile(CHAR16 *filename, uefi_file *fp) {
+#include <Library/BaseMemoryLib.h>
+#include <Library/DebugLib.h>
+
+
+// This function will load the specified PE file using UEFI facilities,
+// and panic on failure; Returns a pointer to the entrypoint
+VOID* UefiLoadPEFile(CHAR16 *filename) {
+    extern BOOLEAN k0_is_uefi;
+    ASSERT(k0_is_uefi);
+
     // Open the file
+    EFI_FILE_HANDLE fh;
     EFI_STATUS exec_file_result = ShellOpenFileByName(filename,
-        &fp->file_handle,
+        &fh,
         EFI_FILE_MODE_READ,
         0);
 
     if (EFI_ERROR(exec_file_result)) {
-        fp->file_handle = NULL;
         kernel_panic(L"Failed to open executable file %s: %r\n", filename, exec_file_result);
     }
     else if (k0_PRECONFIG_DEBUG) {
@@ -42,21 +51,24 @@ VOID UefiLoadPEFile(CHAR16 *filename, uefi_file *fp) {
     }
 
     // Determine the file size
-    EFI_FILE_INFO *exec_file_info = ShellGetFileInfo(fp->file_handle);
+    EFI_FILE_INFO *exec_file_info = ShellGetFileInfo(fh);
     UINTN exec_file_pages = (exec_file_info->FileSize / EFI_PAGE_SIZE) + 1;
 
     // Allocate enough memory to hold the exec file
-    fp->buffer = AllocatePages(exec_file_pages);
+    CHAR8 *exec_buffer = AllocatePages(exec_file_pages);
+    if (ZeroMem(exec_buffer, exec_file_pages * EFI_PAGE_SIZE) != exec_buffer) {
+        kernel_panic(L"Unable to zero memory for executable image\n");
+    }
 
-    if (ISNULL(fp->buffer)) {
+    if (ISNULL(exec_buffer)) {
         kernel_panic(L"Failed to allocate pages to load exec file %s. Allocation operation returned NULL.\n", filename);
     }
     else if (k0_VERBOSE_DEBUG) {
         Print(L"Allocated %lu pages for %s file data\n", exec_file_pages, filename);
     }
 
-    fp->size = exec_file_info->FileSize;
-    EFI_STATUS exec_file_read_result = ShellReadFile(fp->file_handle, &fp->size, fp->buffer);
+    UINTN sz = exec_file_info->FileSize;
+    EFI_STATUS exec_file_read_result = ShellReadFile(fh, &sz, exec_buffer);
 
     if (EFI_ERROR(exec_file_read_result)) {
         kernel_panic(L"Failed to read %s: %r\n", filename, exec_file_read_result);
@@ -65,14 +77,33 @@ VOID UefiLoadPEFile(CHAR16 *filename, uefi_file *fp) {
         Print(L"Read %s into memory\n", filename);
     }
 
-    // Close the file -- later
-    /*
-    EFI_STATUS efi_close_result = ShellCloseFile(&exec_file_handle);
+    // Close the file
+    EFI_STATUS efi_close_result = ShellCloseFile(&fh);
     if (EFI_ERROR(efi_close_result)) {
         kernel_panic(L"Unable to close %s\n", filename);
     }
     else if (k0_VERBOSE_DEBUG) {
         Print(L"Closed %s\n", filename);
     }
-    */
+
+    // Make sure this is a PE file
+    uint32b *header_offset = (uint32b *)(&exec_buffer[PE_HEADER_OFFSET]);
+    pe_coff_file_header *coff_fh = (pe_coff_file_header *)(&exec_buffer[header_offset->i]);
+
+    if (coff_fh->signature != PE_SIGNATURE) {
+        kernel_panic(L"PE file loaded is not a PE file: 0x%lx\n", coff_fh->signature);
+    }
+    
+    // Ok, "valid" PE file at this point
+    // Perform additional verifications
+    if (coff_fh->machine != PE_FILE_MACHINE_AMD64) {
+        kernel_panic(L"PE file loaded is not for AMD64: 0x%lx\n", coff_fh->machine);
+    }
+    
+    // Get the actual PE header
+    pe32_coff_PE_header *pe_fh = (pe32_coff_PE_header *)((UINT64)coff_fh + 0x18ULL);
+    if (pe_fh->magic != PE_MAGIC_64) {
+        Print(L"coff_fh @ 0x%lx\n", coff_fh);
+        kernel_panic(L"PE file loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
+    }    
 }

@@ -226,7 +226,9 @@ VOID x64InitPIC() {
     MmioWrite8(X64_PIC1_DATA, 0xff);
     MmioWrite8(X64_PIC2_DATA, 0xff);
 
-    Print(L"PIC reprogrammed\n");
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"PIC reprogrammed\n");
+    }    
 }
 
 // Initialize the I/O APIC
@@ -247,6 +249,10 @@ VOID x64InitIoApic() {
     for (i = 1; i < count; i++) {
         x64SetIoApicEntry(i, BIT16_64);
     }
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"IOAPIC reprogrammed\n");
+    }
 }
 
 // Initialize the local APIC
@@ -261,6 +267,10 @@ VOID x64InitLocalApic() {
 
     // Set bit in spurious interrupt vector
     x64WriteLocalApic(X64_APIC_SPRIOUS_INT_VECTOR_OFFSET, 0x100 | 0xFF);
+
+    if (k0_VERBOSE_DEBUG) {
+        Print(L"LAPIC initialized; spurious interrupt vector set\n");
+    }
 }
 
 // Set an entry in the IOAPIC

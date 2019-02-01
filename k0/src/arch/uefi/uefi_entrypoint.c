@@ -56,9 +56,6 @@ BOOLEAN k0_VERBOSE_DEBUG = FALSE;       // Set by configuration file
 BOOLEAN k0_PRECONFIG_DEBUG = TRUE;      // Only set when debugging pre-config file load
 BOOLEAN k0_PAGETABLE_DEBUG = FALSE;     // Only set when debugging pagetables
 
-// fun with PE!
-uefi_file other_pe_executable;
-
 // Placeholder
 EFI_STATUS EFIAPI UefiUnload(IN EFI_HANDLE image_handle) {
     
@@ -95,7 +92,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     ProcessBootConfig();
 
     // Load ourselves as "another" executable
-    UefiLoadPEFile(L"k0.efi", &other_pe_executable);
+    UefiLoadPEFile(L"k0.efi");
 
     // Initialize the Isaac64 CSPRNG
     // Isaac64 generates a 64-bit cryptographically
@@ -196,6 +193,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     gBS->ExitBootServices(uefi_image_handle, uefi_mem_key);
     gST->RuntimeServices->SetVirtualAddressMap(memmap.size, memmap.descr_size, memmap.descr_version, memmap.memory_map);
     
+    extern BOOLEAN k0_is_uefi;
+    k0_is_uefi = FALSE;
+
     // Create our page tables
 #ifdef __NEBULAE_ARCH_X64
     x64InitKernelStacks();

@@ -55,6 +55,9 @@ nebulae_system_table *system_table = NULL;
 // Have we been called?
 BOOLEAN k0_main_called = FALSE;
 
+// Are we still within uefi?
+BOOLEAN k0_is_uefi = TRUE;
+
 // Kernel0 Entrypoint
 // Graphics are initialized, we're flying solo!
 NORETURN VOID k0_main() {

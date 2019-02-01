@@ -94,6 +94,16 @@ typedef PACKED_MS struct s_x64_u128 {
     UINT64 hi64;
 } PACKED_GNU x64_u128;
 
+typedef PACKED_MS union u_uint32b {
+    UINT32 i;
+    UINT8  b[4];
+} PACKED_GNU uint32b;
+
+typedef PACKED_MS union u_uint64b {
+    UINT64 i;
+    UINT8  b[8];
+} PACKED_GNU uint64b;
+
 // Debug mode(s)
 extern BOOLEAN k0_VERBOSE_DEBUG;
 extern BOOLEAN k0_PRECONFIG_DEBUG;
