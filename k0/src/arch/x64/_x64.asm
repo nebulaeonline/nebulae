@@ -45,15 +45,13 @@ segment .text
 ;   UINT8  Value)
 ;
 x64OutportB:
-    mov rax,rcx
-    mov rbx,rdx
+    mov rax, rcx
+    mov rbx, rdx
 
-    mov dx,ax
-    mov al,bl
+    mov dx, ax
+    mov al, bl
 
-    out dx,al
-
-    xor eax,eax
+    out dx, al
 
     ret
 
@@ -63,15 +61,13 @@ x64OutportB:
 ;   UINT16 Value)
 ;
 x64OutportW:
-    mov rax,rcx
-    mov rbx,rdx
+    mov rax, rcx
+    mov rbx, rdx
 
-    mov dx,ax
-    mov ax,bx
+    mov dx, ax
+    mov ax, bx
 
-    out dx,ax
-
-    xor eax,eax
+    out dx, ax
 
     ret
 
@@ -80,10 +76,10 @@ x64OutportW:
 ;   UINT16 Port)
 ;
 x64InportB:
-    mov rax,rcx
-    mov dx,ax
+    mov rax, rcx
+    mov dx, ax
 
-    in al,dx
+    in al, dx
 
     ret
 
@@ -92,10 +88,10 @@ x64InportB:
 ;   UINT16 Port)
 ;
 x64InportW:
-    mov rax,rcx
-    mov dx,ax
+    mov rax, rcx
+    mov dx, ax
 
-    in eax,dx
+    in eax, dx
 
     ret
 
@@ -104,7 +100,6 @@ x64InportW:
 ;
 x64EnableInterrupts:
     cli
-    xor eax,eax
     ret
 
 ;==================================
@@ -112,7 +107,6 @@ x64EnableInterrupts:
 ;
 x64DisableInterrupts:
     sti
-    xor eax,eax
     ret
 
 ;==================================
@@ -125,20 +119,6 @@ x64ReadTsc:
     shl     rdx, 20h
     or      rax, rdx
     ret
-
-;==================================
-; NORETURN
-; x64_farptr*
-; EFIAPI
-; x64LoadStackSegmentAndJump (
-;   x64_farptr*,
-;   VOID* dest
-;   )
-;
-x64LoadStackSegmentAndJump:
-    lss     rax, [rcx]
-    jmp QWORD [rdx]
-
 
 ;==================================
 ; UINTN
@@ -168,8 +148,6 @@ x64ReadGdtr:
 ;
 x64WriteGdtr:
     lgdt    [rcx]
-
-    xor eax, eax
     ret
 
 ;==================================
@@ -190,8 +168,6 @@ x64ReadIdtr:
 ;
 x64WriteIdtr:
     lidt    [rcx]
-
-    xor eax, eax
     ret
 
 ;------------------------------------------------------------------------------
@@ -209,7 +185,7 @@ x64ReadCR2:
 ; x64ReadCS ();
 ;
 x64ReadCS:
-    xor eax, eax
+    xor rax, rax
     mov ax, cs
     ret
 
@@ -219,7 +195,7 @@ x64ReadCS:
 ; x64ReadDS ();
 ;
 x64ReadDS:
-    xor eax, eax
+    xor rax, rax
     mov ax, ds
     ret
 
@@ -229,7 +205,7 @@ x64ReadDS:
 ; x64ReadSS ();
 ;
 x64ReadSS:
-    xor eax, eax
+    xor rax, rax
     mov ax, ss
     ret
 
@@ -239,7 +215,7 @@ x64ReadSS:
 ; x64ReadES ();
 ;
 x64ReadES:
-    xor eax, eax
+    xor rax, rax
     mov ax, es
     ret
 
@@ -249,7 +225,7 @@ x64ReadES:
 ; x64ReadFS ();
 ;
 x64ReadFS:
-    xor eax, eax
+    xor rax, rax
     mov ax, fs
     ret
 
@@ -259,7 +235,7 @@ x64ReadFS:
 ; x64ReadGS ();
 ;
 x64ReadGS:
-    xor eax, eax
+    xor rax, rax
     mov ax, es
     ret
 

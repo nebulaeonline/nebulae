@@ -485,7 +485,7 @@ VOID x64InitGDT() {
     // In order to keep uefi around, it is 
     // imperative not to mess with its 
     // execution environment too much, too early
-    x64_seg_sel pgdt = { .base = 0,.limit = 0 };
+    x64_seg_sel pgdt = { .base = 0, .limit = 0 };
     x64ReadGdtr(&pgdt);
 
     if (pgdt.base == 0) {

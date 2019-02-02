@@ -117,7 +117,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
-    and     rsp,-0x10               ; align the stack to 16 bytes
+    and  qword rsp, -0x10           ; align the stack to 16 bytes
 
     push qword %1                   ; rcx shadow space
     push qword 0                    ; rdx shadow space
@@ -141,7 +141,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
-    and     rsp,-0x10               ; align the stack to 16 bytes
+    and  qword rsp, -0x10           ; align the stack to 16 bytes
 
     push qword %1                   ; rcx shadow space
     push    rdx                     ; rdx shadow space
@@ -164,7 +164,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
     
     push    rsp                     ; push two copies of rsp 
     push qword [rsp]
-    and     rsp,-0x10               ; align the stack to 16 bytes
+    and  qword rsp, -0x10           ; align the stack to 16 bytes
 
     push qword %1                   ; rcx shadow space
     push qword 0                    ; rdx shadow space

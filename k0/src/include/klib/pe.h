@@ -155,7 +155,7 @@
 #define PE_DLLCHARACTERISTICS_TERMINAL_SERVER_AWARE 0x8000
 
 // COFF header struct
-typedef PACKED_MS struct s_pe_file_header {
+typedef PACKED_MS struct s_coff_file_header {
     UINT32  signature;
     UINT16  machine;
     UINT16  number_of_sections;
@@ -164,7 +164,7 @@ typedef PACKED_MS struct s_pe_file_header {
     UINT32  number_of_symbols;
     UINT16  optional_header_size;
     UINT16  characteristics;
-} PACKED_GNU pe_file_header;
+} PACKED_GNU coff_file_header;
 
 // Image header 
 #define PE32_STANDARD_FIELDS_SIZE                   28
@@ -194,6 +194,11 @@ typedef PACKED_MS struct s_pe64_header {
     UINT32  base_of_code;
 } PACKED_GNU pe64_header;
 
+typedef PACKED_MS struct s_pe_data_dir {
+    UINT32  virtual_address;
+    UINT32  size;
+} PACKED_GNU pe_data_dir;
+
 typedef PACKED_MS struct s_pe32_windows_fields {
     UINT32  image_base;
     UINT32  section_alignment;
@@ -216,6 +221,7 @@ typedef PACKED_MS struct s_pe32_windows_fields {
     UINT32  size_of_heap_commit;
     UINT32  loader_flags;
     UINT32  number_of_rva_and_sizes;
+    pe_data_dir first_data_dir;
 } PACKED_GNU pe32_windows_fields;
 
 typedef PACKED_MS struct s_pe64_windows_fields {
@@ -239,32 +245,30 @@ typedef PACKED_MS struct s_pe64_windows_fields {
     UINT64  size_of_heap_reserve;
     UINT64  size_of_heap_commit;
     UINT32  loader_flags;
-    UINT32  number_of_rva_and_sizes;
+    UINT32  number_of_data_dirs;
+    pe_data_dir first_data_dir;
 } PACKED_GNU pe64_windows_fields;
 
-typedef PACKED_MS struct s_pe_data_dir_ptr {
-    UINT32  virtual_address;
-    UINT32  size;
-} PACKED_GNU pe_data_dir_ptr;
 
-typedef PACKED_MS struct s_pe_data_dir {
-    pe_data_dir_ptr  export_table;
-    pe_data_dir_ptr  import_table;
-    pe_data_dir_ptr  resource_table;
-    pe_data_dir_ptr  exception_table;
-    pe_data_dir_ptr  certificate_table;
-    pe_data_dir_ptr  base_relocation_table;
-    pe_data_dir_ptr  debug_data;
-    pe_data_dir_ptr  architecture_reserved;  // must be zero
-    pe_data_dir_ptr  global_ptr;             // must be zero
-    pe_data_dir_ptr  thread_local_storage_table;
-    pe_data_dir_ptr  load_config_table;
-    pe_data_dir_ptr  bound_import;
-    pe_data_dir_ptr  import_address_table;
-    pe_data_dir_ptr  delay_import_descriptor;
-    pe_data_dir_ptr  clr_runtime_header;
-    pe_data_dir_ptr  reserved;               // must be zero
-} PACKED_GNU pe_data_dir;
+
+typedef PACKED_MS struct s_pe_data_dirs {
+    pe_data_dir  export_table;
+    pe_data_dir  import_table;
+    pe_data_dir  resource_table;
+    pe_data_dir  exception_table;
+    pe_data_dir  certificate_table;
+    pe_data_dir  base_relocation_table;
+    pe_data_dir  debug_data;
+    pe_data_dir  architecture_reserved;  // must be zero
+    pe_data_dir  global_ptr;             // must be zero
+    pe_data_dir  thread_local_storage_table;
+    pe_data_dir  load_config_table;
+    pe_data_dir  bound_import;
+    pe_data_dir  import_address_table;
+    pe_data_dir  delay_import_descriptor;
+    pe_data_dir  clr_runtime_header;
+    pe_data_dir  reserved;               // must be zero
+} PACKED_GNU pe_data_dirs;
 
 // Image sections
 
@@ -278,7 +282,7 @@ typedef PACKED_MS struct s_pe_data_dir {
 // The section contains initialized data.
 #define PE_SCN_CNT_INITIALIZED_DATA                 0x00000040
 // The section contains uninitialized data.
-#define PE_SCN_CNT_UNINITIALIZED_ DATA              0x00000080
+#define PE_SCN_CNT_UNINITIALIZED_DATA               0x00000080
 // The section contains uninitialized data.
 #define PE_SCN_LNK_OTHER                            0x00000100
 // The section contains comments or other information. The directve section 

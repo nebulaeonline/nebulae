@@ -88,7 +88,7 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
 
     // Make sure this is a PE file
     UINT32 *header_offset = (UINT32 *)(&exec_buffer[PE_HEADER_OFFSET]);
-    pe_file_header *coff_fh = (pe_file_header *)(&exec_buffer[*header_offset]);
+    coff_file_header *coff_fh = (coff_file_header *)(&exec_buffer[*header_offset]);
 
     if (coff_fh->signature != PE_SIGNATURE) {
         kernel_panic(L"PE image loaded is not a valid PE image: 0x%lx\n", coff_fh->signature);
@@ -101,18 +101,34 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
         kernel_panic(L"PE image loaded is not for x64: 0x%lx\n", coff_fh->machine);
     }
     
-    // Get the actual PE header
-    pe64_header *pe_fh = (pe64_header *)((UINT64)coff_fh + 0x18ULL);
-    if (pe_fh->magic != PE_MAGIC_64) {
-        Print(L"coff_fh @ 0x%lx\n", coff_fh);
-        kernel_panic(L"PE image loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
-    }   
+    // Get the optional PE header, if it exists
+    if (coff_fh->optional_header_size == 0) {
+        kernel_panic(L"nebulae requires the optional PE header\n");
+    }
+    else {
+        pe64_header *pe_fh = (pe64_header *)((UINT64)coff_fh + 0x18ULL);
+        if (pe_fh->magic != PE_MAGIC_64) {
+            Print(L"coff_fh @ 0x%lx\n", coff_fh);
+            kernel_panic(L"PE image loaded is not 64-bit: pe_fh->magic @ 0x%lx == 0x%lx\n", &pe_fh->magic, pe_fh->magic);
+        }
 
-    // uefi executables have the Windows specific fields
-    pe64_windows_fields *win_fields = (pe64_windows_fields *)((UINT64)pe_fh + 0x18ULL);
+        // uefi executables have the Windows specific fields
+        pe64_windows_fields *win_fields = (pe64_windows_fields *)((UINT64)pe_fh + 0x18ULL);
 
-    if (win_fields->subsystem != PE_SUBSYSTEM_EFI_APPLICATION) {
-        Print(L"win_fields @ 0x%lx\n", win_fields);
-        kernel_panic(L"nebulae only supports applications of type efi_subsystem; this image type == 0x%lx\n", win_fields->subsystem);
+        if (win_fields->subsystem != PE_SUBSYSTEM_EFI_APPLICATION) {
+            Print(L"win_fields @ 0x%lx\n", win_fields);
+            kernel_panic(L"nebulae only supports applications of type efi_subsystem; this image is of type == 0x%lx\n", win_fields->subsystem);
+        } 
+
+        // docs state these data directories are optional;
+        // but it doesn't make sense to have less than the
+        // 16 every pe file seems to have (legacy?)
+        // pe data directories - skip for now
+        pe_data_dirs *data_dirs = (pe_data_dirs *)((UINT64)coff_fh + 0x70ULL);
+
+        // The section headers come after the data directories
+        pe_section_header *cur_pe_section_hdr = (pe_section_header *)((UINT64)data_dirs + (sizeof(pe_data_dir) * (UINT64)win_fields->number_of_data_dirs));
+
+
     }
 }
