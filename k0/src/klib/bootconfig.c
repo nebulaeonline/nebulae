@@ -23,8 +23,11 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #include <Library/ShellLib.h>
+#include <Library/UefiLib.h>
+#include <Library/MemoryAllocationLib.h>
 
 #include "../include/k0.h"
+#include "../include/klib/kstring.h"
 
 extern UINTN nebulae_system_table_reserved_bytes;
 
@@ -237,4 +240,6 @@ BOOLEAN ProcessBootConfig() {
     if (k0_PRECONFIG_DEBUG) {
         Print(L"Freed %lu page(s) for k0.config.json file data\n", 1);
     }
+
+    return TRUE;
 }

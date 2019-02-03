@@ -41,7 +41,8 @@ typedef                 int  word;  /* fastest type available */
 /*
 #ifndef align
 # define align(a) (((ub4)a+(sizeof(VOID *)-1))&(~(sizeof(VOID *)-1)))
-#endif /* align */
+#endif // align
+*/
 
 #ifndef abs
 # define abs(a)   (((a)>0) ? (a) : -(a))

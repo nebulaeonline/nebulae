@@ -28,6 +28,7 @@
 // Basic UEFI Libraries
 //
 #include <Library/UefiLib.h>
+#include <Library/PrintLib.h>
 
 #include "../include/k0.h"
 
@@ -106,7 +107,7 @@ nstatus kGuid2String(CHAR16 *buffer, UINTN buffsiz, EFI_GUID *guid) {
 }
 
 // Helper function for json string matching without libc
-INT32 jsoneq(CONST CHAR8 *json, jsmntok_t *tok, CONST CHAR8 *s) {
+INT32 jsoneq(CHAR8 *json, jsmntok_t *tok, CHAR8 *s) {
     if (ISNULL(json) || ISNULL(tok) || ISNULL(s)) {
         return NEBERROR_NULL_PTR_UNEXPECTED;
     }

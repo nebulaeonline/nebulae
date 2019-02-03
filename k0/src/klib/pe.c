@@ -26,9 +26,10 @@
 
 #include "../include/klib/pe.h"
 
+#include <Library/UefiLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/MemoryAllocationLib.h>
 #include <Library/DebugLib.h>
-
 
 // This function will load the specified PE file using UEFI facilities,
 // and panic on failure; Returns a pointer to the entrypoint
@@ -37,7 +38,7 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
     ASSERT(k0_is_uefi);
 
     // Open the file
-    EFI_FILE_HANDLE fh;
+    SHELL_FILE_HANDLE fh;
     EFI_STATUS exec_file_result = ShellOpenFileByName(filename,
         &fh,
         EFI_FILE_MODE_READ,
@@ -120,6 +121,7 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
             kernel_panic(L"nebulae only supports applications of type efi_subsystem; this image is of type == 0x%lx\n", win_fields->subsystem);
         } 
 
+        /*
         // docs state these data directories are optional;
         // but it doesn't make sense to have less than the
         // 16 every pe file seems to have (legacy?)
@@ -129,11 +131,15 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
         // The section headers come after the data directories
         pe_section_header *cur_pe_section_hdr = (pe_section_header *)((UINT64)data_dirs + (sizeof(pe_data_dir) * (UINT64)win_fields->number_of_data_dirs));
 
+        
         // These sections need to be loaded into virtual memory somewhere
         // that is backed by physical memory
         UINTN i;
         for (i = 0; i < coff_fh->number_of_sections; i++) {
 
         }
+        */
     }
+
+    return (VOID*)5;
 }

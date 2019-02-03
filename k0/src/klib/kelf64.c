@@ -29,7 +29,7 @@ UINT64 elf64_hash(CONST CHAR8* name) {
 
     while (*name) {
         h = (h << 4) + *name++;
-        if (g = h & 0xF0000000) {
+        if ((g = (h & 0xF0000000))) {
             h ^= g >> 24;
         }
         h &= 0x0FFFFFFF;
