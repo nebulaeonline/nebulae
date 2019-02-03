@@ -129,6 +129,11 @@ VOID* UefiLoadPEFile(CHAR16 *filename) {
         // The section headers come after the data directories
         pe_section_header *cur_pe_section_hdr = (pe_section_header *)((UINT64)data_dirs + (sizeof(pe_data_dir) * (UINT64)win_fields->number_of_data_dirs));
 
+        // These sections need to be loaded into virtual memory somewhere
+        // that is backed by physical memory
+        UINTN i;
+        for (i = 0; i < coff_fh->number_of_sections; i++) {
 
+        }
     }
 }

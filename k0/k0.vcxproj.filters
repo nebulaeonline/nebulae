@@ -144,5 +144,8 @@
     <NASM Include="src\arch\x64\x64_interrupts.asm">
       <Filter>Source Files</Filter>
     </NASM>
+    <NASM Include="src\arch\x64\_kavl.asm">
+      <Filter>Source Files</Filter>
+    </NASM>
   </ItemGroup>
 </Project>

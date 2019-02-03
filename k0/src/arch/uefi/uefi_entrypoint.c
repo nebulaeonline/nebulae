@@ -196,7 +196,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     extern BOOLEAN k0_is_uefi;
     k0_is_uefi = FALSE;
 
-    // Create our page tables
 #ifdef __NEBULAE_ARCH_X64
     x64InitKernelStacks();
     x64InitGDT();

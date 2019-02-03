@@ -129,7 +129,7 @@ EFI_PHYSICAL_ADDRESS* AllocPhysicalPage(UINTN page_size) {
 // Allocates a physical page of memory that contains the
 // specified address; If NULL is returned, page_size must 
 // be ignored on return
-EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size) {
+EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size) {
     
     // Address and page_size pointer cannot be NULL
     if (ISNULL(addr) || ISNULL(page_size)) {
@@ -154,7 +154,7 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UI
     }
 }
 
-// Frees a physical page of memory allocated with AllocPage
+// Frees a physical page of memory allocated with AllocPhysicalPage
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
 nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
     
@@ -451,7 +451,7 @@ VOID AllocateSystemStruct() {
 
 // Removes a page from the free system physical memory stacks
 // containing the specified address
-nebStatus RemoveFreePageContainingAddr(UINT64 addr) {
+nebStatus RemoveFreePageContainingPhysicalAddr(UINT64 addr) {
     
     nebStatus found_in_2MB = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(found_in_2MB)) {
@@ -510,4 +510,11 @@ UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
     x64GetPageInfo(NULL, addr);
 #endif
 
+}
+
+// Invalidates a page in the page cache (TLB)
+VOID InvalidatePage(EFI_VIRTUAL_ADDRESS base_addr) {
+#ifdef __NEBULAE_ARCH_X64
+    x64InvalidatePage(base_addr);
+#endif
 }

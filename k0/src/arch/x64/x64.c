@@ -615,7 +615,7 @@ VOID x64InitKernelStacks() {
         kernel_stack[i].stack_base = kernel_stack[i].guard_page_high_base - ALIGN_16; 
     }
 
-    // So now there's 7 interrupt stacks along with 14 guard 
+    // So now there's 7 32KB interrupt stacks along with 14 guard 
     // pages, but the guard pages don't yet guard anything 
     // because we haven't moved to our own page tables yet :/ 
     // #TODO mark guard pages not present
@@ -2614,6 +2614,8 @@ EFI_PHYSICAL_ADDRESS x64GetCurrentPML4TableAddr() {
 
 // Allocates a block of random memory within
 // the largest available conventional chunk
+// #TODO there is a bug creeping around here;
+// #BUG kernel stack allocation fails (not only) when mb->addr == 0x1C000000
 VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 size, UINT64 alignment_mask) {
 
     // Memory Subsystem Vars
@@ -2643,7 +2645,7 @@ VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 si
         Print(L"Scratch area allocated @ 0x%lx\n", addr);
     }
 
-    // Initialize the pre-boot memory block (the scratch area) struct
+    // Initialize the pre-boot memory block struct
     if (InitPrebootMemBlock(mb, id, addr, size) != mb) {
         kernel_panic(L"There was a problem initializing a kernel scratch area - preboot mem block allocation failed!\n");
     }
@@ -2655,7 +2657,7 @@ VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 si
 
     while (bytes_to_remove > 0) {
         
-        remove_scratch_page_result = RemoveFreePageContainingAddr(current_addr);
+        remove_scratch_page_result = RemoveFreePageContainingPhysicalAddr(current_addr);
 
         if (NEB_ERROR(remove_scratch_page_result)) {
             kernel_panic(L"Unable to remove scratch pages from physical memory stacks @ 0x%lx: %ld\n",
@@ -3025,7 +3027,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
 // Un-maps a physical page from the specified virtual address in the given address space;
 // If no address space is specified, then the mapping is removed from the current address
 // space- note that there is no actual change of address space mappings here; i.e.
-// you have to flush your own CR3 if you're modifying the current address space
+// you have to reload your own CR3 if you're modifying the current address space
 VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
     if (ISNULL(pml4e_base)) {
         pml4e_base = x64GetCurrentPML4TableAddr();

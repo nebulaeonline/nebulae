@@ -395,5 +395,16 @@ extern UINT16 EFIAPI x64ReadES();
 extern UINT16 EFIAPI x64ReadFS();
 extern UINT16 EFIAPI x64ReadGS();
 extern VOID EFIAPI x64LoadTR(UINT16 tr_gdt_descr_index);
+extern VOID EFIAPI x64InvalidatePage(EFI_PHYSICAL_ADDRESS *base_addr);
+extern VOID EFIAPI x64AtomicOr(UINT64 *value, UINT64 mask);
+extern VOID EFIAPI x64AtomicAnd(UINT64 *value, UINT64 mask);
+extern VOID EFIAPI x64AtomicXor(UINT64 *value, UINT64 mask);
+extern VOID EFIAPI x64AtomicAdd(UINT64 *value, UINT64 addend);
+extern VOID EFIAPI x64AtomicSub(UINT64 *value, UINT64 subtrahend);
+extern VOID EFIAPI x64AtomicInc(UINT64 *value);
+extern VOID EFIAPI x64AtomicDec(UINT64 *value);
+extern UINT8 EFIAPI x64AtomicDecAndTestZero(UINT64 *value);
+extern VOID EFIAPI x64SpinlockAcquire(VOID *spinlock);
+extern VOID EFIAPI x64SpinlockRelease(VOID *spinlock);
 
 #endif /* __K0_X64_H */

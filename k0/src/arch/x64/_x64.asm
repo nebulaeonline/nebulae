@@ -32,7 +32,11 @@ global x64WriteCR3, x64ReadGdtr, x64WriteGdtr
 global x64ReadIdtr, x64WriteIdtr, x64ReadCR2
 global x64ReadCS, x64ReadDS, x64ReadSS
 global x64ReadES, x64ReadFS, x64ReadGS
-global x64LoadTR
+global x64LoadTR, x64InvalidatePage, x64AtomicOr
+global x64AtomicAnd, x64AtomicXor, x64AtomicAdd
+global x64AtomicSub, x64AtomicInc, x64AtomicDec
+global x64AtomicDecAndTestZero, 
+global x64SpinlockAcquire, x64SpinlockRelease
 
 bits 64
 %define retfq o64 retf
@@ -42,7 +46,7 @@ segment .text
 ;==================================
 ; VOID x64OutportB(
 ;   UINT16 Port, 
-;   UINT8  Value)
+;   UINT8  Value);
 ;
 x64OutportB:
     mov rax, rcx
@@ -58,7 +62,7 @@ x64OutportB:
 ;==================================
 ; VOID x64OutportW(
 ;   UINT16 Port, 
-;   UINT16 Value)
+;   UINT16 Value);
 ;
 x64OutportW:
     mov rax, rcx
@@ -73,7 +77,7 @@ x64OutportW:
 
 ;==================================
 ; UINT8 x64InportB(
-;   UINT16 Port)
+;   UINT16 Port);
 ;
 x64InportB:
     mov rax, rcx
@@ -85,7 +89,7 @@ x64InportB:
 
 ;==================================
 ; UINT16 x64InportW(
-;   UINT16 Port)
+;   UINT16 Port);
 ;
 x64InportW:
     mov rax, rcx
@@ -96,14 +100,14 @@ x64InportW:
     ret
 
 ;==================================
-; VOID x64EnableInterrupts()
+; VOID x64EnableInterrupts();
 ;
 x64EnableInterrupts:
     cli
     ret
 
 ;==================================
-; VOID x64DisableInterrupts()
+; VOID x64DisableInterrupts();
 ;
 x64DisableInterrupts:
     sti
@@ -112,7 +116,7 @@ x64DisableInterrupts:
 ;==================================
 ; UINT64
 ; EFIAPI
-; x64ReadTsc ()
+; x64ReadTsc ();
 ;
 x64ReadTsc:
     rdtsc
@@ -134,8 +138,7 @@ x64WriteCR3:
 ; VOID
 ; EFIAPI
 ; x64ReadGdtr (
-;   OUT x64_seg_sel  *gdtr
-;   );
+;   OUT x64_seg_sel  *gdtr);
 ;
 x64ReadGdtr:
     sgdt    [rcx]
@@ -144,7 +147,8 @@ x64ReadGdtr:
 ;==================================
 ; VOID
 ; EFIAPI
-; x64WriteGdtr (IN CONST x64_seg_sel *gdtr);
+; x64WriteGdtr (
+;   IN CONST x64_seg_sel *gdtr);
 ;
 x64WriteGdtr:
     lgdt    [rcx]
@@ -154,8 +158,7 @@ x64WriteGdtr:
 ; VOID
 ; EFIAPI
 ; x64ReadIdtr (
-;   OUT x64_seg_sel  *idtr
-;   );
+;   OUT x64_seg_sel  *idtr);
 ;
 x64ReadIdtr:
     sidt    [rcx]
@@ -164,17 +167,18 @@ x64ReadIdtr:
 ;==================================
 ; VOID
 ; EFIAPI
-; x64WriteIdtr (IN CONST x64_seg_sel *idtr);
+; x64WriteIdtr (
+;   IN CONST x64_seg_sel *idtr);
 ;
 x64WriteIdtr:
     lidt    [rcx]
     ret
 
-;------------------------------------------------------------------------------
-; UINTN
+;==================================
+; UINT64
 ; EFIAPI
 ; x64ReadCR2 (VOID);
-;------------------------------------------------------------------------------
+;
 x64ReadCR2:
     mov     rax, cr2
     ret
@@ -185,8 +189,8 @@ x64ReadCR2:
 ; x64ReadCS ();
 ;
 x64ReadCS:
-    xor rax, rax
-    mov ax, cs
+    xor     rax, rax
+    mov     ax, cs
     ret
 
 ;==================================
@@ -195,8 +199,8 @@ x64ReadCS:
 ; x64ReadDS ();
 ;
 x64ReadDS:
-    xor rax, rax
-    mov ax, ds
+    xor     rax, rax
+    mov     ax, ds
     ret
 
 ;==================================
@@ -205,8 +209,8 @@ x64ReadDS:
 ; x64ReadSS ();
 ;
 x64ReadSS:
-    xor rax, rax
-    mov ax, ss
+    xor     rax, rax
+    mov     ax, ss
     ret
 
 ;==================================
@@ -215,8 +219,8 @@ x64ReadSS:
 ; x64ReadES ();
 ;
 x64ReadES:
-    xor rax, rax
-    mov ax, es
+    xor     rax, rax
+    mov     ax, es
     ret
 
 ;==================================
@@ -225,8 +229,8 @@ x64ReadES:
 ; x64ReadFS ();
 ;
 x64ReadFS:
-    xor rax, rax
-    mov ax, fs
+    xor     rax, rax
+    mov     ax, fs
     ret
 
 ;==================================
@@ -235,17 +239,142 @@ x64ReadFS:
 ; x64ReadGS ();
 ;
 x64ReadGS:
-    xor rax, rax
-    mov ax, es
+    xor     rax, rax
+    mov     ax, es
     ret
 
 ;==================================
 ; VOID
 ; EFIAPI
 ; x64LoadTR (
-;   UINT16 tr_gdt_descr_index
-;   );
+;   UINT16 tr_gdt_descr_index);
 ;
 x64LoadTR:
-    ltr cx
+    ltr     cx
     ret
+
+;==================================
+; VOID 
+; EFIAPI 
+; x64InvalidatePage(
+;   EFI_PHYSICAL_ADDRESS *addr);
+;
+x64InvalidatePage:
+	invlpg  [rcx]
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicOr(
+;   UINT64 *value, 
+;   UINT64 mask);
+;
+x64AtomicOr:
+    lock or qword [rcx], rdx
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicAnd(
+;   UINT64 *value, 
+;   UINT64 mask);
+;
+x64AtomicAnd:
+    lock and qword [rcx], rdx
+    ret
+
+;==================================
+; VOID 
+; EFIAPI
+; x64AtomicXor(
+;   UINT64 *value, 
+;   UINT64 mask);
+;
+x64AtomicXor:
+    lock xor qword [rcx], rdx
+    ret
+	
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicAdd(
+;   UINT64 *value, 
+;   UINT64 addend);
+;
+x64AtomicAdd:
+	lock add qword [rcx], rdx
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicSub(
+;   UINT64 *value, 
+;   UINT64 subtrahend);
+;
+x64AtomicSub:
+    lock sub qword [rcx], rdx
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicInc(UINT64 *value);
+;
+x64AtomicInc:
+    lock inc qword [rcx]
+    ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64AtomicDec(UINT64 *value);
+;
+x64AtomicDec:
+    lock dec qword [rcx]
+    ret
+
+;==================================
+; UINT8 
+; EFIAPI
+; x64AtomicDecAndTestZero(
+;   UINT64 *value);
+;
+x64AtomicDecAndTestZero:
+    lock dec qword [rcx]
+    xor rax, rax
+	setz al
+	ret
+
+;==================================
+; VOID
+; EFIAPI
+; x64SpinlockAcquire(
+;   VOID *spinlock);
+;
+x64SpinlockAcquire:
+	cmp qword [rcx], 0
+	je x64_s_a_get_spinlock
+	pause
+	jmp x64SpinlockAcquire
+	
+x64_s_a_get_spinlock:
+	mov qword rbx, 1
+	xchg [rcx], rbx
+	cmp qword rbx, 0
+	jne x64SpinlockAcquire
+	ret
+
+;==================================	
+; VOID
+; EFIAPI
+; x64SpinlockRelease(
+;   VOID *spinlock);
+;
+x64SpinlockRelease:
+	mov qword rbx, 0
+	xchg [rcx], rbx
+	ret
+	

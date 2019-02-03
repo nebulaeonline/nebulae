@@ -62,15 +62,17 @@ VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desi
 VOID* kPrebootCriticalMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desired_alignment);
 
 EFI_PHYSICAL_ADDRESS* AllocPhysicalPage(UINTN page_size);
-EFI_PHYSICAL_ADDRESS* AllocPageContainingAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size);
+EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size);
+
 
 nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
 UINT64    GetFreeMemStackCount(UINT32 which_size);
 nebStatus InitMem();
 UINTN     ReadUefiMemoryMap();
 VOID      AllocateSystemStruct();
-nebStatus RemoveFreePageContainingAddr(UINT64 addr);
+nebStatus RemoveFreePageContainingPhysicalAddr(UINT64 addr);
 BOOLEAN   IsPageFree_Preboot(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
+VOID      InvalidatePage(EFI_VIRTUAL_ADDRESS base_addr);
 
 #endif /* __K0_KMEM_H */

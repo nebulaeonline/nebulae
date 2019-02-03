@@ -27,15 +27,16 @@
 
 #include "../k0.h"
 
-typedef struct s_kavl_node;
+typedef struct kavl_node;
 
 typedef PACKED_MS struct s_kavl_ptrset {
-    s_kavl_node *left;
-    INT64        left_balance;
-    s_kavl_node *right;
-    INT64        right_balance;
-    INT64        depth;
-    INT64        height;
+    kavl_node   *left;
+    INT64       left_balance;
+    kavl_node   *right;
+    INT64       right_balance;
+    INT64       depth;
+    INT64       height;
+    UINT64      lock;
 } PACKED_GNU kavl_ptrset;
 
 typedef PACKED_MS struct s_kavl_node {
