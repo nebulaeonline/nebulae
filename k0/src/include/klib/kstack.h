@@ -46,7 +46,7 @@ typedef struct s_kstack {
 
 // Initializes a stack structure with appropriate values given the parameters
 // size_in_bytes must be a multiple of KSTACK_UNIT_SIZE
-nebStatus kInitStackStructure(kstack *stack, 
+nstatus kInitStackStructure(kstack *stack, 
                               EFI_PHYSICAL_ADDRESS* base_addr, 
                               UINTN size_in_bytes, INT32 dir);
 
@@ -68,9 +68,9 @@ UINT64 kGetStackCount(kstack *stack);
 // i.e. SIZE_4KB for 4KB pages, or SIZE_2MB for 2MB pages; this value is
 // added to each address in the stack to see if value falls in that range.
 // Exact matches would have a size factor of 0.
-nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor);
+nstatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor);
 
 // Finds an item in the stack
-nebStatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor);
+nstatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor);
 
 #endif // __K0_KSTACK_H

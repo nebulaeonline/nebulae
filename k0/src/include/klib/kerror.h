@@ -26,7 +26,7 @@
 #define __K0_KERROR_H
 
 // System-wide Status Code type
-typedef INT64 nebStatus;
+typedef INT64 nstatus;
 #define NEB_ERROR(X)                    ((X < 0) ? TRUE : FALSE)
 #define NEB_SUCCESS(X)                  ((X >= 0) ? TRUE : FALSE)
 #define NEB_OK                          0LL

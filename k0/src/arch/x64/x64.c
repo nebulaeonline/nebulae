@@ -317,7 +317,7 @@ x64_kernel_stack kernel_stack[8];
 BOOLEAN kernel_stacks_initialized = FALSE;
 
 // Zeros a 512-entry pml4 table representing a virtual address space
-nebStatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
+nstatus x64ClearVirtualAddressSpace(x64_virtual_address_space *vas) {
     
     if (ISNULL(vas)) {
         return NEBERROR_NULL_PTR_UNEXPECTED;
@@ -2653,7 +2653,7 @@ VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 si
     // Remove the(se) page(s) from the physical free page stack
     UINT64 bytes_to_remove = size;
     UINT64 current_addr = addr;
-    nebStatus remove_scratch_page_result; 
+    nstatus remove_scratch_page_result; 
 
     while (bytes_to_remove > 0) {
         

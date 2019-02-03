@@ -65,12 +65,12 @@ EFI_PHYSICAL_ADDRESS* AllocPhysicalPage(UINTN page_size);
 EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr, OUT UINTN *page_size);
 
 
-nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
+nstatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size);
 UINT64    GetFreeMemStackCount(UINT32 which_size);
-nebStatus InitMem();
+nstatus InitMem();
 UINTN     ReadUefiMemoryMap();
 VOID      AllocateSystemStruct();
-nebStatus RemoveFreePageContainingPhysicalAddr(UINT64 addr);
+nstatus RemoveFreePageContainingPhysicalAddr(UINT64 addr);
 BOOLEAN   IsPageFree_Preboot(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
 VOID      InvalidatePage(EFI_VIRTUAL_ADDRESS base_addr);

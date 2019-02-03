@@ -151,7 +151,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
     InitGraphics();
 
     // Initialize the memory subsystem
-    nebStatus init_mem_status = InitMem();
+    nstatus init_mem_status = InitMem();
 
     if (NEB_ERROR(init_mem_status)) {
         kernel_panic(L"There was a problem initializing the memory management subsystem: %ld\n", init_mem_status);
@@ -216,7 +216,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
         kernel_panic(L"Unable to allocate 4KB page\n");
     }
 
-    nebStatus free_result = FreePhysicalPage(page_2MB, SIZE_2MB);
+    nstatus free_result = FreePhysicalPage(page_2MB, SIZE_2MB);
 
     if (NEB_ERROR(free_result)) {
         kernel_panic(L"Unable to free 2MB page; result == %ld\n", free_result);

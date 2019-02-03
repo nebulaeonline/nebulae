@@ -137,7 +137,7 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr
     }
     
     // Look in 2MB pages first
-    nebStatus swap_result = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
+    nstatus swap_result = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(swap_result)) { // not found, look in 4KB pages
         swap_result = kStackSwapValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
         if (NEB_ERROR(swap_result)) { // really not found
@@ -156,14 +156,14 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr
 
 // Frees a physical page of memory allocated with AllocPhysicalPage
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
-nebStatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
+nstatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
     
     if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
         Print(L"Invalid page size\n");
         return NEBERROR_INVALID_PAGE_SIZE;
     }
 
-    nebStatus swap_result = NEBSTATUS_UNDETERMINED;
+    nstatus swap_result = NEBSTATUS_UNDETERMINED;
     UINT64 allocated_result = 0;
 
     return NEB_OK;
@@ -183,7 +183,7 @@ UINT64 GetFreeMemStackCount(UINT32 which_size) {
 
 // This function allocates 2MB of space for 2MB pages and 2MB of 
 // space for 4KB pages in 2 separate kernel "stack" data structures
-nebStatus InitMem() {
+nstatus InitMem() {
     
     UINT64 ret = NEB_OK;
 
@@ -451,12 +451,12 @@ VOID AllocateSystemStruct() {
 
 // Removes a page from the free system physical memory stacks
 // containing the specified address
-nebStatus RemoveFreePageContainingPhysicalAddr(UINT64 addr) {
+nstatus RemoveFreePageContainingPhysicalAddr(UINT64 addr) {
     
-    nebStatus found_in_2MB = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
+    nstatus found_in_2MB = kStackSwapValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(found_in_2MB)) {
 
-        nebStatus found_in_4KB = kStackSwapValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
+        nstatus found_in_4KB = kStackSwapValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
 
         if (NEB_ERROR(found_in_4KB)) {
             // We didn't find shit
@@ -484,10 +484,10 @@ nebStatus RemoveFreePageContainingPhysicalAddr(UINT64 addr) {
 // cause a race condition if used once 
 // multiprocessing is enabled.
 BOOLEAN IsPageFree_Preboot(UINT64 addr) {
-    nebStatus found_in_2MB = kStackFindValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
+    nstatus found_in_2MB = kStackFindValue(&kmem_free_pages_2MB, (UINT64)addr, SIZE_2MB);
     if (NEB_ERROR(found_in_2MB)) {
 
-        nebStatus found_in_4KB = kStackFindValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
+        nstatus found_in_4KB = kStackFindValue(&kmem_free_pages_4KB, (UINT64)addr, SIZE_4KB);
 
         if (NEB_ERROR(found_in_4KB)) {
             // We didn't find shit

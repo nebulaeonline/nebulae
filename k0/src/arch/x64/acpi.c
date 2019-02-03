@@ -42,7 +42,7 @@ extern nebulae_system_table *system_table;
 
 // this is the internal function that actually parses
 // the ACPI tables
-nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
+nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     EFI_ACPI_DESCRIPTION_HEADER *xsdt, *entry;
     CHAR16 sig[20], oemstr[20];
     UINT32 entry_count;
@@ -172,7 +172,7 @@ nebStatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
 // information about the local APIC, IOAPIC, and number
 // of cpus.  
 // **there is NO transition into ACPI mode at this point
-nebStatus x64PreInitAcpi() {
+nstatus x64PreInitAcpi() {
 
     EFI_CONFIGURATION_TABLE *ect = gST->ConfigurationTable;
     X64_ACPI_RSDP *rsdp = NULL;

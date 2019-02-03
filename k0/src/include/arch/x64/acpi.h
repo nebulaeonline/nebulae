@@ -205,7 +205,7 @@ typedef PACKED_MS struct s_x64_overridden_interrupt {
 } PACKED_GNU x64_overriden_interrupt;
 
 // Prototypes
-nebStatus x64PreInitAcpi();
+nstatus x64PreInitAcpi();
 
 VOID   x64InitPIC();
 VOID   x64InitIoApic();

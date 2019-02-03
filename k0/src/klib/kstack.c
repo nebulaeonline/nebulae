@@ -28,7 +28,7 @@
 
 // Initialize a stack structure
 // Valid direction for stack (dir) is 1 or -1
-nebStatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UINTN size_in_bytes, INT32 dir) {
+nstatus kInitStackStructure(kstack *stack, EFI_PHYSICAL_ADDRESS* base_addr, UINTN size_in_bytes, INT32 dir) {
     
     // Verify no nulls
     if (ISNULL(stack) || ISNULL(base_addr)) {
@@ -152,7 +152,7 @@ UINT64 kGetStackCount(kstack *stack) {
 
 // Locates a value in the stack and swaps it with the 
 // value at the top of the stack
-nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
+nstatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
 
     UINT64 *current_item = stack->top;
 
@@ -179,7 +179,7 @@ nebStatus kStackSwapValue(kstack *stack, UINT64 value, UINTN size_factor) {
 }
 
 // Locates a value in the stack 
-nebStatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor) {
+nstatus kStackFindValue(kstack *stack, UINT64 value, UINTN size_factor) {
 
     UINT64 *current_item = stack->top;
 
