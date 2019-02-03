@@ -295,7 +295,7 @@ x64AtomicAnd:
 x64AtomicXor:
     lock xor qword [rcx], rdx
     ret
-	
+    
 ;==================================
 ; VOID
 ; EFIAPI
@@ -304,7 +304,7 @@ x64AtomicXor:
 ;   UINT64 addend);
 ;
 x64AtomicAdd:
-	lock add qword [rcx], rdx
+    lock add qword [rcx], rdx
     ret
 
 ;==================================
@@ -345,8 +345,8 @@ x64AtomicDec:
 x64AtomicDecAndTestZero:
     lock dec qword [rcx]
     xor rax, rax
-	setz al
-	ret
+    setz al
+    ret
 
 ;==================================
 ; VOID
@@ -355,26 +355,26 @@ x64AtomicDecAndTestZero:
 ;   VOID *spinlock);
 ;
 x64SpinlockAcquire:
-	cmp qword [rcx], 0
-	je x64_s_a_get_spinlock
-	pause
-	jmp x64SpinlockAcquire
-	
+    cmp qword [rcx], 0
+    je x64_s_a_get_spinlock
+    pause
+    jmp x64SpinlockAcquire
+    
 x64_s_a_get_spinlock:
-	mov qword rbx, 1
-	xchg [rcx], rbx
-	cmp qword rbx, 0
-	jne x64SpinlockAcquire
-	ret
+    mov qword rbx, 1
+    xchg [rcx], rbx
+    cmp qword rbx, 0
+    jne x64SpinlockAcquire
+    ret
 
-;==================================	
+;==================================    
 ; VOID
 ; EFIAPI
 ; x64SpinlockRelease(
 ;   VOID *spinlock);
 ;
 x64SpinlockRelease:
-	mov qword rbx, 0
-	xchg [rcx], rbx
-	ret
-	
+    mov qword rbx, 0
+    xchg [rcx], rbx
+    ret
+    
