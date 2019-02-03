@@ -343,8 +343,8 @@ x64AtomicDec:
 ;   UINT64 *value);
 ;
 x64AtomicDecAndTestZero:
-    lock dec qword [rcx]
     xor rax, rax
+    lock dec qword [rcx]
     setz al
     ret
 
