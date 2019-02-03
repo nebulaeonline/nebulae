@@ -277,3 +277,5 @@ __pycache__/
 
 # For Rust Libraries
 target/
+
+*.filters
