@@ -27,7 +27,7 @@
 global x64OutportB, x64OutportW
 global x64InportB, x64InportW
 global x64EnableInterrupts, x64DisableInterrupts
-global x64ReadTsc, x64LoadStackSegmentAndJump
+global x64ReadTsc
 global x64WriteCR3, x64ReadGdtr, x64WriteGdtr
 global x64ReadIdtr, x64WriteIdtr, x64ReadCR2
 global x64ReadCS, x64ReadDS, x64ReadSS
@@ -125,13 +125,22 @@ x64ReadTsc:
     ret
 
 ;==================================
-; UINTN
+; UINT64
 ; EFIAPI
 ; x64WriteCR3 (UINTN  new_cr3);
 ;
 x64WriteCR3:
     mov     cr3, rcx
     mov     rax, rcx
+    ret
+
+;==================================
+; UINT64
+; EFIAPI
+; x64ReadCR3 ();
+;
+x64ReadCR3:
+    mov     rax, cr3
     ret
 
 ;==================================

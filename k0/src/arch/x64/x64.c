@@ -2608,7 +2608,7 @@ VOID x64InitIDT() {
 
 // Read CR3 to obtain the address of the PML4 Table
 EFI_PHYSICAL_ADDRESS x64GetCurrentPML4TableAddr() {
-    UINT64 cr3 = AsmReadCr3();
+    UINT64 cr3 = x64ReadCR3();
     return (cr3 & X64_4KB_ALIGN_MASK);
 }
 
@@ -3130,7 +3130,7 @@ UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr) {
     }
 
     if (k0_PAGETABLE_DEBUG) {
-        Print(L"cr3 == 0x%lx\n", AsmReadCr3());
+        Print(L"cr3 == 0x%lx\n", x64ReadCR3());
         Print(L"PML4Entry at PML4Table[0x%lx] found at 0x%lx == 0x%lx\n", 
             PML4_INDEX(addr), 
             &l4_table[PML4_INDEX(addr)], 
