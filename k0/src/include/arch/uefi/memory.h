@@ -73,6 +73,6 @@ VOID      AllocateSystemStruct();
 nstatus RemoveFreePageContainingPhysicalAddr(UINT64 addr);
 BOOLEAN   IsPageFree_Preboot(UINT64 addr);
 UINT64*   GetPageInfo(EFI_VIRTUAL_ADDRESS addr);
-VOID      InvalidatePage(EFI_VIRTUAL_ADDRESS base_addr);
+VOID      InvalidatePage(EFI_VIRTUAL_ADDRESS *base_addr);
 
 #endif /* __K0_KMEM_H */

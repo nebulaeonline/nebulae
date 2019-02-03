@@ -73,6 +73,7 @@
 #define HI32(X)                         (UINT32)((((UINT64)(X)) & HI32_MASK) >> 32)
 #define LO32(X)                         (UINT32)(((UINT64)(X)) & LO32_MASK)
 #define ISNULL(X)                       (X == NULL)
+#define ISINTPTRNULL(X)                 (X == 0ULL)
 #define UDIV_UP(A, B)                   ((((UINT64)A) + ((UINT64)B) - 1ULL) / ((UINT64)B))
 #define ALIGN_UP(A, B)                  (UDIV_UP((UINT64)A, (UINT64)B) * ((UINT64)B))
 #define ARRAYLEN(X)                     (sizeof(X) / sizeof((X)[0]))
@@ -117,15 +118,12 @@ typedef PACKED_MS struct s_nebulae_sys_common_header {
     UINT64  reserved;
 } PACKED_GNU nebulae_sys_common_header;
 
-// forward struct declaration
-typedef struct nebulae_sys_element;
-
 // Generic element structure
 typedef PACKED_MS struct s_nebulae_sys_element {
     UINT64  type_id;
     UINT64  value;
-    struct nebulae_sys_element *prev;
-    struct nebulae_sys_element *next;
+    struct s_nebulae_sys_element *prev;
+    struct s_nebulae_sys_element *next;
 } PACKED_GNU nebulae_sys_element;
 
 // System table struct declaration

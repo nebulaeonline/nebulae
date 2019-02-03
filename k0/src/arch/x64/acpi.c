@@ -44,7 +44,7 @@ extern nebulae_system_table *system_table;
 // the ACPI tables
 nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     EFI_ACPI_DESCRIPTION_HEADER *xsdt, *entry;
-    CHAR16 sig[20], oemstr[20];
+    CHAR16 oemstr[20];
     UINT32 entry_count;
     UINT64 *entry_ptr;
     UINT32 index;
@@ -65,13 +65,10 @@ nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
         return NEBERROR_ACPI_XSDT_NOT_FOUND;
     }
 
-    if (xsdt->Signature & 0xFFFFFFFF00 != 0x5444535800) {
-        if (k0_VERBOSE_DEBUG) {
-            Print(L"ERROR: Invalid Xsdt table found: %0x%x\n", xsdt->Signature);
-        }
-        return NEBERROR_ACPI_INVALID_XSDT;
+    if ((xsdt->Signature & 0xFFFFFFFF) != 0x54445358) {
+        kernel_panic(L"Xsdt table not found or invalid: 0x%x\n", xsdt->Signature);
     }
-        
+            
     entry_count = (xsdt->Length - sizeof(EFI_ACPI_DESCRIPTION_HEADER)) / sizeof(UINT64);
     if (k0_VERBOSE_DEBUG) {
         kAscii2UnicodeStr((CHAR8 *)(xsdt->OemId), oemstr, 6);
@@ -89,9 +86,9 @@ nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     system_table->acpi_cpu_table.type_id = NEBTYPE_ACPI_CPU;
     system_table->acpi_cpu_table.struct_sz = sizeof(nebulae_sys_element);
     system_table->acpi_cpu_table.struct_count = 0;
-    system_table->acpi_cpu_table.element0_addr = NULL;
-    system_table->acpi_cpu_table.elementn_addr = NULL;
-    system_table->acpi_cpu_table.parent_addr = NULL;
+    system_table->acpi_cpu_table.element0_addr = 0;
+    system_table->acpi_cpu_table.elementn_addr = 0;
+    system_table->acpi_cpu_table.parent_addr = 0;
     system_table->acpi_cpu_table.reserved = NEBULAE_ACPI_CPU_TABLE;
 
     // Set up the acpi interrupt override header
@@ -99,9 +96,9 @@ nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
     system_table->acpi_interrupt_override_table.type_id = NEBTYPE_ACPI_OVERRIDDEN_INTERRUPT;
     system_table->acpi_interrupt_override_table.struct_sz = sizeof(nebulae_sys_element);
     system_table->acpi_interrupt_override_table.struct_count = 0;
-    system_table->acpi_interrupt_override_table.element0_addr = NULL;
-    system_table->acpi_interrupt_override_table.elementn_addr = NULL;
-    system_table->acpi_interrupt_override_table.parent_addr = NULL;
+    system_table->acpi_interrupt_override_table.element0_addr = 0;
+    system_table->acpi_interrupt_override_table.elementn_addr = 0;
+    system_table->acpi_interrupt_override_table.parent_addr = 0;
     system_table->acpi_interrupt_override_table.reserved = NEBULAE_ACPI_INTERRUPT_OVERRIDE_TABLE;
 
     // Let others in preboot know we're good with Xsdt
@@ -118,7 +115,7 @@ nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
         case ACPI_FACP_TABLE_SIG:
             break;
         case ACPI_MADT_TABLE_SIG:
-            madt = entry;
+            madt = (X64_MADT_HEADER *)entry;
             system_table->lapic_base_addr = madt->LocalApicAddress;
 
             UINT8 *xsdt_curr = (UINT8 *)(madt + 1);
@@ -135,7 +132,7 @@ nstatus ParseRSDP(X64_ACPI_RSDP *rsdp, CHAR16* guid) {
                     system_table->cpu_count++;
                     break;
                 case EFI_ACPI_1_0_IO_APIC:
-                    ia = hdr;
+                    ia = (x64_io_apic *)hdr;
                     system_table->ioapic_base_addr = ia->addr;
                     break;
                 case EFI_ACPI_1_0_INTERRUPT_SOURCE_OVERRIDE:
@@ -237,7 +234,7 @@ VOID x64InitIoApic() {
         kernel_panic(L"nebulae requires IOAPIC support on x64\n");
     }
     
-    if (ISNULL(system_table->ioapic_base_addr)) {
+    if (ISINTPTRNULL(system_table->ioapic_base_addr)) {
         kernel_panic(L"Fatal attempt to initialize IOAPIC before ACPI\n");
     }
 
@@ -281,7 +278,7 @@ VOID x64SetIoApicEntry(UINT8 index, UINT64 data) {
 
 // Read the IOAPIC
 UINT32 x64ReadIoApic(UINT8 reg) {
-    ASSERT(!ISNULL(system_table->ioapic_base_addr));
+    ASSERT(!ISINTPTRNULL(system_table->ioapic_base_addr));
     
     MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOREGSEL, reg);
     return MmioRead32(system_table->ioapic_base_addr + X64_APIC_IOWIN);
@@ -289,7 +286,7 @@ UINT32 x64ReadIoApic(UINT8 reg) {
 
 // Writes the IOAPIC
 VOID x64WriteIoApic(UINT8 reg, UINT32 value) {
-    ASSERT(!ISNULL(system_table->ioapic_base_addr));
+    ASSERT(!ISINTPTRNULL(system_table->ioapic_base_addr));
 
     MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOREGSEL, reg);
     MmioWrite32(system_table->ioapic_base_addr + X64_APIC_IOWIN, value);
@@ -297,7 +294,7 @@ VOID x64WriteIoApic(UINT8 reg, UINT32 value) {
 
 // Reads the Local APIC
 UINT32 x64ReadLocalApic(UINT32 reg) {
-    ASSERT(!ISNULL(system_table->lapic_base_addr));
+    ASSERT(!ISINTPTRNULL(system_table->lapic_base_addr));
 
     return MmioRead32(system_table->lapic_base_addr + reg);
 }

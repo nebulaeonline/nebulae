@@ -247,6 +247,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE uefi_image_handle, IN EFI_SYSTEM_TABLE*
 
     k0_main();
 
-exit:
+    // shut up the compiler
     return EFI_SUCCESS;
 }

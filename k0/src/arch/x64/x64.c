@@ -451,7 +451,7 @@ VOID x64InitGDT() {
 
     // Allocate for gdt
     gdt = kPrebootMalloc(&k0_preboot_heap, X64_GDT_MAX * sizeof(x64_seg_descr), ALIGN_16);
-    x64_seg_sel gdt_sel = { .base = gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
+    x64_seg_sel gdt_sel = { .base = (UINT64)gdt, .limit = X64_GDT_MAX * sizeof(x64_seg_descr) };
 
     if (ISNULL(gdt)) {
         kernel_panic(L"Problem allocating memory for global descriptor table\n");
@@ -495,7 +495,7 @@ VOID x64InitGDT() {
     x64_seg_descr *gdt_entry = (x64_seg_descr*)pgdt.base;
     UINT16 current_entry = 0;
 
-    while (gdt_entry < (pgdt.base + pgdt.limit)) {
+    while (gdt_entry < (x64_seg_descr *)(pgdt.base + pgdt.limit)) {
         gdt[++current_entry] = (x64_seg_descr)*gdt_entry;
         gdt_entry++;
     }
@@ -609,10 +609,10 @@ VOID x64InitKernelStacks() {
     // allocation is in 4KB blocks, so requesting 
     // byte alignment here is ok
     for (i = 0; i < 8; i++) {
-        kernel_stack[i].guard_page_low_base = kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB, 1);
-        kernel_stack[i].stack_base = kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB * 8, 1);
-        kernel_stack[i].guard_page_high_base = kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB, 1);
-        kernel_stack[i].stack_base = kernel_stack[i].guard_page_high_base - ALIGN_16; 
+        kernel_stack[i].guard_page_low_base = (UINT64)kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB, 1);
+        kernel_stack[i].stack_base = (UINT64)kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB * 8, 1);
+        kernel_stack[i].guard_page_high_base = (UINT64)kPrebootMalloc(&k0_kernel_stack_area, SIZE_4KB, 1);
+        kernel_stack[i].stack_base = (UINT64)(kernel_stack[i].guard_page_high_base - ALIGN_16);
     }
 
     // So now there's 7 32KB interrupt stacks along with 14 guard 
@@ -2595,7 +2595,7 @@ VOID x64InitIDT() {
     idt[255].typeflags = X64_TYPE_INT_GATE | X64_INT_GATE_PRESENT;
     idt[255].segment_selector = DPL0_CODE64_READABLE;
 
-    x64_seg_sel idt_sel = { .base = idt, .limit = X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate) };
+    x64_seg_sel idt_sel = { .base = (UINT64)idt, .limit = X64_INTERRUPT_MAX * sizeof(x64_inttrap_gate) };
     
     x64DisableInterrupts();
     x64WriteIdtr(&idt_sel);
@@ -2624,14 +2624,14 @@ VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 si
     extern UINTN kmem_total_page_count;
 
     // We are randomly choosing an area in the largest block of free conventional memory
-    EFI_PHYSICAL_ADDRESS addr;
+    EFI_PHYSICAL_ADDRESS *addr;
     UINT64 lowest_addr = (UINT64)kmem_largest_block;
     UINT64 highest_addr = (UINT64)kmem_largest_block + (UINT64)kmem_largest_block_size;
     
     addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64(lowest_addr, highest_addr) & alignment_mask);
     
-    while (ISNULL(addr) || !IsPageFree_Preboot(addr)) {
-        addr = (EFI_PHYSICAL_ADDRESS*)(GetCSPRNG64((UINT64)kmem_largest_block,
+    while (ISNULL(addr) || !IsPageFree_Preboot((UINT64)addr)) {
+        addr = (EFI_PHYSICAL_ADDRESS *)(GetCSPRNG64((UINT64)kmem_largest_block,
             (UINT64)(kmem_largest_block + (kmem_largest_block_size - size))) & alignment_mask);
     }
     
@@ -2652,7 +2652,7 @@ VOID* x64AllocateRandomMemory(x64_preboot_mem_block *mb, CHAR16 id[5], UINT64 si
 
     // Remove the(se) page(s) from the physical free page stack
     UINT64 bytes_to_remove = size;
-    UINT64 current_addr = addr;
+    UINT64 current_addr = (UINT64)addr;
     nstatus remove_scratch_page_result; 
 
     while (bytes_to_remove > 0) {
@@ -2682,7 +2682,8 @@ VOID x64AllocatePrebootKernelHeap() {
     extern preboot_mem_block k0_preboot_heap;
 
     // Allocate 32MB to start with
-    VOID *bs = x64AllocateRandomMemory(&k0_preboot_heap, L"NBSA", SIZE_32MB, X64_2MB_ALIGN_MASK);
+    x64AllocateRandomMemory(&k0_preboot_heap, L"NBSA", SIZE_32MB, X64_2MB_ALIGN_MASK);
+
 }
 
 // Builds our initial kernel page table
@@ -2789,8 +2790,6 @@ VOID x64BuildInitialKernelPageTable() {
         UINT64 mem_block_end = current_addr + ((UINT64)memmap_entry->NumberOfPages * (UINT64)EFI_PAGE_SIZE);
 
         while (current_addr < mem_block_end) {
-            UINT64 *stack_result = NULL;
-
             if ((current_addr % SIZE_2MB) == 0 && (current_addr + SIZE_2MB) <= mem_block_end) {
                 // Already mapped 2MB pages for all physical memory!
                 current_addr += SIZE_2MB;
@@ -2804,8 +2803,8 @@ VOID x64BuildInitialKernelPageTable() {
                 UINTN pde_index = PAGE_DIR_INDEX(current_addr);
                 UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
 
-                x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
-                x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+                x64_pdpte *cur_pdpt = (x64_pdpte *)(k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK);
+                x64_pde   *cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
                 x64_pte   *cur_pt = NULL;
 
                 // See if this entry already points to pages, or if we need to create a page
@@ -2829,7 +2828,7 @@ VOID x64BuildInitialKernelPageTable() {
                         X64_PAGING_SUPERVISOR_MODE;
                 }
                 else {
-                    cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+                    cur_pt = (x64_pte *)(cur_pd[pde_index] & X64_4KB_ALIGN_MASK);
                 }
 
                 // Now we know which page table this physical page should be in, and we have
@@ -2864,9 +2863,9 @@ VOID x64BuildInitialKernelPageTable() {
         UINTN pde_index = PAGE_DIR_INDEX(current_addr);
         UINTN pte_index = PAGE_TABLE_INDEX(current_addr);
 
-        x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
-        x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
-        x64_pte   *cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+        x64_pdpte *cur_pdpt = (x64_pdpte *)(k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK);
+        x64_pde   *cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
+        x64_pte   *cur_pt = (x64_pte *)(cur_pd[pde_index] & X64_4KB_ALIGN_MASK);
 
         cur_pt[pte_index] = (UINT64)current_addr |
             X64_PAGING_PRESENT |
@@ -2884,8 +2883,8 @@ VOID x64BuildInitialKernelPageTable() {
     UINTN pdpt_index = PAGE_DIR_PTR_INDEX(current_addr);
     UINTN pde_index = PAGE_DIR_INDEX(current_addr);
 
-    x64_pdpte *cur_pdpt = k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK;
-    x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+    x64_pdpte *cur_pdpt = (x64_pdpte *)(k0_addr_space.pml4[pml4_index] & X64_4KB_ALIGN_MASK);
+    x64_pde   *cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
 
     if (cur_pdpt[pdpt_index] == 0) {
         cur_pd = (x64_pde*)kPrebootMalloc(&k0_preboot_heap, X64_PAGING_TABLE_MAX * sizeof(x64_pde), ALIGN_4KB);
@@ -2904,7 +2903,7 @@ VOID x64BuildInitialKernelPageTable() {
             X64_PAGING_SUPERVISOR_MODE;
     }
     else {
-        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
     }
 
     cur_pd[pde_index] = (UINT64)current_addr |
@@ -2932,7 +2931,7 @@ VOID x64BuildInitialKernelPageTable() {
         Print(L"Jumping to new page tables @ 0x%lx\n", k0_addr_space.pml4);
     }
 
-    x64WriteCR3(k0_addr_space.pml4);
+    x64WriteCR3((UINT64)k0_addr_space.pml4);
 }
 
 // Reloads CR3 after a change to the page tables for the current address space
@@ -2946,7 +2945,7 @@ VOID x64ReloadCR3() {
 // you have to reload your own CR3 if you're modifying the current address space
 VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_ADDRESS virt, UINT64 flags, UINT64 page_size) {
     if (ISNULL(pml4e_base)) {
-        pml4e_base = x64GetCurrentPML4TableAddr();
+        pml4e_base = (x64_pml4e *)x64GetCurrentPML4TableAddr();
     }
 
     UINT64 virt_base_addr = virt;
@@ -2956,8 +2955,8 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
     UINTN pde_index = PAGE_DIR_INDEX(virt_base_addr);
     UINTN pt_index = PAGE_TABLE_INDEX(virt_base_addr);
 
-    x64_pdpte *cur_pdpt = pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK;
-    x64_pde   *cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+    x64_pdpte *cur_pdpt = (x64_pdpte *)(pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK);
+    x64_pde   *cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
     x64_pte   *cur_pt = NULL;
 
     extern preboot_mem_block k0_preboot_heap;
@@ -2993,7 +2992,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
             X64_PAGING_SUPERVISOR_MODE;
     }
     else {
-        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
     }
 
     // See if this new entry will be a page or a page table
@@ -3017,7 +3016,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
             cur_pd[pde_index] = (UINT64)cur_pt | flags;
         }
         else {
-            cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+            cur_pt = (x64_pte *)(cur_pd[pde_index] & X64_4KB_ALIGN_MASK);
         }
 
         cur_pt[pt_index] = (UINT64)phys | flags;
@@ -3030,7 +3029,7 @@ VOID x64MapPage(x64_pml4e *pml4e_base, EFI_PHYSICAL_ADDRESS phys, EFI_VIRTUAL_AD
 // you have to reload your own CR3 if you're modifying the current address space
 VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
     if (ISNULL(pml4e_base)) {
-        pml4e_base = x64GetCurrentPML4TableAddr();
+        pml4e_base = (x64_pml4e *)x64GetCurrentPML4TableAddr();
     }
 
     UINT64 virt_base_addr = virt;
@@ -3040,7 +3039,7 @@ VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
     UINTN pde_index = PAGE_DIR_INDEX(virt_base_addr);
     UINTN pt_index = PAGE_TABLE_INDEX(virt_base_addr);
 
-    x64_pdpte *cur_pdpt = pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK;
+    x64_pdpte *cur_pdpt = (x64_pdpte *)(pml4e_base[pml4_index] & X64_4KB_ALIGN_MASK);
     x64_pde   *cur_pd = NULL;
     x64_pte   *cur_pt = NULL;
 
@@ -3049,7 +3048,7 @@ VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
         return;
     }
     else {
-        cur_pd = cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK;
+        cur_pd = (x64_pde *)(cur_pdpt[pdpt_index] & X64_4KB_ALIGN_MASK);
 
         if (ISNULL(cur_pd) || !CHECK_BIT(cur_pd[pde_index], X64_PAGING_PRESENT)) {
             // This page directory is not here, or the index for this
@@ -3066,7 +3065,7 @@ VOID x64UnmapPage(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS virt) {
         }
         
         // Ok, must be a page table
-        cur_pt = cur_pd[pde_index] & X64_4KB_ALIGN_MASK;
+        cur_pt = (x64_pte *)(cur_pd[pde_index] & X64_4KB_ALIGN_MASK);
 
         if (ISNULL(cur_pt) || !CHECK_BIT(cur_pt[pt_index], X64_PAGING_PRESENT)) {
             // This page table is not here, or the index for this
@@ -3090,7 +3089,7 @@ VOID  x64DumpGdt() {
     }
 
     x64_seg_descr *gdt_entry = (x64_seg_descr*)pgdt.base;
-    while (gdt_entry < (pgdt.base + pgdt.limit)) {
+    while ((UINT64)gdt_entry < (pgdt.base + pgdt.limit)) {
         Print(L"gdt_entry 0x%lx == 0x%lx\n", ((UINT64)gdt_entry - (UINT64)pgdt.base) / sizeof(x64_seg_descr), (UINT64)*gdt_entry);
         gdt_entry++;
     }
@@ -3112,7 +3111,7 @@ VOID x64AllocateSystemStruct() {
     if (k0_PAGETABLE_DEBUG) {
         Print(L"Page table entry for 0x%lx == 0x%lx\n", 
             system_table,
-            *x64GetPageInfo(NULL, system_table));
+            *x64GetPageInfo(NULL, (EFI_VIRTUAL_ADDRESS)system_table));
     }
 }
 
@@ -3141,7 +3140,7 @@ UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr) {
         return NULL;
     }
 
-    x64_pdpte *l3_table = l4_table[PML4_INDEX(addr)] & X64_4KB_ALIGN_MASK;
+    x64_pdpte *l3_table = (x64_pdpte *)(l4_table[PML4_INDEX(addr)] & X64_4KB_ALIGN_MASK);
 
     if (l3_table[PAGE_DIR_PTR_INDEX(addr)] == 0) {
         return NULL;
@@ -3160,14 +3159,14 @@ UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr) {
             Print(L"1GB pages found\n");
         }
         if (addr == 0) {
-            return X64_1GB_ALIGN_MASK;
+            return (UINT64*)X64_1GB_ALIGN_MASK;
         }
         else {
             return &l3_table[PAGE_DIR_PTR_INDEX(addr)];
         }
     } 
 
-    x64_pde *l2_table = l3_table[PAGE_DIR_PTR_INDEX(addr)] & X64_4KB_ALIGN_MASK;
+    x64_pde *l2_table = (x64_pde *)(l3_table[PAGE_DIR_PTR_INDEX(addr)] & X64_4KB_ALIGN_MASK);
 
     if (l2_table[PAGE_DIR_INDEX(addr)] == 0) {
         return 0;
@@ -3189,7 +3188,7 @@ UINT64* x64GetPageInfo(x64_pml4e *pml4e_base, EFI_VIRTUAL_ADDRESS addr) {
         return &l2_table[PAGE_DIR_INDEX(addr)];
     }
 
-    x64_pte *l1_table = l2_table[PAGE_DIR_INDEX(addr)];
+    x64_pte *l1_table = (x64_pte *)l2_table[PAGE_DIR_INDEX(addr)];
 
     if (l1_table[PAGE_TABLE_INDEX(addr)] == 0) {
         return 0;

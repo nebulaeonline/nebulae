@@ -108,13 +108,13 @@ EFI_PHYSICAL_ADDRESS* AllocPhysicalPage(UINTN page_size) {
 
     switch (page_size) {
     case SIZE_4KB:
-        new_page_base = kStackPop(&kmem_free_pages_4KB);
+        new_page_base = (EFI_PHYSICAL_ADDRESS *)kStackPop(&kmem_free_pages_4KB);
         if (ISNULL(new_page_base)) {
             return NULL;
         }
         break;
     case SIZE_2MB:
-        new_page_base = kStackPop(&kmem_free_pages_2MB);
+        new_page_base = (EFI_PHYSICAL_ADDRESS *)kStackPop(&kmem_free_pages_2MB);
         if (ISNULL(new_page_base)) {
             return NULL;
         }
@@ -145,19 +145,20 @@ EFI_PHYSICAL_ADDRESS* AllocPageContainingPhysicalAddr(EFI_PHYSICAL_ADDRESS *addr
         }
         else {
             *page_size = SIZE_4KB;
-            return kStackPop(&kmem_free_pages_4KB);
+            return (EFI_PHYSICAL_ADDRESS *)kStackPop(&kmem_free_pages_4KB);
         }
     }
     else {
         *page_size = SIZE_2MB;
-        return kStackPop(&kmem_free_pages_2MB);
+        return (EFI_PHYSICAL_ADDRESS *)kStackPop(&kmem_free_pages_2MB);
     }
 }
 
 // Frees a physical page of memory allocated with AllocPhysicalPage
 // *** THIS PAGE IS NOT ZEROED HERE -- BEWARE!! ***
+// #TODO free physical pages (and keep track of them)
 nstatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
-    
+    /*
     if (page_size != SIZE_4KB && page_size != SIZE_2MB) {
         Print(L"Invalid page size\n");
         return NEBERROR_INVALID_PAGE_SIZE;
@@ -165,6 +166,7 @@ nstatus FreePhysicalPage(EFI_PHYSICAL_ADDRESS *base_addr, UINTN page_size) {
 
     nstatus swap_result = NEBSTATUS_UNDETERMINED;
     UINT64 allocated_result = 0;
+    */
 
     return NEB_OK;
 }
@@ -247,7 +249,7 @@ VOID* kPrebootMalloc(preboot_mem_block *pbmb, UINTN allocation_size, UINT64 desi
     
     pbmb->wasted_space += (return_addr - (UINT64)pbmb->current_addr);
 
-    pbmb->current_addr = return_addr + allocation_size;
+    pbmb->current_addr = (VOID *)(return_addr + allocation_size);
     pbmb->free_space = (((UINT64)pbmb->base_addr + pbmb->size) - (UINT64)pbmb->current_addr);
     
     return (VOID*)return_addr;
@@ -304,10 +306,6 @@ VOID DumpUefiMemoryMap() {
 //      conventional memory
 //  4) Query the UEFI memmap again
 UINTN ReadUefiMemoryMap() {
-    
-    // Function exit status
-    EFI_STATUS exit_status = EFI_SUCCESS;
-    
     // If we've already left boot services, this call is worthless
     // Ditto if we haven't allocated any page stacks yet
     if (k0_main_called || !physical_mem_stacks_allocated) {
@@ -507,13 +505,13 @@ BOOLEAN IsPageFree_Preboot(UINT64 addr) {
 UINT64* GetPageInfo(EFI_VIRTUAL_ADDRESS addr) {
 
 #ifdef __NEBULAE_ARCH_X64
-    x64GetPageInfo(NULL, addr);
+    return x64GetPageInfo(NULL, addr);
 #endif
 
 }
 
 // Invalidates a page in the page cache (TLB)
-VOID InvalidatePage(EFI_VIRTUAL_ADDRESS base_addr) {
+VOID InvalidatePage(EFI_VIRTUAL_ADDRESS *base_addr) {
 #ifdef __NEBULAE_ARCH_X64
     x64InvalidatePage(base_addr);
 #endif

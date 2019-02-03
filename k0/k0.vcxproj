@@ -78,14 +78,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
-      <Optimization>Disabled</Optimization>
+      <WarningLevel>EnableAllWarnings</WarningLevel>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>
       </SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
@@ -103,7 +103,7 @@
       <CallingConvention />
       <ForcedIncludeFiles>$(EDK_PATH)\..\EDK-II\BaseLib\vshacks.h</ForcedIncludeFiles>
       <ErrorReporting />
-      <MSCompatibility>false</MSCompatibility>
+      <MSCompatibility>true</MSCompatibility>
       <DataLevelLinking>false</DataLevelLinking>
       <PositionIndependentCode>false</PositionIndependentCode>
       <MSExtensions>false</MSExtensions>
