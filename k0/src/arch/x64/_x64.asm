@@ -260,7 +260,7 @@ x64LoadTR:
 ;   EFI_PHYSICAL_ADDRESS *addr);
 ;
 x64InvalidatePage:
-	invlpg  [rcx]
+    invlpg  [rcx]
     ret
 
 ;==================================
