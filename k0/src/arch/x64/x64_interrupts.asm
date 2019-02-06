@@ -31,7 +31,6 @@ segment .text
 extern IsrHandler, ExceptionHandler, NMIHandler
 
 ; Exceptions/Faults/Traps
-global default_exception_handler
 global interrupt_0x00_wrapper, interrupt_0x01_wrapper, interrupt_0x02_wrapper, interrupt_0x03_wrapper
 global interrupt_0x04_wrapper, interrupt_0x05_wrapper, interrupt_0x06_wrapper, interrupt_0x07_wrapper
 global interrupt_0x08_wrapper, interrupt_0x09_wrapper, interrupt_0x0A_wrapper, interrupt_0x0B_wrapper
@@ -39,7 +38,6 @@ global interrupt_0x0C_wrapper, interrupt_0x0D_wrapper, interrupt_0x0E_wrapper, i
 global interrupt_0x11_wrapper, interrupt_0x12_wrapper, interrupt_0x13_wrapper, interrupt_0x14_wrapper
 
 ; Hardware / User-Defined Interrupts
-global default_interrupt_handler
 global interrupt_0x20_wrapper, interrupt_0x21_wrapper, interrupt_0x22_wrapper, interrupt_0x23_wrapper
 global interrupt_0x24_wrapper, interrupt_0x25_wrapper, interrupt_0x26_wrapper, interrupt_0x27_wrapper
 global interrupt_0x28_wrapper, interrupt_0x29_wrapper, interrupt_0x2A_wrapper, interrupt_0x2B_wrapper
@@ -284,7 +282,7 @@ global interrupt_0xFC_wrapper, interrupt_0xFD_wrapper, interrupt_0xFE_wrapper, i
 
 ; Exception 0x00 (0) - Divide Error
 interrupt_0x00_wrapper:
-    create_exception_handler 0x00, IsrHandler
+    create_exception_handler 0x00, ExceptionHandler
 
 ; Exception 0x01 (1) - Debug Exception    
 interrupt_0x01_wrapper:
