@@ -208,24 +208,18 @@
 // structure on x64)
 // Maps 512GB
 typedef UINT64      x64_pml4e;
-#define PML4E_FORMAT_PDPT_ADDR(X)       (X & X64_4KB_ALIGN_MASK)
 
 // Page Directory Pointer Table Entry
 // Maps 1GB page
 typedef UINT64      x64_pdpte;
-#define PDPTE_FORMAT_1GB_PAGE_ADDR(X)   (X & X64_1GB_ALIGN_MASK)
-#define PDPTE_FORMAT_PAGE_DIR_ADDR(X)   (X & X64_4KB_ALIGN_MASK)
 
 // Page Directory Entry
 // Maps 2MB
 typedef UINT64      x64_pde;
-#define PDE_FORMAT_2MB_PAGE_ADDR(X)     (X & X64_2MB_ALIGN_MASK)
-#define PDE_FORMAT_PAGE_TABLE_ADDR(X)   (X & X64_4KB_ALIGN_MASK)
 
 // Page Table Entry
 // Maps 4KB
 typedef UINT64      x64_pte;
-#define PTE_FORMAT_4KB_PAGE_ADDR(X)     (X & X64_4KB_ALIGN_MASK)
 
 // Helpful virtual address macros
 #define PML4_INDEX(X)                   (((UINT64)X & 0x7F8000000000ULL) >> 39)
