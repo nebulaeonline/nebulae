@@ -1,4 +1,5 @@
-; Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
+; Copyright (c) 2003-2018 RCH3 (nebulae@nebulae.online)
+; Copyright (c) 2019 Nebulae Foundation, LLC. All rights reserved.
 ; Copyright (c) 2006, Intel Corporation. All rights reserved.
 ;
 ; Redistribution and use in source and binary forms, with or without 

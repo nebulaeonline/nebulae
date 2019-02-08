@@ -1,5 +1,5 @@
-// Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
-// Portions Copyright(c) 2003 - 2005, Robert C.Horvath, III
+// Copyright (c) 2003-2018 RCH3 (nebulae@nebulae.online)
+// Copyright (c) 2019 Nebulae Foundation, LLC. All rights reserved.
 // Portions Copyright (c) 2006 - 2017, Intel Corporation. All rights reserved.
 // Portions Copyright(c) 2008-2009, Apple Inc. All rights reserved.
 //

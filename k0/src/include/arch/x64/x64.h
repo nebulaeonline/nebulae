@@ -1,4 +1,5 @@
-// Copyright (c) 2005-2019 Nebulae Foundation. All rights reserved.
+// Copyright (c) 2003-2018 RCH3 (nebulae@nebulae.online)
+// Copyright (c) 2019 Nebulae Foundation, LLC. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without 
 // modification, are permitted provided that the following conditions are met:
@@ -270,7 +271,7 @@ typedef PACKED_MS struct s_x64_call_gate {
     UINT32 high_bits;
 } PACKED_GNU x64_call_gate;
 
-// Interrupt Trap Gate
+// Interrupt / Trap Gate
 typedef PACKED_MS struct s_x64_inttrap_gate {
     UINT16 procedure_entry_offset_00_15;
     UINT16 segment_selector;
@@ -381,13 +382,12 @@ extern VOID EFIAPI x64OutportW(IN UINT16 Port, OUT UINT16 Value);
 extern UINT8 EFIAPI x64InportB(IN UINT16 Port);
 extern UINT16 EFIAPI x64InportW(IN UINT16 Port);
 extern UINT64 EFIAPI x64ReadTsc();
-extern x64_farptr* EFIAPI x64LoadStackSegmentAndJump(IN x64_farptr* ssptr, IN UINT64* dest);
 extern UINTN EFIAPI x64WriteCR3(IN UINT64 new_cr3);
 extern UINT64 EFIAPI x64ReadCR3();
 extern VOID EFIAPI x64ReadGdtr(OUT x64_seg_sel  *gdtr);
 extern VOID EFIAPI x64WriteGdtr(IN CONST x64_seg_sel *gdtr);
 extern VOID EFIAPI x64ReadIdtr(OUT x64_seg_sel  *idtr);
-extern VOID EFIAPI x64WriteIdtr(OUT x64_seg_sel  *idtr);
+extern VOID EFIAPI x64WriteIdtr(IN x64_seg_sel  *idtr);
 extern UINT64 EFIAPI x64ReadCR2();
 extern UINT16 EFIAPI x64ReadCS();
 extern UINT16 EFIAPI x64ReadDS();
