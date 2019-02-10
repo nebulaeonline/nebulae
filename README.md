@@ -1,6 +1,6 @@
 # nebulae
 
-nebulae is an experimental operating system:
+nebulae is an experimental (minimal) operating system / kernel:
 
   - modern&mdash; implements recent concepts in operating system research
   - modular&mdash; it's easy to tinker with
