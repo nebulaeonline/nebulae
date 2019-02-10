@@ -10,7 +10,7 @@ nebulae is an experimental operating system:
 
 The goal of this project is provide a learning / practice environment for systems-level programming on modern 64-bit architectures (first, x64, then AARCH64).
 
-The environment aims to be beginner friendly&mdash; well, OS developer beginner friendly at least!; The system is small, and easily hackable.
+The environment aims to be beginner friendly&mdash; well, OS developer beginner friendly at least! The system is small, and easily hackable.
 
 ## Why all the Visual Studio stuff?
 
