@@ -8,12 +8,12 @@ nebulae is an experimental (minimal) operating system / kernel; it's goals, whil
 
 ## So what does it actually do so far?
 
-Quite a bit.  The memory system is a mess.  The ideas I had back then were not well thought out.  BUT-->
+A moderate bit of basic setup.  The memory subsystem is a mess.  The ideas I had back then were not well thought out.  However it does have the following features:
 
-  - nasm assembly routines for basically every x64 function you'd need all set up and ready to call from C.
-  - it sets up all interrupt and exception vectors will decently commented code and no expansion macros (except nasm, forgive me!)
-  - the basic code is there for MMIO and ACPI
-  - it can map pages
+  - nasm assembly routines for most x64 system programming instructions you'd need all configured to call from C (or other lang supporting C FFI).
+  - sets up all interrupt and exception vectors with decently commented code, and no expansion macros (with the exception of nasm, forgive me!)
+  - there is basic skeleton code for MMIO and ACPI
+  - it can map pages, for the most basic definition of "map pages"
   
 ## So what can't it do?
 
