@@ -22,9 +22,11 @@ Additionally, I have to give major kudos to Alex Ionescu for his excellent Visua
 
  - Start going fast -->
  
- Since this has gotten a bit of attention here and there, this readme was written with a bit more ambition towards this particular setup and kernel in mind.  Let me be clear: this is not a kernel;  it *is* however, a minimal starting ground to get going and hacking on your own.  In a way, that's kind of nice, and something I wish I had when I started many moons ago.  
+ Since this has gotten a bit of attention here and there, this readme was written with a bit more ambition towards this particular setup and kernel in mind.  Let me be clear: this is not a kernel;  it *is* however, a minimal starting ground to get going and hacking on your own.  In a way, that's kind of nice, and something I wish I had when I started many moons ago. Believe me, when you get started and you are tying to write bare metal code, the setup and the tooling is 90% of the problem.
  
- I hope you enjoy.  And don't worry, there will be MUCH more to come on the topic of systems programming!
+ I really hope you enjoy.  And don't worry, there will be MUCH more to come on the topic of systems programming!
+ 
+ Happy hacking!
 
 License
 ----
