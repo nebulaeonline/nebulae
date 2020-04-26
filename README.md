@@ -13,7 +13,7 @@ A moderate bit of basic setup.  The memory subsystem is a mess.  The ideas I had
   - nasm assembly routines for most x64 system programming instructions you'd need all configured to call from C (or other lang supporting C FFI).
   - sets up all interrupt and exception vectors with decently commented code, and no expansion macros (with the exception of nasm, forgive me!)
   - there is basic skeleton code for MMIO and ACPI
-  - it can map pages, for the most basic definition of "map pages"
+  - it can map pages, for the most basic definition of "map pages" (i.e. it can create virtual address spaces and map pages within them and then modify cr3 to utilize that vas)
   
 ## So what can't it do?
 
