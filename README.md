@@ -1,6 +1,6 @@
 # nebulae
 
-nebulae is an experimental (minimal) operating system / kernel; it's goals, while lofty, are to (one day):
+nebulae is an experimental (minimal) operating system / kernel; it's goals, while lofty, are to be (one day):
 
   - modern&mdash; implement recent concepts in operating system research
   - modular&mdash; be easy to tinker with
