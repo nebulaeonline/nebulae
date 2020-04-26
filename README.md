@@ -43,7 +43,7 @@ Since this has gotten a bit of attention here and there, this readme was written
 
 ### Final Notes
 
-Given the incomplete state of many of the subsystems, the very easy to follow and heavily commented code from uefi_main on, this may also be of use to students and/or TAs in Operating Systems labs (with a fair bit of cleanup of course).
+Given the incomplete state of many of the subsystems, the very easy to follow and heavily commented code from uefi_main() on, this may also be of use to students and/or TAs in Operating Systems labs (with a fair bit of cleanup of course).
 
 I really hope you enjoy.  And don't worry, there will be MUCH more to come on the topic of systems programming!
  
