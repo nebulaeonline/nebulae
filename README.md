@@ -6,6 +6,23 @@ nebulae is an experimental (minimal) operating system / kernel; it's goals, whil
   - modular&mdash; be easy to tinker with
   - ~~Magic~~ (it will not be magic)
 
+## So what does it actually do so far?
+
+Quite a bit.  The memory system is a mess.  The ideas I had back then were not well thought out.  BUT-->
+
+  - nasm assembly routines for basically every x64 function you'd need all set up and ready to call from C.
+  - it sets up all interrupt and exception vectors will decently commented code and no expansion macros (except nasm, forgive me!)
+  - the basic code is there for MMIO and ACPI
+  - it can map pages
+  
+## So what can't it do?
+
+  - most things, lol :P
+  - as mentioned above, the memory subsystem is a mess, but there are some good starting blocks
+  - it does not switch to usermode
+  - it does not unmap or clean up anything.  At all.
+  - the code is messy in places, but I tried to comment as best I could
+
 ## What's the goal here?
 
 The goal of this project is provide a learning / practice environment for systems-level programming on modern 64-bit architectures (first, x64, then AARCH64).
