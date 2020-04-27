@@ -47,6 +47,8 @@ I really hope you enjoy.  And don't worry, there will be MUCH more to come on th
  
 Happy hacking!
 
+P.S. Here is a link to the uefi entrypoint: https://github.com/nebulaeonline/nebulae/blob/master/k0/src/arch/uefi/uefi_entrypoint.c
+
 License
 ----
 
