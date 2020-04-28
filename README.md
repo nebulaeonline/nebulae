@@ -30,6 +30,8 @@ The goal of this project is provide a learning / practice environment for system
 
 The environment aims to be beginner friendly&mdash; well, OS developer beginner friendly at least! The system is small, and easily hackable.
 
+I personally use this as a quick base to test this or that theory or benchmark on a system that's not so far along as to be opinionated.
+
 ## Why all the Visual Studio stuff?
 
 Well, the project files make it easy for someone to grab VS Community, clone the Github repo, and get started!  The project files can be used with MSVC or Clang with MSVC link.  The project itself is self-contained, including debugger (qemu).
