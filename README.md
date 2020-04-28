@@ -14,6 +14,7 @@ A moderate bit of basic setup.  The memory subsystem is a mess.  The ideas I had
   - sets up all interrupt and exception vectors with decently commented code, and no expansion macros (with the exception of nasm, forgive me!)
   - there is basic skeleton code for MMIO and ACPI
   - it can map pages, for the most basic definition of "map pages" (i.e. it can create virtual address spaces and map pages within them and then modify cr3 to utilize that vas)
+  - sets up Uefi GOP (graphics output protocol) framebuffer @ 1024x768
   
 ## So what can't it do?
 
