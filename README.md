@@ -1,57 +1,44 @@
 # nebulae
 
-nebulae is an experimental (minimal) operating system / kernel; it's goals, while lofty, are to be (one day):
+2023 Update:
 
-  - modern&mdash; implement recent concepts in operating system research
-  - modular&mdash; be easy to tinker with
-  - ~~Magic~~ (it will not be magic)
+This was my starting point for trying various operating system ideas over the years, kind of a snapshot of a hump
+I never truly got over.
 
-## So what does it actually do so far?
+This code doesn't actually do much of anything that an actual OS would do, aside from laying some groundwork.
 
-A moderate bit of basic setup.  The memory subsystem is a mess.  The ideas I had back then were not well thought out.  However it does have the following features:
+That being said, some goodies are there.  This actually does exit UEFI boot services.  
 
-  - nasm assembly routines for most x64 system programming instructions you'd need all configured to call from C (or other lang supporting C FFI).
-  - sets up all interrupt and exception vectors with decently commented code, and no expansion macros (with the exception of nasm, forgive me!)
-  - there is basic skeleton code for MMIO and ACPI
-  - it can map pages, for the most basic definition of "map pages" (i.e. it can create virtual address spaces and map pages within them and then modify cr3 to utilize that vas)
-  - sets up Uefi GOP (graphics output protocol) framebuffer @ 1024x768
-  
-## So what can't it do?
+It wires up the circuitry to a decent level for those just getting started.  Exceptions & interrupt handling are present
+and should work (if memory serves), but it has no real SMP support, does not do much in the way of ACPI table parsing,
+and has no real memory manager (kernel or otherwise) to speak of.
 
-  - most things, lol :P
-  - as mentioned above, the memory subsystem is a mess, but there are some good starting blocks
-  - it does not switch to usermode
-  - it does not unmap or clean up anything.  At all.
-  - the code is messy in places, but I tried to comment as best I could
+But it does map a set of page tables, and the headers are all there (many are original), and it switches CR3 at least once.
 
-## What's the goal here?
+I wanted to release a much better version with proper ACPI table parsing and some SMP ready code, but the publicly
+available ACPI libraries were much more restrictively licensed 6-10 years ago, and it's hard to wrap one's head
+aroud the mountain of documentation.
 
-The goal of this project is provide a learning / practice environment for systems-level programming on modern 64-bit architectures (first, x64, then AARCH64).
+I stopped most of my OS dev when life got in the way, which tends to happen to the best of us.
 
-The environment aims to be beginner friendly&mdash; well, OS developer beginner friendly at least! The system is small, and easily hackable.
+Then there's the reality that doing yet another C-based OS isn't where it's at it 2023.  Maybe Rust, maybe Zig, maybe any
+of the other languages out there.
 
-I personally use this as a quick base to test this or that theory or benchmark on a system that's not so far along as to be opinionated.
+Hacking around with the hardware was something I did variously since the early 90s, and it was always fun, usually
+slightly frustrating, but incredibly educational.  Seeing how the sausage gets made helped me immensely, starting with
+that first 8051 Intel breadboard with the hex keypad.  Our assembler was a pencil, a worksheet, and a table of opcodes.  
+You can see where it goes from there :)
 
-## Why all the Visual Studio stuff?
+Maybe I'll get around to spending some time updating this in the near future, because it's around the time for that 
+5-year itch again.  It comes like clockwork.  Each time I come back, I'm a much better developer, but that's not saying much.
 
-Well, the project files make it easy for someone to grab VS Community, clone the Github repo, and get started!  The project files can be used with MSVC or Clang with MSVC link.  The project itself is self-contained, including debugger (qemu).
-
-Additionally, I have to give major kudos to Alex Ionescu for his excellent VisualUefi repo. 
- 
-### Todos
-
- - Start going fast -->
- 
-Since this has gotten a bit of attention here and there, this readme was written with a bit more ambition towards this particular setup and kernel in mind.  Let me be clear: this is not a kernel;  it *is* however, a minimal starting ground to get going and hacking on your own.  In a way, that's kind of nice, and something I wish I had when I started many moons ago. Believe me, when you get started and you are tying to write bare metal code, the setup and the tooling is 90% of the problem.
-
-### Final Notes
-
-I really hope you enjoy.  And don't worry, there will be MUCH more to come on the topic of systems programming!
+If this helps you scratch your OS itch, I'm glad I could help.
  
 Happy hacking!
 
-P.S. Here is a link to the uefi entrypoint: https://github.com/nebulaeonline/nebulae/blob/master/k0/src/arch/uefi/uefi_entrypoint.c
+N
 
+----
 License
 ----
 
