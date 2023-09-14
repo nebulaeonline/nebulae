@@ -26,8 +26,7 @@ of the other languages out there.
 
 Hacking around with the hardware was something I did variously since the early 90s, and it was always fun, usually
 slightly frustrating, but incredibly educational.  Seeing how the sausage gets made helped me immensely, starting with
-that first 8051 Intel breadboard with the hex keypad.  Our assembler was a pencil, a worksheet, and a table of opcodes.  
-You can see where it goes from there :)
+that first 8051 Intel breadboard with the hex keypad.  Our assembler was a pencil, a worksheet, and a table of opcodes. You can see where it goes from there :)
 
 Maybe I'll get around to spending some time updating this in the near future, because it's around the time for that 
 5-year itch again.  It comes like clockwork.  Each time I come back, I'm a much better developer, but that's not saying much.
