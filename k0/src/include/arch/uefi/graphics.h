@@ -26,6 +26,8 @@
 #ifndef __K0_GRAPHICS_H
 #define __K0_GRAPHICS_H
 
+#include "../../../../../VisualUefi/edk2/MdePkg/Include/Protocol/GraphicsOutput.h"
+
 typedef struct s_uefi_gfx_info {
     EFI_HANDLE* handle_buffer;
     UINTN handle_count;
@@ -34,14 +36,14 @@ typedef struct s_uefi_gfx_info {
     UINTN size_of_info;
 } uefi_gfx_info;
 
-uefi_gfx_info gfx_info;
+static uefi_gfx_info gfx_info;
 
 typedef struct s_uefi_display {
     UINT32 width;
     UINT32 height;
 } uefi_display;
 
-uefi_display boot_display;
+static uefi_display boot_display;
 
 VOID InitGraphics();
 

@@ -26,6 +26,10 @@
 #include <Library/UefiLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 
+extern UINTN InternalPrint(IN  CONST CHAR16* Format,
+    IN  EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* Console,
+    IN  VA_LIST                          Marker);
+
 // Panic function
 NORETURN VOID kernel_panic(IN CONST CHAR16  *Format, ...) {
     VA_LIST Marker;
