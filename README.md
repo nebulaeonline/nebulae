@@ -1,5 +1,9 @@
 # nebulae
 
+2024 Update:
+
+There is now a UEFI rust version for x86, x64 & aarch64: [nebulae/iron/uefi via rust](https://github.com/nebulaeonline/nebulae-rs)
+
 2023 Update:
 
 This was my starting point for trying various operating system ideas over the years, kind of a snapshot of a hump
